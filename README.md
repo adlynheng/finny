@@ -1,0 +1,2 @@
+# finny
+Personal finance dashboard
