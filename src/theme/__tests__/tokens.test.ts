@@ -35,6 +35,32 @@ describe('dot-grid backdrop', () => {
   });
 });
 
+describe('frame geometry', () => {
+  it('desktop: 76px header, 12/32/32 content padding, 14 gap', () => {
+    expect(tokens.frame.desktop).toEqual({
+      width: 1512,
+      height: 982,
+      headerHeight: 76,
+      headerPaddingX: 32,
+      headerGap: 22,
+      contentPadding: { top: 12, x: 32, bottom: 32 },
+      gap: 14,
+    });
+  });
+
+  it('mobile: 56+56 chrome, 4/16/112 scroll padding, 12 gap, floating bar', () => {
+    expect(tokens.frame.mobile).toEqual({
+      width: 390,
+      height: 844,
+      statusBarHeight: 56,
+      headerHeight: 56,
+      contentPadding: { top: 4, x: 16, bottom: 112 },
+      gap: 12,
+      bottomBar: { insetX: 12, bottom: 28, tabHeight: 54, fabSize: 52 },
+    });
+  });
+});
+
 describe('type', () => {
   it('uses Urbanist at 300/400/500/600', () => {
     expect(tokens.type.family).toBe('Urbanist');

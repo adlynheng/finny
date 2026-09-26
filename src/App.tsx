@@ -3,32 +3,21 @@
  */
 
 import './global.css';
-import { Text, View } from 'react-native';
-import { tokens } from '@/theme/tokens';
-
-const { family, weights, numeral } = tokens.type;
-const PROBE_SIZE = 76;
+import { Text } from 'react-native';
+import { AppFrame } from '@/components/ui/AppFrame';
 
 function App() {
   return (
-    <View className="flex-1 items-center justify-center">
-      {/* Urbanist weight probe (Task 10): replaced by the app frame in Task 12. */}
-      {Object.values(weights).map(weight => (
-        <Text
-          key={weight}
-          testID={`font-probe-${weight}`}
-          className="text-ink"
-          style={{
-            fontFamily: family,
-            fontWeight: String(weight) as '300' | '400' | '500' | '600',
-            fontSize: PROBE_SIZE,
-            letterSpacing: PROBE_SIZE * numeral.letterSpacingEm,
-          }}
-        >
-          S$184,210
+    <AppFrame
+      header={
+        // Placeholder until the desktop header (Task 46).
+        <Text className="font-sans text-[17px] font-medium text-ink">
+          Finny
         </Text>
-      ))}
-    </View>
+      }
+    >
+      {null}
+    </AppFrame>
   );
 }
 

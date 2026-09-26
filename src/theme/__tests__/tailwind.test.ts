@@ -1,12 +1,18 @@
 import resolveConfig from 'tailwindcss/resolveConfig';
 import { tokens } from '@/theme/tokens';
 
+declare const process: { env: Record<string, string | undefined> };
+
+// Resolve the native NativeWind preset, as Metro does; without this the preset
+// falls back to its web variant, which does not override font-sans.
+process.env.NATIVEWIND_OS = 'ios';
 const tailwindConfig = require('../../../tailwind.config.js');
 
 const theme = resolveConfig(tailwindConfig).theme as unknown as {
   colors: Record<string, string>;
   borderRadius: Record<string, string>;
   fontFamily: Record<string, string[]>;
+  spacing: Record<string, string>;
 };
 
 describe('tailwind theme', () => {
@@ -32,5 +38,18 @@ describe('tailwind theme', () => {
 
   it('uses Urbanist as the sans family', () => {
     expect(theme.fontFamily.sans).toEqual([tokens.type.family]);
+  });
+
+  it('names the desktop frame geometry, so layouts use tokens not [76px]', () => {
+    const { desktop } = tokens.frame;
+    expect(theme.spacing['frame-header']).toBe(`${desktop.headerHeight}px`);
+    expect(theme.spacing['frame-header-x']).toBe(`${desktop.headerPaddingX}px`);
+    expect(theme.spacing['frame-header-gap']).toBe(`${desktop.headerGap}px`);
+    expect(theme.spacing['frame-top']).toBe(`${desktop.contentPadding.top}px`);
+    expect(theme.spacing['frame-x']).toBe(`${desktop.contentPadding.x}px`);
+    expect(theme.spacing['frame-bottom']).toBe(
+      `${desktop.contentPadding.bottom}px`,
+    );
+    expect(theme.spacing['frame-gap']).toBe(`${desktop.gap}px`);
   });
 });

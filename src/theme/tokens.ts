@@ -181,6 +181,26 @@ export const tokens = {
       spacing: 14,
     },
   },
+  frame: {
+    desktop: {
+      width: 1512,
+      height: 982,
+      headerHeight: 76,
+      headerPaddingX: 32,
+      headerGap: 22,
+      contentPadding: { top: 12, x: 32, bottom: 32 },
+      gap: 14,
+    },
+    mobile: {
+      width: 390,
+      height: 844,
+      statusBarHeight: 56,
+      headerHeight: 56,
+      contentPadding: { top: 4, x: 16, bottom: 112 },
+      gap: 12,
+      bottomBar: { insetX: 12, bottom: 28, tabHeight: 54, fabSize: 52 },
+    },
+  },
   type: {
     family: 'Urbanist',
     weights: { light: 300, regular: 400, medium: 500, semibold: 600 },
