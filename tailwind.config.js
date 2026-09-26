@@ -8,6 +8,8 @@ module.exports = {
   content: ['./src/**/*.{ts,tsx}'],
   presets: [require('nativewind/preset')],
   theme: {
+    // font-sans is Urbanist; pick the face with font-light/normal/medium/semibold.
+    fontFamily: { sans: [tokens.type.family] },
     extend: {
       // bg-ink, text-muted-2, border-lime-dark ...
       colors: Object.fromEntries(

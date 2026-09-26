@@ -6,6 +6,7 @@ const tailwindConfig = require('../../../tailwind.config.js');
 const theme = resolveConfig(tailwindConfig).theme as unknown as {
   colors: Record<string, string>;
   borderRadius: Record<string, string>;
+  fontFamily: Record<string, string[]>;
 };
 
 describe('tailwind theme', () => {
@@ -27,5 +28,9 @@ describe('tailwind theme', () => {
       expect(theme.borderRadius[String(r)]).toBe(`${r}px`);
     }
     expect(theme.borderRadius.sheet).toBe('22px');
+  });
+
+  it('uses Urbanist as the sans family', () => {
+    expect(theme.fontFamily.sans).toEqual([tokens.type.family]);
   });
 });
