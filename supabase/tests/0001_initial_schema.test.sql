@@ -1,7 +1,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(21);
+select plan(23);
 
 select is(
   (select count(*)::int from information_schema.tables
@@ -99,6 +99,19 @@ select is(
 select ok(
   has_table_privilege('authenticated', 'public.txn', 'select, insert, update, delete'),
   'authenticated can read and write txn'
+);
+
+select is(
+  (select count(*)::int from pg_event_trigger where evtname = 'ensure_rls'),
+  0,
+  'no event trigger auto-enables row level security'
+);
+
+create table public.rls_probe (id int);
+select is(
+  (select relrowsecurity from pg_class where oid = 'public.rls_probe'::regclass),
+  false,
+  'a newly created public table does not get row level security'
 );
 
 select * from finish();
