@@ -16,8 +16,7 @@ select tables_are('public', array[
   'net_worth_snapshot', 'net_worth_snapshot_class', 'watchlist_item'
 ]);
 
--- settings is a singleton
-insert into settings (name) values ('Adlyn');
+-- settings is a singleton (0003 seeds row 1)
 select throws_ok(
   $$insert into settings (id, name) values (2, 'Second')$$,
   '23514', null,
@@ -28,7 +27,6 @@ select has_column('public', 'income_source', 'payday', 'income_source carries it
 select has_column('public', 'settings', 'payday', 'settings keeps the headline payday');
 
 -- enumerated text columns reject typos
-insert into asset_class (label) values ('Cash');
 insert into account (name, type) values ('DBS', 'Savings');
 
 select throws_ok(
