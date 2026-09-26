@@ -1,0 +1,25 @@
+diff --git a/apple/worklets/apple/AnimationFrameQueue.mm b/apple/worklets/apple/AnimationFrameQueue.mm
+index b93cd2c625ef8a03415ce23c6fc584e51d3696a9..d68f43dcce026b64a2182bec5e6f0d4c958975e1 100644
+--- a/apple/worklets/apple/AnimationFrameQueue.mm
++++ b/apple/worklets/apple/AnimationFrameQueue.mm
+@@ -87,11 +87,18 @@ typedef void (^AnimationFrameCallback)(WorkletsDisplayLink *displayLink);
+   RCTAssertMainQueue();
+ 
+   auto frameCallbacks = [self pullCallbacks];
+-  [displayLink_ setPaused:TRUE];
+ 
+ #if TARGET_OS_OSX
+-  auto targetTimestamp = displayLink.timestamp + displayLink.duration;
++  // react-native-macos implements setPaused: as CVDisplayLinkStop/Start, which
++  // spawns a new CoreVideo thread per restart, and a stopped link reports a zero
++  // timestamp. Keep the link running and use the host clock it is based on.
++  if (frameCallbacks.empty()) {
++    [displayLink_ setPaused:TRUE];
++    return;
++  }
++  auto targetTimestamp = CACurrentMediaTime() + displayLink.duration;
+ #else // TARGET_OS_OSX
++  [displayLink_ setPaused:TRUE];
+   auto targetTimestamp = displayLink.targetTimestamp;
+ #endif // TARGET_OS_OSX
+   targetTimestamp = worklets::calculateTimestampWithSlowAnimations(targetTimestamp);

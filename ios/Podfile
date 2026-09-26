@@ -1,0 +1,55 @@
+# Resolve react_native_pods.rb with node to allow for hoisting
+require Pod::Executable.execute_command('node', ['-p',
+  'require.resolve(
+    "react-native/scripts/react_native_pods.rb",
+    {paths: [process.argv[1]]},
+  )', __dir__]).strip
+
+platform :ios, min_ios_version_supported
+prepare_react_native_project!
+
+linkage = ENV['USE_FRAMEWORKS']
+if linkage != nil
+  Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
+  use_frameworks! :linkage => linkage.to_sym
+end
+
+target 'Finny' do
+  config = use_native_modules!
+
+  use_react_native!(
+    :path => config[:reactNativePath],
+    # An absolute path to your application root.
+    :app_path => "#{Pod::Config.instance.installation_root}/.."
+  )
+
+  post_install do |installer|
+    # Xcode 27 rejects deployment targets below its minimum (iOS 15.0); some pods
+    # still declare older ones.
+    installer.pods_project.targets.each do |t|
+      t.build_configurations.each do |c|
+        v = c.build_settings['IPHONEOS_DEPLOYMENT_TARGET']
+        c.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1' if v.nil? || Gem::Version.new(v) < Gem::Version.new('15.1')
+      end
+    end
+    # Xcode 27's Apple clang rejects fmt 11.0.2's consteval format-string checks
+    # ("call to consteval function ... is not a constant expression"). fmt 11.0.2
+    # has no override hook, so force its non-consteval path.
+    fmt_base = File.join(installer.sandbox.root.to_s, 'fmt/include/fmt/base.h')
+    if File.exist?(fmt_base)
+      src = File.read(fmt_base)
+      marker = "// Detect consteval, C++20 constexpr extensions and std::is_constant_evaluated.\n#if !defined(__cpp_lib_is_constant_evaluated)"
+      if src.include?(marker)
+        File.chmod(0644, fmt_base)
+        File.write(fmt_base, src.sub(marker, "#if 1 // patched by Podfile for Xcode 27\n#  define FMT_USE_CONSTEVAL 0\n#elif !defined(__cpp_lib_is_constant_evaluated)"))
+      end
+    end
+    # https://github.com/facebook/react-native/blob/main/packages/react-native/scripts/react_native_pods.rb#L197-L202
+    react_native_post_install(
+      installer,
+      config[:reactNativePath],
+      :mac_catalyst_enabled => false,
+      # :ccache_enabled => true
+    )
+  end
+end
