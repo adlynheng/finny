@@ -10,7 +10,8 @@
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit",
     "ios:ipa": "scripts/build-ipa.sh",
-    "db:test": "supabase test db"
+    "db:test": "supabase test db",
+    "db:types": "supabase gen types typescript --local --schema public > src/types/database.ts && prettier --write src/types/database.ts"
   },
   "dependencies": {
     "nativewind": "4.2.7",
