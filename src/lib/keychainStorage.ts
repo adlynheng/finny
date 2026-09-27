@@ -28,17 +28,25 @@ export const keychainStorage: SupportedStorage = {
    */
   async getItem(key) {
     try {
-      const item = await Keychain.getGenericPassword({ service: serviceFor(key) });
+      const item = await Keychain.getGenericPassword({
+        service: serviceFor(key),
+      });
       return item ? item.password : null;
     } catch (error) {
-      console.warn(`Keychain read failed for ${key}; treating it as signed out.`, error);
+      console.warn(
+        `Keychain read failed for ${key}; treating it as signed out.`,
+        error,
+      );
       return null;
     }
   },
 
   /** Rejects on failure, so a session that cannot be saved surfaces as a sign-in error. */
   async setItem(key, value) {
-    await Keychain.setGenericPassword(key, value, { service: serviceFor(key), accessible });
+    await Keychain.setGenericPassword(key, value, {
+      service: serviceFor(key),
+      accessible,
+    });
   },
 
   /** Never throws, so signing out always completes. */

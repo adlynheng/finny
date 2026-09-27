@@ -2,8 +2,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { queryKeys } from '@/lib/queryKeys';
 import { supabase } from '@/lib/supabase';
+import { isExisting, type Save } from '@/lib/save';
 import { unwrap } from '@/lib/unwrap';
-import type { CardInsert } from '@/types/domain';
+import type { CardInsert, CardUpdate } from '@/types/domain';
 
 export function useCards() {
   return useQuery({
@@ -23,12 +24,27 @@ function useInvalidateCards() {
     ]);
 }
 
-/** Inserts a new card, or updates one when the row carries an id. Resolves to the saved row. */
+/**
+ * Inserts a new card, or updates the given fields of one when the row carries its id.
+ * Resolves to the saved row.
+ */
 export function useUpsertCard() {
   const onSettled = useInvalidateCards();
   return useMutation({
-    mutationFn: async (card: CardInsert) =>
-      unwrap(await supabase.from('card').upsert(card).select().single()),
+    mutationFn: async (card: Save<CardInsert, CardUpdate>) => {
+      if (isExisting(card)) {
+        const { id, ...fields } = card;
+        return unwrap(
+          await supabase
+            .from('card')
+            .update(fields)
+            .eq('id', id)
+            .select()
+            .single(),
+        );
+      }
+      return unwrap(await supabase.from('card').insert(card).select().single());
+    },
     onSettled,
   });
 }

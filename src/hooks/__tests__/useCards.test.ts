@@ -39,7 +39,7 @@ it('surfaces a failed read as an error', async () => {
   expect(result.current.error).toBe(error);
 });
 
-it('upserts a card, then refreshes cards and net worth snapshots', async () => {
+it('inserts a new card, then refreshes cards and net worth snapshots', async () => {
   const card = {
     account_id: 2,
     bank: 'Citi',
@@ -56,7 +56,7 @@ it('upserts a card, then refreshes cards and net worth snapshots', async () => {
   });
 
   expect(stub.chainsFor('card')).toEqual([
-    [['upsert', card], ['select'], ['single']],
+    [['insert', card], ['select'], ['single']],
   ]);
   expect(client.getQueryState(queryKeys.cards.list())?.isInvalidated).toBe(
     true,
@@ -64,6 +64,24 @@ it('upserts a card, then refreshes cards and net worth snapshots', async () => {
   expect(
     client.getQueryState(queryKeys.snapshots.window(24))?.isInvalidated,
   ).toBe(true);
+});
+
+it('updates an existing card by id', async () => {
+  stub.respond('card', { data: { id: 5, color_theme: 'Dusk' }, error: null });
+  const { result } = await renderHookWithClient(() => useUpsertCard());
+
+  await act(async () => {
+    await result.current.mutateAsync({ id: 5, color_theme: 'Dusk' });
+  });
+
+  expect(stub.chainsFor('card')).toEqual([
+    [
+      ['update', { color_theme: 'Dusk' }],
+      ['eq', 'id', 5],
+      ['select'],
+      ['single'],
+    ],
+  ]);
 });
 
 it('toggles whether a card counts toward the monthly budget', async () => {

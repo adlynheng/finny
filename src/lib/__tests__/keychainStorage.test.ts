@@ -7,19 +7,28 @@ jest.mock('react-native-keychain', () => {
   const items = new Map<string, { username: string; password: string }>();
   return {
     ACCESSIBLE: {
-      AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY: 'AccessibleAfterFirstUnlockThisDeviceOnly',
+      AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY:
+        'AccessibleAfterFirstUnlockThisDeviceOnly',
     },
     setGenericPassword: jest.fn(
-      async (username: string, password: string, options: { service: string }) => {
+      async (
+        username: string,
+        password: string,
+        options: { service: string },
+      ) => {
         items.set(options.service, { username, password });
         return { service: options.service, storage: 'keychain' };
       },
     ),
     getGenericPassword: jest.fn(async (options: { service: string }) => {
       const item = items.get(options.service);
-      return item ? { ...item, service: options.service, storage: 'keychain' } : false;
+      return item
+        ? { ...item, service: options.service, storage: 'keychain' }
+        : false;
     }),
-    resetGenericPassword: jest.fn(async (options: { service: string }) => items.delete(options.service)),
+    resetGenericPassword: jest.fn(async (options: { service: string }) =>
+      items.delete(options.service),
+    ),
     __items: items,
   };
 });
@@ -56,7 +65,9 @@ describe('keychainStorage', () => {
     await keychainStorage.setItem(`${KEY}-code-verifier`, 'verifier');
 
     await expect(keychainStorage.getItem(KEY)).resolves.toBe(SESSION);
-    await expect(keychainStorage.getItem(`${KEY}-code-verifier`)).resolves.toBe('verifier');
+    await expect(keychainStorage.getItem(`${KEY}-code-verifier`)).resolves.toBe(
+      'verifier',
+    );
   });
 
   it('never passes an access group, so iOS uses the default one', async () => {
@@ -87,7 +98,9 @@ describe('keychainStorage', () => {
 
   it('reads as "no session" when the keychain throws, instead of throwing', async () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
-    mocked.getGenericPassword.mockRejectedValueOnce(new Error('errSecInteractionNotAllowed'));
+    mocked.getGenericPassword.mockRejectedValueOnce(
+      new Error('errSecInteractionNotAllowed'),
+    );
 
     await expect(keychainStorage.getItem(KEY)).resolves.toBeNull();
     expect(warn).toHaveBeenCalledTimes(1);
@@ -95,14 +108,18 @@ describe('keychainStorage', () => {
 
   it('does not throw when removing fails, so sign-out still completes', async () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
-    mocked.resetGenericPassword.mockRejectedValueOnce(new Error('errSecMissingEntitlement'));
+    mocked.resetGenericPassword.mockRejectedValueOnce(
+      new Error('errSecMissingEntitlement'),
+    );
 
     await expect(keychainStorage.removeItem(KEY)).resolves.toBeUndefined();
     expect(warn).toHaveBeenCalledTimes(1);
   });
 
   it('lets a failed write reject, so a session that cannot be saved is reported', async () => {
-    mocked.setGenericPassword.mockRejectedValueOnce(new Error('errSecMissingEntitlement'));
+    mocked.setGenericPassword.mockRejectedValueOnce(
+      new Error('errSecMissingEntitlement'),
+    );
 
     await expect(keychainStorage.setItem(KEY, SESSION)).rejects.toThrow(
       'errSecMissingEntitlement',

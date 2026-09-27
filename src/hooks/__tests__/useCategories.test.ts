@@ -77,7 +77,7 @@ it('surfaces a failed read as an error', async () => {
   expect(result.current.error).toBe(error);
 });
 
-it('upserts and deletes, refreshing every kind', async () => {
+it('inserts, renames and deletes, refreshing every kind', async () => {
   stub.respond('category', {
     data: { id: 9, kind: 'expense', name: 'Pets' },
     error: null,
@@ -105,10 +105,12 @@ it('upserts and deletes, refreshing every kind', async () => {
   ).toBe(false);
 
   await act(async () => {
+    await result.current.upsert.mutateAsync({ id: 9, name: 'Pet care' });
     await result.current.remove.mutateAsync(9);
   });
   expect(stub.chainsFor('category')).toEqual([
-    [['upsert', { kind: 'expense', name: 'Pets' }], ['select'], ['single']],
+    [['insert', { kind: 'expense', name: 'Pets' }], ['select'], ['single']],
+    [['update', { name: 'Pet care' }], ['eq', 'id', 9], ['select'], ['single']],
     [['delete'], ['eq', 'id', 9]],
   ]);
 });

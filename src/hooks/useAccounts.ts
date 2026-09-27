@@ -2,11 +2,13 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { queryKeys } from '@/lib/queryKeys';
 import { supabase } from '@/lib/supabase';
+import { isExisting, type Save } from '@/lib/save';
 import { unwrap } from '@/lib/unwrap';
 import {
   ACCOUNT_TYPES,
   type AccountInsert,
   type AccountRow,
+  type AccountUpdate,
 } from '@/types/domain';
 
 /** Position of a type in the Settings grouping; an unknown type sorts last. */
@@ -39,12 +41,29 @@ function useInvalidateAccounts() {
     ]);
 }
 
-/** Inserts a new account, or updates one when the row carries an id. Resolves to the saved row. */
+/**
+ * Inserts a new account, or updates the given fields of one when the row carries its id.
+ * Resolves to the saved row.
+ */
 export function useUpsertAccount() {
   const onSettled = useInvalidateAccounts();
   return useMutation({
-    mutationFn: async (account: AccountInsert) =>
-      unwrap(await supabase.from('account').upsert(account).select().single()),
+    mutationFn: async (account: Save<AccountInsert, AccountUpdate>) => {
+      if (isExisting(account)) {
+        const { id, ...fields } = account;
+        return unwrap(
+          await supabase
+            .from('account')
+            .update(fields)
+            .eq('id', id)
+            .select()
+            .single(),
+        );
+      }
+      return unwrap(
+        await supabase.from('account').insert(account).select().single(),
+      );
+    },
     onSettled,
   });
 }

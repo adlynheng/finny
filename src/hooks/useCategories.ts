@@ -2,8 +2,13 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { queryKeys } from '@/lib/queryKeys';
 import { supabase } from '@/lib/supabase';
+import { isExisting, type Save } from '@/lib/save';
 import { unwrap } from '@/lib/unwrap';
-import type { CategoryInsert, CategoryKind } from '@/types/domain';
+import type {
+  CategoryInsert,
+  CategoryKind,
+  CategoryUpdate,
+} from '@/types/domain';
 
 /**
  * Expense and deposit categories share one table but Settings shows them in separate panels, so
@@ -27,14 +32,29 @@ function useInvalidateCategories() {
     queryClient.invalidateQueries({ queryKey: queryKeys.categories.all });
 }
 
-/** Inserts a new category, or updates one when the row carries an id. Resolves to the saved row. */
+/**
+ * Inserts a new category, or updates the given fields of one when the row carries its id.
+ * Resolves to the saved row.
+ */
 export function useUpsertCategory() {
   const onSettled = useInvalidateCategories();
   return useMutation({
-    mutationFn: async (category: CategoryInsert) =>
-      unwrap(
-        await supabase.from('category').upsert(category).select().single(),
-      ),
+    mutationFn: async (category: Save<CategoryInsert, CategoryUpdate>) => {
+      if (isExisting(category)) {
+        const { id, ...fields } = category;
+        return unwrap(
+          await supabase
+            .from('category')
+            .update(fields)
+            .eq('id', id)
+            .select()
+            .single(),
+        );
+      }
+      return unwrap(
+        await supabase.from('category').insert(category).select().single(),
+      );
+    },
     onSettled,
   });
 }

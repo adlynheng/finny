@@ -58,7 +58,7 @@ it('surfaces a failed read as an error', async () => {
   expect(result.current.error).toBe(error);
 });
 
-it('upserts an account, then refreshes accounts and net worth snapshots', async () => {
+it('inserts a new account, then refreshes accounts and net worth snapshots', async () => {
   const saved = account(7, 'Savings', 'OCBC 360');
   stub.respond('account', { data: saved, error: null });
   const { result, client } = await renderHookWithClient(() =>
@@ -78,7 +78,7 @@ it('upserts an account, then refreshes accounts and net worth snapshots', async 
 
   expect(returned).toEqual(saved);
   expect(stub.chainsFor('account')).toEqual([
-    [['upsert', { name: 'OCBC 360', type: 'Savings' }], ['select'], ['single']],
+    [['insert', { name: 'OCBC 360', type: 'Savings' }], ['select'], ['single']],
   ]);
   expect(client.getQueryState(queryKeys.accounts.list())?.isInvalidated).toBe(
     true,
@@ -89,6 +89,34 @@ it('upserts an account, then refreshes accounts and net worth snapshots', async 
   expect(client.getQueryState(queryKeys.cards.list())?.isInvalidated).toBe(
     false,
   );
+});
+
+it('updates an existing account by id, sending only the changed fields', async () => {
+  stub.respond('account', { data: account(4, 'CPF', 'CPF OA'), error: null });
+  const { result, client } = await renderHookWithClient(() =>
+    useUpsertAccount(),
+  );
+  client.setQueryData(queryKeys.accounts.list(), []);
+  client.setQueryData(queryKeys.snapshots.window(12), []);
+
+  await act(async () => {
+    await result.current.mutateAsync({ id: 4, balance_cents: 1_250_000 });
+  });
+
+  expect(stub.chainsFor('account')).toEqual([
+    [
+      ['update', { balance_cents: 1_250_000 }],
+      ['eq', 'id', 4],
+      ['select'],
+      ['single'],
+    ],
+  ]);
+  expect(client.getQueryState(queryKeys.accounts.list())?.isInvalidated).toBe(
+    true,
+  );
+  expect(
+    client.getQueryState(queryKeys.snapshots.window(12))?.isInvalidated,
+  ).toBe(true);
 });
 
 it('deletes an account by id and refreshes, and rejects when the delete fails', async () => {
