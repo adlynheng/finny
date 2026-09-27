@@ -6,5 +6,6 @@ module.exports = {
     // Tailwind CSS is compiled by Metro (NativeWind); Jest only needs the import to resolve.
     '\\.css$': '<rootDir>/test/styleStub.js',
   },
+  setupFiles: ['<rootDir>/test/jestSetup.js'],
   testPathIgnorePatterns: ['/node_modules/', '<rootDir>/docs/'],
 };

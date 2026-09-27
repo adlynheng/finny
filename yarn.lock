@@ -1486,6 +1486,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@egjs/hammerjs@npm:^2.0.17":
+  version: 2.0.17
+  resolution: "@egjs/hammerjs@npm:2.0.17"
+  dependencies:
+    "@types/hammerjs": ^2.0.36
+  checksum: 8945137cec5837edd70af3f2e0ea621543eb0aa3b667e6269ec6485350f4d120c2434b37c7c30b1cf42a65275dd61c1f24626749c616696d3956ac0c008c4766
+  languageName: node
+  linkType: hard
+
 "@eslint-community/eslint-utils@npm:^4.2.0, @eslint-community/eslint-utils@npm:^4.4.0":
   version: 4.10.1
   resolution: "@eslint-community/eslint-utils@npm:4.10.1"
@@ -2618,6 +2627,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tanstack/query-core@npm:5.104.0":
+  version: 5.104.0
+  resolution: "@tanstack/query-core@npm:5.104.0"
+  checksum: 31397c3c7ee4bcc0d3f05f89f029902d04a0089757a1e25e3d1b8a0e0a7c660e58345f6a220691631724b76432411f7da89eb97b964efd88318396f04d3fa9b3
+  languageName: node
+  linkType: hard
+
+"@tanstack/react-query@npm:^5.104.0":
+  version: 5.104.0
+  resolution: "@tanstack/react-query@npm:5.104.0"
+  dependencies:
+    "@tanstack/query-core": 5.104.0
+  peerDependencies:
+    react: ^18 || ^19
+  checksum: b0ceee18b5b7c7f88cc5341d2a7638ff7d3c0fb714f28405a1aecad42e51e9861d1c52200a4a61969aa02417df46713631dd9af480176c41e772ee4f4bd1eaeb
+  languageName: node
+  linkType: hard
+
 "@testing-library/react-native@npm:^14.0.1":
   version: 14.0.1
   resolution: "@testing-library/react-native@npm:14.0.1"
@@ -2685,6 +2712,13 @@ __metadata:
   dependencies:
     "@types/node": "*"
   checksum: 79d746a8f053954bba36bd3d94a90c78de995d126289d656fb3271dd9f1229d33f678da04d10bce6be440494a5a73438e2e363e92802d16b8315b051036c5256
+  languageName: node
+  linkType: hard
+
+"@types/hammerjs@npm:^2.0.36":
+  version: 2.0.46
+  resolution: "@types/hammerjs@npm:2.0.46"
+  checksum: caba6ec788d19905c71092670b58514b3d1f5eee5382bf9205e8df688d51e7857b7994e2dd7aed57fac8977bdf0e456d67fbaf23440a4385b8ce25fe2af1ec39
   languageName: node
   linkType: hard
 
@@ -5132,6 +5166,7 @@ __metadata:
     "@react-native/metro-config": 0.81.6
     "@react-native/typescript-config": 0.81.6
     "@supabase/supabase-js": ^2.117.2
+    "@tanstack/react-query": ^5.104.0
     "@testing-library/react-native": ^14.0.1
     "@types/jest": ^29.5.13
     "@types/react": ^19.1.4
@@ -5144,6 +5179,7 @@ __metadata:
     prettier: 2.8.8
     react: 19.1.4
     react-native: 0.81.6
+    react-native-gesture-handler: 2.31.2
     react-native-keychain: 10.0.0
     react-native-macos: 0.81.9
     react-native-reanimated: 4.3.4
@@ -5529,6 +5565,15 @@ __metadata:
   dependencies:
     hermes-estree: 0.35.0
   checksum: 097572045fc574afc7a1d35ab3304651605408770371f8eb74ef7a971b48b0e3cf82e45156fa431ba60bf5ee196100c69d4fa107e6fc2d4e18757aa0a1ae0382
+  languageName: node
+  linkType: hard
+
+"hoist-non-react-statics@npm:^3.3.0":
+  version: 3.3.2
+  resolution: "hoist-non-react-statics@npm:3.3.2"
+  dependencies:
+    react-is: ^16.7.0
+  checksum: b1538270429b13901ee586aa44f4cc3ecd8831c061d06cb8322e50ea17b3f5ce4d0e2e66394761e6c8e152cd8c34fb3b4b690116c6ce2bd45b18c746516cb9e8
   languageName: node
   linkType: hard
 
@@ -8202,7 +8247,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-is@npm:^16.13.1":
+"react-is@npm:^16.13.1, react-is@npm:^16.7.0":
   version: 16.13.1
   resolution: "react-is@npm:16.13.1"
   checksum: f7a19ac3496de32ca9ae12aa030f00f14a3d45374f1ceca0af707c831b2a6098ef0d6bdae51bd437b0a306d7f01d4677fcc8de7c0d331eb47ad0f46130e53c5f
@@ -8230,6 +8275,21 @@ __metadata:
     react-native-svg:
       optional: true
   checksum: afe876d06c44573f639a8b57dd356b452f010aeb0e6ad83223c9ee20b308fe4cc774f644e8c80012d99e82bb623598a79c5981f595b7d9f486c29759f59c7fa4
+  languageName: node
+  linkType: hard
+
+"react-native-gesture-handler@npm:2.31.2":
+  version: 2.31.2
+  resolution: "react-native-gesture-handler@npm:2.31.2"
+  dependencies:
+    "@egjs/hammerjs": ^2.0.17
+    "@types/react-test-renderer": ^19.1.0
+    hoist-non-react-statics: ^3.3.0
+    invariant: ^2.2.4
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 0caa56d14b4deadf776e48c73084a69e19e9e0e86e6c6b2bbb97cb44190cfa25806bf8aff35782410ae33e2d3d429068013602a5a011ae1c47fe52cebb7b0df8
   languageName: node
   linkType: hard
 
