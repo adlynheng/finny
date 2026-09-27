@@ -26,7 +26,8 @@
     "react-native-safe-area-context": "^5.5.2",
     "react-native-svg": "15.15.5",
     "react-native-url-polyfill": "^4.0.0",
-    "react-native-worklets": "patch:react-native-worklets@npm%3A0.8.3#./.yarn/patches/react-native-worklets-npm-0.8.3-89f34099cb.patch"
+    "react-native-worklets": "patch:react-native-worklets@npm%3A0.8.3#./.yarn/patches/react-native-worklets-npm-0.8.3-89f34099cb.patch",
+    "zustand": "^5.0.15"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
