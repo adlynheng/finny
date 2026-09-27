@@ -6,9 +6,9 @@
 # app runs without Metro.
 #
 # Build-time config: the "Bundle React Native code and images" build phase runs
-# Metro on the JS, and it inherits this script's environment. Values that must
-# be baked into the bundle (from Task 16: the Supabase URL and anon key) are
-# exported here before xcodebuild and inlined by Babel at bundle time.
+# Metro on the JS, and Babel inlines the Supabase URL and anon key into it
+# (scripts/build-env.js). They come from the shell environment or from .env at
+# the repo root, so fill in .env (see .env.example) before running this.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -19,6 +19,11 @@ APP="$DERIVED/Build/Products/Release-iphoneos/$APP_NAME.app"
 IPA="$BUILD_DIR/$APP_NAME.ipa"
 
 LOG="$BUILD_DIR/ios-release.log"
+
+if [ ! -f "$ROOT/.env" ] && { [ -z "${SUPABASE_URL:-}" ] || [ -z "${SUPABASE_ANON_KEY:-}" ]; }; then
+  echo "error: no .env and SUPABASE_URL / SUPABASE_ANON_KEY unset; the app would fail at launch" >&2
+  exit 1
+fi
 
 mkdir -p "$BUILD_DIR"
 echo "Building $APP_NAME (Release, iphoneos). Full log: $LOG"

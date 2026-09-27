@@ -80,3 +80,6 @@ finny.db-wal
 
 #claude
 docs/
+
+# Build-time config (see .env.example)
+.env
