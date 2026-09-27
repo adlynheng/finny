@@ -1,6 +1,14 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { ActivityIndicator, Platform, Pressable, Text, TextInput, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Platform,
+  Pressable,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import type { Session } from '@supabase/supabase-js';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { supabase } from '@/lib/supabase';
 
@@ -17,6 +25,7 @@ type Props = {
 export function SessionGate({ children }: Props) {
   // undefined while the stored session is still being read.
   const [session, setSession] = useState<Session | null | undefined>(undefined);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     let mounted = true;
@@ -25,14 +34,18 @@ export function SessionGate({ children }: Props) {
         setSession(current => (current === undefined ? data.session : current));
       }
     });
-    const { data } = supabase.auth.onAuthStateChange((_event, next) => {
+    const { data } = supabase.auth.onAuthStateChange((event, next) => {
+      if (event === 'SIGNED_OUT') {
+        // Nothing read in the old session should show in the next one.
+        queryClient.clear();
+      }
       setSession(next);
     });
     return () => {
       mounted = false;
       data.subscription.unsubscribe();
     };
-  }, []);
+  }, [queryClient]);
 
   if (session === undefined) {
     return (
@@ -56,7 +69,10 @@ function SignInForm() {
   async function signIn() {
     setBusy(true);
     setError(null);
-    const result = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+    const result = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
     setBusy(false);
     if (result.error) {
       setError(result.error.message);
@@ -94,14 +110,18 @@ function SignInForm() {
           onSubmitEditing={signIn}
           className={inputClass}
         />
-        {error ? <Text className="font-sans text-[12px] text-danger">{error}</Text> : null}
+        {error ? (
+          <Text className="font-sans text-[12px] text-danger">{error}</Text>
+        ) : null}
         <Pressable
           accessibilityRole="button"
           disabled={busy}
           onPress={signIn}
           className="h-10 items-center justify-center rounded-8 bg-ink"
         >
-          <Text className="font-sans text-[14px] font-medium text-white">Sign in</Text>
+          <Text className="font-sans text-[14px] font-medium text-white">
+            Sign in
+          </Text>
         </Pressable>
       </View>
     </View>
