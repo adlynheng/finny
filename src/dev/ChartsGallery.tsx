@@ -7,10 +7,17 @@
 import { useState } from 'react';
 import { Platform, Text, View } from 'react-native';
 import { MultiStrandLine } from '@/components/charts/MultiStrandLine';
+import { RadialDial } from '@/components/charts/RadialDial';
+import { allocationDial, budgetDial } from '@/components/charts/dialConfigs';
 import { Sphere } from '@/components/charts/Sphere';
 import type { SphereClass } from '@/components/charts/sphereLayout';
 import { ChipRow } from '@/components/ui/ChipRow';
 import { GradientCard } from '@/components/ui/GradientCard';
+import {
+  designBudget,
+  designGrossCents,
+  designPlan,
+} from '../../test/dialCases';
 import { designHistory } from '../../test/historyCases';
 
 // The Overview design's breakdown and its Oct 2024 / Sep 2026 net worth.
@@ -28,8 +35,55 @@ const ranges = ['6', '12', '24'] as const;
 export function ChartsGallery() {
   const [selected, setSelected] = useState<string | null>(null);
   const [range, setRange] = useState<string>('24');
+  const [dialState, setDialState] = useState<string>('normal');
+  const [planFocus, setPlanFocus] = useState<string | null>(null);
+  const over = dialState === 'over';
   return (
     <View className="gap-y-2">
+      <Text className="font-sans text-[11px] text-muted">
+        Dials: budget (left) and monthly plan (right); tap a category to
+        highlight it
+      </Text>
+      <ChipRow
+        options={[
+          { value: 'normal', label: 'Within limit' },
+          { value: 'over', label: 'Over' },
+        ]}
+        value={dialState}
+        onChange={v => setDialState(v ?? 'normal')}
+      />
+      <ChipRow
+        options={designPlan.map(c => ({ value: c.key, label: c.name }))}
+        value={planFocus}
+        onChange={key => setPlanFocus(f => (f === key ? null : key))}
+      />
+      <View className={desktop ? 'flex-row gap-x-6' : 'gap-y-4'}>
+        <View className={desktop ? 'w-[392px]' : 'w-[300px] self-center'}>
+          <RadialDial
+            key={`budget-${dialState}`}
+            testID="budget-dial"
+            {...budgetDial({
+              ...designBudget,
+              spentCents: over ? 400_000 : designBudget.spentCents,
+            })}
+          />
+        </View>
+        <View className={desktop ? 'w-[392px]' : 'w-[300px] self-center'}>
+          <RadialDial
+            key={`plan-${dialState}`}
+            testID="plan-dial"
+            selected={planFocus}
+            {...allocationDial({
+              grossCents: designGrossCents,
+              categories: over
+                ? designPlan.map(c =>
+                    c.key === 'exp' ? { ...c, cents: 400_000 } : c,
+                  )
+                : designPlan,
+            })}
+          />
+        </View>
+      </View>
       <Text className="font-sans text-[11px] text-muted">
         {desktop
           ? 'History: hover for the crosshair; switch range to replay the reveal'

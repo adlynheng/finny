@@ -10,8 +10,10 @@ import {
   distributeTicks,
   labelAnchor,
   polar,
+  tickPaths,
   type Anchor,
   type Point,
+  type Tick,
 } from './geometry';
 import { textWidth } from './textWidth';
 
@@ -97,7 +99,7 @@ export function latitudes(classes: readonly SphereClass[]): Latitude[] {
   });
 }
 
-export type Tick = { angle: number; length: number };
+export type { Tick } from './geometry';
 
 /** A few adjacent ticks, drawn and animated in as one layer. */
 export type TickChunk = {
@@ -135,25 +137,6 @@ export type TickGroup = SphereClass & {
   /** Where the label goes. */
   labelAt: ClassLabel;
 };
-
-const seg = ([x1, y1]: Point, [x2, y2]: Point) =>
-  `M${x1.toFixed(2)} ${y1.toFixed(2)}L${x2.toFixed(2)} ${y2.toFixed(2)}`;
-
-function tickPaths(ticks: readonly Tick[]) {
-  const { inner, spread, side } = SPHERE.ticks;
-  let centre = '';
-  let sides = '';
-  for (const { angle, length } of ticks) {
-    centre += seg(polar(inner, angle), polar(inner + length, angle));
-    for (const o of [-spread, spread]) {
-      sides += seg(
-        polar(inner, angle + o),
-        polar(inner + length * side, angle + o),
-      );
-    }
-  }
-  return { centre, sides };
-}
 
 function classLabel(
   mid: number,
@@ -212,7 +195,7 @@ export function tickGroups(classes: readonly SphereClass[]): TickGroup[] {
     for (let j = 0; j < ticks.length; j += perLayer) {
       chunks.push({
         firstIndex: firstIndex + j,
-        ...tickPaths(ticks.slice(j, j + perLayer)),
+        ...tickPaths(ticks.slice(j, j + perLayer), SPHERE.ticks),
       });
     }
     const value = formatKMoney(c.cents);

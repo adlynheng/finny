@@ -242,6 +242,27 @@ const sphere = {
 } as const;
 
 /**
+ * The radial dials — Personal Finance's budget dial and the Planner's
+ * allocation dial — from the designs' `dial()`s, in their 480-unit viewBox.
+ * The tick strokes, spinning ring and pulse match the sphere's.
+ */
+const dial = {
+  half: 240,
+  /** The three faint guide rings. */
+  rings: { radii: [208, 164, 96], opacity: 0.09, width: 0.7 },
+  spinRing: { radius: 186 },
+  tick: { inner: 110, side: 0.8, perLayer: 4, todayOpacity: 0.9 },
+  /** Future days and the unallocated remainder. */
+  dot: { radius: 116, size: 1.4, opacity: 0.3 },
+  arc: { radius: 208, width: 1.4, opacity: 0.85, capRadius: 3.5 },
+  pace: { radius: 5, width: 0.9, labelRadius: 192, labelSize: 10 },
+  head: { radius: 5, pulseRadius: 10 },
+  bead: { radius: 3.4, opacity: 0.55 },
+  label: { radius: 226, nameSize: 11, valueSize: 15 },
+  centre: { primaryY: 6, secondaryY: 26, secondarySize: 11 },
+} as const;
+
+/**
  * The Overview's net-worth history, from the design's `hist()`: white strokes
  * on the green card, at these opacities and widths in points (the strokes do
  * not scale with the stretched chart).
@@ -403,6 +424,7 @@ export const tokens = {
   calendar,
   table,
   sphere,
+  dial,
   history,
   dialog,
   gradients,

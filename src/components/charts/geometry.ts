@@ -153,3 +153,32 @@ export function labelAnchor(deg: number): { anchor: Anchor; dy: number } {
   const dy = sin > 0.6 ? 12 : sin < -0.6 ? -12 : 0;
   return { anchor, dy };
 }
+
+export type Tick = { angle: number; length: number };
+
+const seg = ([x1, y1]: Point, [x2, y2]: Point) =>
+  `M${x1.toFixed(2)} ${y1.toFixed(2)}L${x2.toFixed(2)} ${y2.toFixed(2)}`;
+
+/**
+ * Radial ticks drawn as the design's triplets: a centre stroke from `inner`
+ * out by the tick's length, and two side strokes `spread`° either side at
+ * `side` of that length. Returned as two paths, so a whole run of ticks is two
+ * SVG elements.
+ */
+export function tickPaths(
+  ticks: readonly Tick[],
+  { inner, spread, side }: { inner: number; spread: number; side: number },
+): { centre: string; sides: string } {
+  let centre = '';
+  let sides = '';
+  for (const { angle, length } of ticks) {
+    centre += seg(polar(inner, angle), polar(inner + length, angle));
+    for (const o of [-spread, spread]) {
+      sides += seg(
+        polar(inner, angle + o),
+        polar(inner + length * side, angle + o),
+      );
+    }
+  }
+  return { centre, sides };
+}

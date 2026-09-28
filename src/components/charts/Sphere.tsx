@@ -11,34 +11,25 @@
  * <Svg> inside an Animated.View, and only the view animates.
  */
 
-import {
-  useEffect,
-  useMemo,
-  useRef,
-  type ComponentProps,
-  type ReactNode,
-} from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedProps,
-  useAnimatedStyle,
   useSharedValue,
-  withDelay,
   withRepeat,
   withTiming,
   type SharedValue,
 } from 'react-native-reanimated';
-import Svg, {
+import {
   Circle,
   Ellipse,
-  Path,
   Text as SvgText,
   type EllipseProps,
 } from 'react-native-svg';
 import { HoverSurface } from '@/components/ui/HoverSurface';
 import type { HoverPoint } from '@/components/ui/hoverTypes';
-import { motion, type MotionSpec } from '@/theme/motion';
+import { motion } from '@/theme/motion';
 import { tokens } from '@/theme/tokens';
 import { formatMonthShort, type MonthKey } from '@/utils/format/date';
 import { formatKMoney } from '@/utils/format/money';
@@ -49,23 +40,18 @@ import {
   sphereGeometry,
   type Latitude,
   type SphereClass,
-  type TickChunk,
   type TickGroup,
 } from './sphereLayout';
+import { Layer, Pulse, SpinRing, TickLayer } from './ringParts';
 import { useEased } from './useEased';
 
 const AnimatedEllipse = Animated.createAnimatedComponent(Ellipse);
-const AnimatedPath = Animated.createAnimatedComponent(Path);
 const AnimatedSvgText = Animated.createAnimatedComponent(SvgText);
 
 const look = tokens.sphere;
 const { ink, muted, lime } = tokens.colors;
 const FONT = tokens.type.family;
 const R = SPHERE.radius;
-const pct = (fraction: number): `${number}%` => `${fraction * 100}%`;
-
-const easing = (spec: MotionSpec) =>
-  spec.easing === 'linear' ? Easing.linear : Easing.bezier(...spec.easing);
 
 type Props = {
   /** Asset classes in the order they run round the ring from the top. */
@@ -90,36 +76,6 @@ const emphasis = (key: string, selected: string | null): Emphasis => ({
   on: !selected || selected === key,
   hot: selected === key,
 });
-
-/** A full-size layer over the sphere, never taking touches. */
-function Layer({
-  half,
-  style,
-  children,
-  testID,
-}: {
-  half: number;
-  style?: ComponentProps<typeof Animated.View>['style'];
-  children: ReactNode;
-  testID?: string;
-}) {
-  return (
-    <Animated.View
-      testID={testID}
-      pointerEvents="none"
-      className="absolute inset-0"
-      style={style}
-    >
-      <Svg
-        width="100%"
-        height="100%"
-        viewBox={`${-half} ${-half} ${half * 2} ${half * 2}`}
-      >
-        {children}
-      </Svg>
-    </Animated.View>
-  );
-}
 
 // fnMeridian: scaleX 1 → −1 and back, each meridian a tenth of a cycle ahead.
 // One clock runs 0 → 2 (out and back) for all ten.
@@ -263,72 +219,6 @@ function ClassLabel({
   );
 }
 
-// fnGrow: each layer scales .6 → 1 about the sphere's centre and fades in,
-// staggered 12 ms per tick by its first tick.
-function TickLayer({
-  groupKey,
-  index,
-  chunk,
-  half,
-  animate,
-  centre,
-  side,
-  hot,
-}: {
-  groupKey: string;
-  index: number;
-  chunk: TickChunk;
-  half: number;
-  animate: boolean;
-  centre: SharedValue<number>;
-  side: SharedValue<number>;
-  hot: boolean;
-}) {
-  const spec = motion.fnGrow;
-  const grow = useSharedValue(animate ? 0 : 1);
-  useEffect(() => {
-    if (!animate) return;
-    grow.value = withDelay(
-      chunk.firstIndex * spec.staggerMs,
-      withTiming(1, { duration: spec.durationMs, easing: easing(spec) }),
-    );
-  }, [animate, chunk.firstIndex, grow, spec]);
-  const from = spec.from.scale!;
-  const style = useAnimatedStyle(() => ({
-    opacity: grow.value,
-    transform: [{ scale: from + (1 - from) * grow.value }],
-  }));
-  const sideProps = useAnimatedProps(() => ({ strokeOpacity: side.value }));
-  const centreProps = useAnimatedProps(() => ({ strokeOpacity: centre.value }));
-  const t = look.tick;
-  return (
-    <Layer
-      half={half}
-      style={style}
-      testID={`sphere-ticks-${groupKey}-${index}`}
-    >
-      <AnimatedPath
-        testID={`sphere-sides-${groupKey}-${index}`}
-        d={chunk.sides}
-        fill="none"
-        stroke={ink}
-        strokeWidth={t.side.width}
-        strokeLinecap="round"
-        animatedProps={sideProps}
-      />
-      <AnimatedPath
-        testID={`sphere-centres-${groupKey}-${index}`}
-        d={chunk.centre}
-        fill="none"
-        stroke={ink}
-        strokeWidth={hot ? t.centre.hotWidth : t.centre.width}
-        strokeLinecap="round"
-        animatedProps={centreProps}
-      />
-    </Layer>
-  );
-}
-
 function TickClass({
   group,
   selected,
@@ -354,102 +244,21 @@ function TickClass({
   return (
     <>
       {group.chunks.map((chunk, index) => (
+        // fnGrow, staggered 12 ms a tick by each layer's first tick.
         <TickLayer
           key={chunk.firstIndex}
-          groupKey={group.key}
-          index={index}
-          chunk={chunk}
+          run={chunk}
           half={half}
           animate={animate}
+          delayMs={chunk.firstIndex * motion.fnGrow.staggerMs}
           centre={centre}
           side={side}
-          hot={hot}
+          centreWidth={hot ? t.centre.hotWidth : t.centre.width}
+          idPrefix="sphere"
+          idKey={`${group.key}-${index}`}
         />
       ))}
     </>
-  );
-}
-
-// fnSpin: the dashed ring turns once every two minutes.
-function SpinRing({ half, animate }: { half: number; animate: boolean }) {
-  const spec = motion.fnSpin;
-  const turn = useSharedValue(0);
-  useEffect(() => {
-    if (!animate) return;
-    turn.value = withRepeat(
-      withTiming(spec.to.rotateDeg!, {
-        duration: spec.durationMs,
-        easing: easing(spec),
-      }),
-      spec.repeat,
-      spec.reverse,
-    );
-  }, [animate, turn, spec]);
-  const style = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${turn.value}deg` }],
-  }));
-  const r = look.spinRing;
-  return (
-    <Layer half={half} style={style} testID="sphere-spin-ring">
-      <Circle
-        r={SPHERE.spinRing}
-        fill="none"
-        stroke={ink}
-        strokeOpacity={r.opacity}
-        strokeWidth={r.width}
-        strokeDasharray={r.dash}
-      />
-    </Layer>
-  );
-}
-
-// fnPulse on the north pole: out to 1.7× and faded, then back, 2.8 s a cycle.
-function Pulse({ half, animate }: { half: number; animate: boolean }) {
-  const spec = motion.fnPulse;
-  const p = useSharedValue(0);
-  useEffect(() => {
-    if (!animate) return;
-    // The keyframes run 0% → 50% → 100% back to the start, easing each half.
-    p.value = withRepeat(
-      withTiming(1, { duration: spec.durationMs / 2, easing: easing(spec) }),
-      -1,
-      true,
-    );
-  }, [animate, p, spec]);
-  const { from, to } = spec;
-  const style = useAnimatedStyle(() =>
-    animate
-      ? {
-          opacity: from.opacity! + (to.opacity! - from.opacity!) * p.value,
-          transform: [
-            { scale: from.scale! + (to.scale! - from.scale!) * p.value },
-          ],
-        }
-      : { opacity: look.pole.pulseRestOpacity },
-  );
-  // A square just big enough for the dot, centred on the pole, so the default
-  // origin (its own centre) is the pole. A transformOrigin on a full-size
-  // layer is ignored on macOS, where the dot then drifted as it grew. Yoga
-  // takes percentage margins from the parent's width; the sphere is square.
-  const d = look.pole.pulseRadius * 2;
-  const box = {
-    left: '50%',
-    top: pct((half - R) / (half * 2)),
-    width: pct(d / (half * 2)),
-    marginLeft: pct(-d / 2 / (half * 2)),
-    marginTop: pct(-d / 2 / (half * 2)),
-  } as const;
-  return (
-    <Animated.View
-      testID="sphere-pulse"
-      pointerEvents="none"
-      className="absolute aspect-square"
-      style={[box, style]}
-    >
-      <Svg width="100%" height="100%" viewBox={`${-d / 2} ${-d / 2} ${d} ${d}`}>
-        <Circle r={look.pole.pulseRadius} fill={lime} />
-      </Svg>
-    </Animated.View>
   );
 }
 
@@ -567,8 +376,21 @@ export function Sphere({
             <ClassLabel key={g.key} group={g} selected={selected} />
           ))}
       </Layer>
-      <SpinRing half={half} animate={animate} />
-      <Pulse half={half} animate={animate} />
+      <SpinRing
+        half={half}
+        radius={SPHERE.spinRing}
+        animate={animate}
+        testID="sphere-spin-ring"
+      />
+      {/* fnPulse on the north pole. */}
+      <Pulse
+        half={half}
+        x={0}
+        y={-R}
+        radius={look.pole.pulseRadius}
+        animate={animate}
+        testID="sphere-pulse"
+      />
       <Layer half={half}>
         <Circle cx={0} cy={-R} r={look.pole.radius} fill={lime} />
       </Layer>
