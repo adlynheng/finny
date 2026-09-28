@@ -18,6 +18,8 @@ target 'finny-macOS' do
 
   # Finny's own backdrop blur for macOS (NSVisualEffectView), in place of expo-blur.
   pod 'FinnyBlur', :path => './FinnyBlur'
+  # Mouse-moved tracking for chart hover; react-native-macos only reports enter/leave.
+  pod 'FinnyHover', :path => './FinnyHover'
 
   # Flags change depending on the env values.
   flags = get_default_flags()

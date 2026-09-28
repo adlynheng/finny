@@ -14,6 +14,7 @@ import {
 import { GradientFill } from '@/components/ui/GradientFill';
 import { gradients } from '@/theme/gradients';
 import { tokens, type GlassName } from '@/theme/tokens';
+import { ChartsGallery } from './ChartsGallery';
 import { ControlsGallery } from './ControlsGallery';
 import { IconsGallery } from './IconsGallery';
 import { SheetGallery } from './SheetGallery';
@@ -63,6 +64,9 @@ const tile = 'absolute bottom-1 left-5 right-1 top-5 justify-end p-2';
 export function SurfacesGallery() {
   return (
     <ScrollView contentContainerClassName="gap-y-4 pb-4">
+      <Label>Charts (Phase G)</Label>
+      <ChartsGallery />
+
       <Label>Icons (Task 36)</Label>
       <IconsGallery />
 

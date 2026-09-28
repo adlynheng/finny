@@ -205,6 +205,35 @@ const table = {
   expandMs: 200,
 } as const;
 
+/**
+ * The Overview's net-worth sphere: strokes as opacities of ink, so each can
+ * transition as a number. `rest` is nothing hovered, `hot` the hovered class,
+ * `dim` every other class.
+ */
+const sphere = {
+  reference: { opacity: 0.35, width: 0.8, dash: '2 4', labelSize: 9 },
+  meridian: { opacity: 0.32, dimOpacity: 0.16, width: 0.7 },
+  latitude: {
+    rest: { opacity: 0.42, width: 0.8 },
+    hot: { opacity: 0.9, width: 1.1 },
+    dim: { opacity: 0.13, width: 0.7 },
+    transitionMs: 300,
+  },
+  pole: { radius: 5, pulseRadius: 9, pulseRestOpacity: 0.3 },
+  outerRing: { opacity: 0.1, width: 0.7 },
+  spinRing: { opacity: 0.25, width: 0.6, dash: '1 5' },
+  tick: {
+    centre: { opacity: 0.55, hotOpacity: 0.95, width: 0.9, hotWidth: 1.2 },
+    side: { opacity: 0.2, hotOpacity: 0.35, width: 0.6 },
+    /** Other classes' ticks, as a multiplier. */
+    dim: 0.35,
+    transitionMs: 250,
+  },
+  bead: { radius: 2.2, opacity: 0.5 },
+  /** Other classes' value labels. */
+  valueDimOpacity: 0.45,
+} as const;
+
 /** The form containers: a centred modal on desktop, a bottom sheet on mobile. */
 const dialog = {
   desktop: {
@@ -345,6 +374,7 @@ export const tokens = {
   controls,
   calendar,
   table,
+  sphere,
   dialog,
   gradients,
   cardThemes,
