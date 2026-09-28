@@ -2,7 +2,7 @@
 const { tokens } = require('./src/theme/tokens');
 
 const { desktop } = tokens.frame;
-const { controls, dialog } = tokens;
+const { calendar, controls, dialog } = tokens;
 const px = n => `${n}px`;
 
 const kebab = name => name.replace(/[A-Z0-9]/g, c => `-${c.toLowerCase()}`);
@@ -49,8 +49,15 @@ module.exports = {
         'outline-border': controls.outlineBorder,
         'chip-border': controls.chipBorder,
         'input-border': controls.input.border,
+        'input-open-border': controls.input.openBorder,
         'toggle-off': controls.toggle.offColor,
         'sheet-handle': dialog.mobile.handle,
+        // The date picker: bg-tile, border-tile-today, bg-nav-tray ...
+        'popover-border': calendar.popover.border,
+        'nav-tray': calendar.navTray,
+        tile: calendar.tile.fill,
+        'tile-today': calendar.tile.todayBorder,
+        'tile-hover': calendar.tile.hoverBorder,
       },
       // opacity-dimmed (an unchoosable chip), opacity-disabled.
       opacity: {
@@ -92,6 +99,10 @@ module.exports = {
         'sheet-pad': px(dialog.mobile.padding),
         'sheet-gap': px(dialog.mobile.gap),
         action: px(dialog.mobile.actionHeight),
+        // w-popover; h-tile (desktop), h-tile-touch (mobile).
+        popover: px(calendar.popover.width),
+        tile: px(calendar.tile.height),
+        'tile-touch': px(calendar.tile.touchHeight),
       },
       // rounded-4 ... rounded-14, plus the named mobile radii.
       borderRadius: {

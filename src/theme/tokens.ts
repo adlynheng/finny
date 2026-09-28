@@ -139,6 +139,8 @@ const controls = {
   chipBorder: 'rgba(28,28,26,.08)',
   input: {
     border: 'rgba(28,28,26,.1)',
+    /** A field whose picker is open, e.g. the date field. */
+    openBorder: 'rgba(28,28,26,.45)',
     height: 40,
     /** Mobile. */
     touchHeight: 44,
@@ -154,6 +156,30 @@ const controls = {
     offColor: 'rgba(28,28,26,.14)',
     knobShadow: '0 1px 2px rgba(0,0,0,.2)',
     durationMs: 200,
+  },
+} as const;
+
+/**
+ * The date picker's month grid: a popover above the date field on desktop,
+ * inline in the sheet on mobile.
+ */
+const calendar = {
+  popover: {
+    width: 300,
+    /** Between the popover and the field it opens above. */
+    offset: 8,
+    border: 'rgba(28,28,26,.08)',
+    shadow: '0 18px 44px rgba(0,0,0,.14)',
+  },
+  /** The prev/next pair's tray. */
+  navTray: 'rgba(28,28,26,.04)',
+  tile: {
+    height: 32,
+    /** Mobile. */
+    touchHeight: 38,
+    fill: 'rgba(28,28,26,.04)',
+    todayBorder: 'rgba(28,28,26,.6)',
+    hoverBorder: 'rgba(28,28,26,.35)',
   },
 } as const;
 
@@ -295,6 +321,7 @@ export const tokens = {
   },
   glass,
   controls,
+  calendar,
   dialog,
   gradients,
   cardThemes,

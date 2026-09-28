@@ -223,6 +223,7 @@ describe('controls', () => {
     expect(tokens.controls.chipBorder).toBe('rgba(28,28,26,.08)');
     expect(tokens.controls.input).toEqual({
       border: 'rgba(28,28,26,.1)',
+      openBorder: 'rgba(28,28,26,.45)',
       height: 40,
       touchHeight: 44,
     });
@@ -240,6 +241,28 @@ describe('controls', () => {
   it('dims an unchoosable chip and a disabled action to 35%', () => {
     expect(tokens.controls.dimmedOpacity).toBe(0.35);
     expect(tokens.controls.disabledOpacity).toBe(0.35);
+  });
+});
+
+describe('calendar', () => {
+  it('desktop popover: 300 wide, 8 above the field, hairline border, deep shadow', () => {
+    expect(tokens.calendar.popover).toEqual({
+      width: 300,
+      offset: 8,
+      border: 'rgba(28,28,26,.08)',
+      shadow: '0 18px 44px rgba(0,0,0,.14)',
+    });
+    expect(tokens.calendar.navTray).toBe('rgba(28,28,26,.04)');
+  });
+
+  it('tiles: 32px (38 on mobile), a 4% wash, today outlined at 60%', () => {
+    expect(tokens.calendar.tile).toEqual({
+      height: 32,
+      touchHeight: 38,
+      fill: 'rgba(28,28,26,.04)',
+      todayBorder: 'rgba(28,28,26,.6)',
+      hoverBorder: 'rgba(28,28,26,.35)',
+    });
   });
 });
 

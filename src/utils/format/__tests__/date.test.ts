@@ -9,6 +9,7 @@ import {
   lastOfMonth,
   mondayOffset,
   monthKey,
+  shiftMonth,
 } from '../date';
 
 describe('labels', () => {
@@ -78,4 +79,16 @@ describe('mondayOffset', () => {
       expect(mondayOffset(month)).toBe(offset);
     },
   );
+});
+
+describe('shiftMonth', () => {
+  it.each([
+    ['2026-09', 1, '2026-10'],
+    ['2026-09', -1, '2026-08'],
+    ['2026-12', 1, '2027-01'],
+    ['2027-01', -1, '2026-12'],
+    ['2026-03', -14, '2025-01'],
+  ])('%s moved by %i is %s', (month, by, expected) => {
+    expect(shiftMonth(month, by)).toBe(expected);
+  });
 });

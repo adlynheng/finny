@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { Text, View } from 'react-native';
 import { Button } from '@/components/ui/Button';
 import { ChipRow } from '@/components/ui/ChipRow';
+import { DatePicker } from '@/components/ui/DatePicker';
 import { Input } from '@/components/ui/Input';
 import { Segmented } from '@/components/ui/Segmented';
 import { Sheet } from '@/components/ui/Sheet';
@@ -46,6 +47,7 @@ function DemoForm({ tall }: { tall: boolean }) {
   const [type, setType] = useState<(typeof types)[number]['value']>('expense');
   const [account, setAccount] = useState('dbs');
   const [note, setNote] = useState('');
+  const [date, setDate] = useState<string | null>('2026-09-24');
   return (
     <>
       <Segmented options={types} value={type} onChange={setType} />
@@ -55,12 +57,21 @@ function DemoForm({ tall }: { tall: boolean }) {
       <Field label="Paid from">
         <ChipRow options={accounts} value={account} onChange={setAccount} />
       </Field>
-      <Input
-        label="Description"
-        value={note}
-        onChangeText={setNote}
-        placeholder="e.g. Kopitiam"
-      />
+      {/* Side by side on desktop, as the design has it; stacked on mobile. */}
+      <View className="flex-row gap-[10px] ios:flex-col">
+        <Input
+          label="Description"
+          value={note}
+          onChangeText={setNote}
+          placeholder="e.g. Kopitiam"
+          className="flex-1 ios:flex-none"
+        />
+        <DatePicker
+          value={date}
+          onChange={setDate}
+          className="flex-1 ios:flex-none"
+        />
+      </View>
       {tall &&
         Array.from({ length: 12 }, (_, i) => (
           <Input

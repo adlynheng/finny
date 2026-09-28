@@ -66,6 +66,19 @@ describe('tailwind theme', () => {
     expect(theme.opacity.disabled).toBe('0.35');
   });
 
+  it('names the date picker colours and sizes', () => {
+    const { calendar, controls } = tokens;
+    expect(theme.colors['input-open-border']).toBe(controls.input.openBorder);
+    expect(theme.colors['popover-border']).toBe(calendar.popover.border);
+    expect(theme.colors['nav-tray']).toBe(calendar.navTray);
+    expect(theme.colors.tile).toBe(calendar.tile.fill);
+    expect(theme.colors['tile-today']).toBe(calendar.tile.todayBorder);
+    expect(theme.colors['tile-hover']).toBe(calendar.tile.hoverBorder);
+    expect(theme.spacing.popover).toBe('300px');
+    expect(theme.spacing.tile).toBe('32px');
+    expect(theme.spacing['tile-touch']).toBe('38px');
+  });
+
   it('names the dialog geometry', () => {
     const { desktop, mobile } = tokens.dialog;
     expect(theme.spacing['dialog-standard']).toBe('520px');

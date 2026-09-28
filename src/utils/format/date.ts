@@ -7,6 +7,7 @@
  */
 
 import {
+  addMonths,
   endOfMonth,
   format,
   getDaysInMonth,
@@ -88,6 +89,11 @@ export function firstOfMonth(month: MonthKey): string {
 /** `2026-09-30` */
 export function lastOfMonth(month: MonthKey): string {
   return toIsoDate(endOfMonth(parseMonth(month)));
+}
+
+/** The month `by` months after (or, when negative, before) `month`. */
+export function shiftMonth(month: MonthKey, by: number): MonthKey {
+  return monthKey(addMonths(parseMonth(month), by));
 }
 
 export function daysInMonth(month: MonthKey): number {
