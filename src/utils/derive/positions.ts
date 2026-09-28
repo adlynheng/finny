@@ -50,7 +50,10 @@ export function openedAt(lots: readonly Lot[]): string | null {
  * order, so the recorded cost basis does not depend on the order Postgres
  * returned the rows in. Refuses to sell more than is held.
  */
-export function consumeFifo(lots: readonly Lot[], quantity: number): FifoResult {
+export function consumeFifo(
+  lots: readonly Lot[],
+  quantity: number,
+): FifoResult {
   if (!(quantity > 0)) {
     throw new Error('The quantity must be more than zero.');
   }
@@ -120,8 +123,7 @@ function toSgdCents(
 
 function oldestFirst(lots: readonly Lot[]): Lot[] {
   return [...lots].sort(
-    (a, b) =>
-      a.purchased_at.localeCompare(b.purchased_at) || a.id - b.id,
+    (a, b) => a.purchased_at.localeCompare(b.purchased_at) || a.id - b.id,
   );
 }
 

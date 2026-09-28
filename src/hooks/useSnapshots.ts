@@ -1,20 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { startOfMonth, subMonths } from 'date-fns';
 
 import { queryKeys, type SnapshotWindow } from '@/lib/queryKeys';
 import { supabase } from '@/lib/supabase';
 import { now } from '@/lib/today';
 import { unwrap } from '@/lib/unwrap';
+import { toIsoDate } from '@/utils/format/date';
 
 /** The first day of the month `months - 1` months before this one, as `YYYY-MM-DD`. */
 function windowStart(months: SnapshotWindow) {
-  const current = now();
-  const start = new Date(
-    current.getFullYear(),
-    current.getMonth() - (months - 1),
-    1,
-  );
-  const month = String(start.getMonth() + 1).padStart(2, '0');
-  return `${start.getFullYear()}-${month}-01`;
+  return toIsoDate(startOfMonth(subMonths(now(), months - 1)));
 }
 
 /**

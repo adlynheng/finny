@@ -1,21 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { addMonths } from 'date-fns';
 
 import { queryKeys } from '@/lib/queryKeys';
 import { supabase } from '@/lib/supabase';
 import { unwrap } from '@/lib/unwrap';
 import type { TxnInsert } from '@/types/domain';
+import { parseMonth, toIsoDate } from '@/utils/format/date';
 
 /** The first day of `month` (`YYYY-MM`) and of the month after it, as ISO dates. */
 function monthBounds(month: string) {
-  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) {
-    throw new Error(`Expected a month as YYYY-MM, got "${month}".`);
-  }
-  const [year, monthNumber] = month.split('-').map(Number) as [number, number];
-  const next =
-    monthNumber === 12
-      ? `${year + 1}-01`
-      : `${year}-${String(monthNumber + 1).padStart(2, '0')}`;
-  return { start: `${month}-01`, end: `${next}-01` };
+  const start = parseMonth(month);
+  return { start: toIsoDate(start), end: toIsoDate(addMonths(start, 1)) };
 }
 
 /** One month's transactions (`YYYY-MM`), or all of them, newest first. */

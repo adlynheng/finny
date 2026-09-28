@@ -1,38 +1,49 @@
 /**
- * Date display and month arithmetic over the strings Postgres hands back:
- * `YYYY-MM-DD` for a `date` column and `YYYY-MM` as a month key. Parsed by
- * hand, never through `new Date(string)`, so a label cannot shift a day with
- * the time zone.
+ * Dates as the app stores them — `YYYY-MM-DD` for a Postgres `date` column and
+ * `YYYY-MM` as a month key — and the labels the design shows for them. All
+ * parsing, arithmetic and formatting goes through date-fns; this module only
+ * pins the string shapes. Strings are parsed to local midnight, never through
+ * `new Date(string)`, which reads a bare date as UTC and can shift the day.
  */
+
+import {
+  endOfMonth,
+  format,
+  getDaysInMonth,
+  getISODay,
+  isValid,
+  parse,
+  startOfMonth,
+} from 'date-fns';
 
 /** `YYYY-MM`, the month a transaction list, calendar or budget is showing. */
 export type MonthKey = string;
 
-const MONTHS = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-] as const;
-
-const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const;
-
-const DATE_OR_MONTH = /^(\d{4})-(\d{2})(?:-(\d{2}))?$/;
+const DATE_SHAPE = /^\d{4}-\d{2}-\d{2}$/;
+const MONTH_SHAPE = /^\d{4}-\d{2}$/;
 
 type YearOption = { year?: boolean };
 
+/** A `YYYY-MM-DD` string as local midnight. Throws on anything else, including 30 Feb. */
+export function parseDate(value: string): Date {
+  return strictParse(value, DATE_SHAPE, 'yyyy-MM-dd', 'YYYY-MM-DD');
+}
+
+/** A `YYYY-MM` key, or a `YYYY-MM-DD` date, as local midnight on the 1st of its month. */
+export function parseMonth(value: string): Date {
+  return MONTH_SHAPE.test(value)
+    ? strictParse(value, MONTH_SHAPE, 'yyyy-MM', 'YYYY-MM')
+    : startOfMonth(parseDate(value));
+}
+
+/** A `Date` as the `YYYY-MM-DD` string a `date` column takes. */
+export function toIsoDate(date: Date): string {
+  return format(date, 'yyyy-MM-dd');
+}
+
 /** `24 Sep` */
 export function formatDayMonth(date: string): string {
-  const { day, month } = parseDate(date);
-  return `${day} ${shortMonth(month)}`;
+  return format(parseDate(date), 'd MMM');
 }
 
 /** `Sep`, or `Sep 2026` with `{ year: true }`. Takes a month key or a date. */
@@ -40,8 +51,7 @@ export function formatMonthShort(
   value: string,
   { year = false }: YearOption = {},
 ): string {
-  const parts = parse(value);
-  return withYear(shortMonth(parts.month), parts.year, year);
+  return format(parseMonth(value), year ? 'MMM yyyy' : 'MMM');
 }
 
 /** `September`, or `September 2026` with `{ year: true }`. Takes a month key or a date. */
@@ -49,45 +59,39 @@ export function formatMonthLong(
   value: string,
   { year = false }: YearOption = {},
 ): string {
-  const parts = parse(value);
-  return withYear(MONTHS[parts.month - 1]!, parts.year, year);
+  return format(parseMonth(value), year ? 'MMMM yyyy' : 'MMMM');
 }
 
 /** `Thu` */
 export function formatWeekdayShort(date: string): string {
-  return WEEKDAYS[weekday(parseDate(date))]!;
+  return format(parseDate(date), 'EEE');
 }
 
 /** `Thu, 24 Sep 2026`, the date-picker button's label. */
 export function formatFullDate(date: string): string {
-  const parts = parseDate(date);
-  return `${WEEKDAYS[weekday(parts)]}, ${parts.day} ${shortMonth(parts.month)} ${parts.year}`;
+  return format(parseDate(date), 'EEE, d MMM yyyy');
 }
 
 /** The month key of a `YYYY-MM-DD` string or a local `Date`. */
 export function monthKey(value: string | Date): MonthKey {
-  if (typeof value === 'string') {
-    const { year, month } = parse(value);
-    return key(year, month);
-  }
-  return key(value.getFullYear(), value.getMonth() + 1);
+  return format(
+    typeof value === 'string' ? parseMonth(value) : value,
+    'yyyy-MM',
+  );
 }
 
 /** `2026-09-01` */
 export function firstOfMonth(month: MonthKey): string {
-  const parts = parse(month);
-  return `${key(parts.year, parts.month)}-01`;
+  return toIsoDate(parseMonth(month));
 }
 
 /** `2026-09-30` */
 export function lastOfMonth(month: MonthKey): string {
-  const parts = parse(month);
-  return `${key(parts.year, parts.month)}-${daysInMonth(month)}`;
+  return toIsoDate(endOfMonth(parseMonth(month)));
 }
 
 export function daysInMonth(month: MonthKey): number {
-  const { year, month: m } = parse(month);
-  return new Date(year, m, 0).getDate();
+  return getDaysInMonth(parseMonth(month));
 }
 
 /**
@@ -96,46 +100,22 @@ export function daysInMonth(month: MonthKey): number {
  * design places its first day with this.
  */
 export function mondayOffset(month: MonthKey): number {
-  const { year, month: m } = parse(month);
-  return (weekday({ year, month: m, day: 1 }) + 6) % 7;
+  return getISODay(parseMonth(month)) - 1;
 }
 
-type Parts = { year: number; month: number; day: number | null };
-
-function parse(value: string): Parts {
-  const match = DATE_OR_MONTH.exec(value);
-  if (match) {
-    const year = Number(match[1]);
-    const month = Number(match[2]);
-    const day = match[3] === undefined ? null : Number(match[3]);
-    const probe = new Date(year, month - 1, day ?? 1);
-    if (probe.getMonth() === month - 1 && probe.getDate() === (day ?? 1)) {
-      return { year, month, day };
-    }
+/**
+ * date-fns `parse` accepts one-digit months and days, so the shape is checked
+ * first; `parse` then rejects dates that do not exist.
+ */
+function strictParse(
+  value: string,
+  shape: RegExp,
+  pattern: string,
+  expected: string,
+): Date {
+  const date = shape.test(value) ? parse(value, pattern, new Date(0)) : null;
+  if (date === null || !isValid(date)) {
+    throw new Error(`Expected a date as ${expected}, got "${value}"`);
   }
-  throw new Error(`Expected a date as YYYY-MM-DD or YYYY-MM, got "${value}"`);
-}
-
-function parseDate(value: string): Parts & { day: number } {
-  const parts = parse(value);
-  if (parts.day === null) {
-    throw new Error(`Expected a date as YYYY-MM-DD, got "${value}"`);
-  }
-  return { ...parts, day: parts.day };
-}
-
-function weekday({ year, month, day }: Parts): number {
-  return new Date(year, month - 1, day ?? 1).getDay();
-}
-
-function shortMonth(month: number): string {
-  return MONTHS[month - 1]!.slice(0, 3);
-}
-
-function withYear(label: string, year: number, show: boolean): string {
-  return show ? `${label} ${year}` : label;
-}
-
-function key(year: number, month: number): MonthKey {
-  return `${year}-${String(month).padStart(2, '0')}`;
+  return date;
 }

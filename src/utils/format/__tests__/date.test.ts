@@ -72,7 +72,10 @@ describe('mondayOffset', () => {
     ['2026-02', 6],
     // 1 Jun 2026 is a Monday, the first column.
     ['2026-06', 0],
-  ])('places the 1st of %s in column %i of a Monday-first week', (month, offset) => {
-    expect(mondayOffset(month)).toBe(offset);
-  });
+  ])(
+    'places the 1st of %s in column %i of a Monday-first week',
+    (month, offset) => {
+      expect(mondayOffset(month)).toBe(offset);
+    },
+  );
 });

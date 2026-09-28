@@ -18,7 +18,10 @@ function lot(
 }
 
 // 10 @ $100 then 30 @ $200: weighted average $175, mean of prices $150.
-const lots = [lot(1, 10, 10_000, '2026-01-10'), lot(2, 30, 20_000, '2026-03-02')];
+const lots = [
+  lot(1, 10, 10_000, '2026-01-10'),
+  lot(2, 30, 20_000, '2026-03-02'),
+];
 
 describe('position figures', () => {
   it('sums the open quantity', () => {
@@ -103,7 +106,10 @@ describe('consumeFifo', () => {
   });
 
   it('handles fractional quantities', () => {
-    const fractional = [lot(1, 0.1, 10_000, '2026-01-01'), lot(2, 0.2, 30_000, '2026-02-01')];
+    const fractional = [
+      lot(1, 0.1, 10_000, '2026-01-01'),
+      lot(2, 0.2, 30_000, '2026-02-01'),
+    ];
 
     const result = consumeFifo(fractional, 0.3);
 
