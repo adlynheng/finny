@@ -79,6 +79,22 @@ describe('tailwind theme', () => {
     expect(theme.spacing['tile-touch']).toBe('38px');
   });
 
+  it('names the table colours and sizes', () => {
+    const { table } = tokens;
+    expect(theme.colors['row-border']).toBe(table.rowBorder);
+    expect(theme.colors['totals-border']).toBe(table.totalsBorder);
+    expect(theme.colors['row-hover']).toBe(table.rowHover);
+    expect(theme.colors['row-selected']).toBe(table.rowSelected);
+    expect(theme.colors['sub-area']).toBe(table.subArea);
+    expect(theme.colors.connector).toBe(table.connector);
+    expect(theme.colors['chevron-tray']).toBe(table.chevron.tray);
+    expect(theme.spacing.col).toBe('10px');
+    expect(theme.spacing['table-x']).toBe('8px');
+    expect(theme.spacing.row).toBe('44px');
+    expect(theme.spacing['sub-row']).toBe('38px');
+    expect(theme.spacing.chevron).toBe('20px');
+  });
+
   it('names the dialog geometry', () => {
     const { desktop, mobile } = tokens.dialog;
     expect(theme.spacing['dialog-standard']).toBe('520px');

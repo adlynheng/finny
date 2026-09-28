@@ -16,6 +16,7 @@ import { gradients } from '@/theme/gradients';
 import { tokens, type GlassName } from '@/theme/tokens';
 import { ControlsGallery } from './ControlsGallery';
 import { SheetGallery } from './SheetGallery';
+import { TablesGallery } from './TablesGallery';
 
 const cards: CardGradientName[] = [
   'netWorthHistory',
@@ -61,6 +62,9 @@ const tile = 'absolute bottom-1 left-5 right-1 top-5 justify-end p-2';
 export function SurfacesGallery() {
   return (
     <ScrollView contentContainerClassName="gap-y-4 pb-4">
+      <Label>Tables (Task 35)</Label>
+      <TablesGallery />
+
       <Label>Sheet (Task 33)</Label>
       <SheetGallery />
 

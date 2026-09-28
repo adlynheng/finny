@@ -183,6 +183,28 @@ const calendar = {
   },
 } as const;
 
+/** The Positions and Watchlist tables. */
+const table = {
+  /** Between columns. */
+  columnGap: 10,
+  paddingX: 8,
+  rowHeight: 44,
+  /** An expanded row's lots and sales. */
+  subRowHeight: 38,
+  rowBorder: 'rgba(28,28,26,.06)',
+  totalsBorder: 'rgba(28,28,26,.12)',
+  rowHover: 'rgba(28,28,26,.03)',
+  /** The row whose symbol the chart is showing. */
+  rowSelected: 'rgba(28,28,26,.045)',
+  /** Behind an expanded row's sub-rows. */
+  subArea: 'rgba(28,28,26,.022)',
+  /** The vertical line down the sub-rows' first column. */
+  connector: 'rgba(28,28,26,.14)',
+  chevron: { box: 20, tray: 'rgba(28,28,26,.04)' },
+  /** An expandable row's chevron turn. */
+  expandMs: 200,
+} as const;
+
 /** The form containers: a centred modal on desktop, a bottom sheet on mobile. */
 const dialog = {
   desktop: {
@@ -322,6 +344,7 @@ export const tokens = {
   glass,
   controls,
   calendar,
+  table,
   dialog,
   gradients,
   cardThemes,

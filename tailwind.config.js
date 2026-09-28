@@ -2,7 +2,7 @@
 const { tokens } = require('./src/theme/tokens');
 
 const { desktop } = tokens.frame;
-const { calendar, controls, dialog } = tokens;
+const { calendar, controls, dialog, table } = tokens;
 const px = n => `${n}px`;
 
 const kebab = name => name.replace(/[A-Z0-9]/g, c => `-${c.toLowerCase()}`);
@@ -58,6 +58,14 @@ module.exports = {
         tile: calendar.tile.fill,
         'tile-today': calendar.tile.todayBorder,
         'tile-hover': calendar.tile.hoverBorder,
+        // Tables: border-row-border, hover:bg-row-hover, bg-sub-area ...
+        'row-border': table.rowBorder,
+        'totals-border': table.totalsBorder,
+        'row-hover': table.rowHover,
+        'row-selected': table.rowSelected,
+        'sub-area': table.subArea,
+        connector: table.connector,
+        'chevron-tray': table.chevron.tray,
       },
       // opacity-dimmed (an unchoosable chip), opacity-disabled.
       opacity: {
@@ -103,6 +111,12 @@ module.exports = {
         popover: px(calendar.popover.width),
         tile: px(calendar.tile.height),
         'tile-touch': px(calendar.tile.touchHeight),
+        // Tables: gap-col, px-table-x, min-h-row, min-h-sub-row, size-chevron.
+        col: px(table.columnGap),
+        'table-x': px(table.paddingX),
+        row: px(table.rowHeight),
+        'sub-row': px(table.subRowHeight),
+        chevron: px(table.chevron.box),
       },
       // rounded-4 ... rounded-14, plus the named mobile radii.
       borderRadius: {

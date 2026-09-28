@@ -266,6 +266,40 @@ describe('calendar', () => {
   });
 });
 
+describe('tables', () => {
+  it('rows: 44px (38 for sub-rows), 10px between columns, 8px in from the edge', () => {
+    const t = tokens.table;
+    expect([t.rowHeight, t.subRowHeight, t.columnGap, t.paddingX]).toEqual([
+      44, 38, 10, 8,
+    ]);
+  });
+
+  it('washes: 3% on hover, 4.5% selected, 2.2% behind sub-rows', () => {
+    const t = tokens.table;
+    expect(t.rowHover).toBe('rgba(28,28,26,.03)');
+    expect(t.rowSelected).toBe('rgba(28,28,26,.045)');
+    expect(t.subArea).toBe('rgba(28,28,26,.022)');
+  });
+
+  it('lines: 6% between rows, 12% above totals, a 14% connector', () => {
+    const t = tokens.table;
+    expect(t.rowBorder).toBe('rgba(28,28,26,.06)');
+    expect(t.totalsBorder).toBe('rgba(28,28,26,.12)');
+    expect(t.connector).toBe('rgba(28,28,26,.14)');
+  });
+
+  it('chevron: a 20px tray', () => {
+    expect(tokens.table.chevron).toEqual({
+      box: 20,
+      tray: 'rgba(28,28,26,.04)',
+    });
+  });
+
+  it('expanding turns the chevron in 200ms', () => {
+    expect(tokens.table.expandMs).toBe(200);
+  });
+});
+
 describe('dialogs', () => {
   it('desktop modal: 520/500/540 wide, 14 radius, 26 padding, 18 between fields', () => {
     expect(tokens.dialog.desktop).toEqual({
