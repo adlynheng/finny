@@ -187,6 +187,15 @@ describe('glass recipes', () => {
   });
 });
 
+describe('card chrome', () => {
+  it('is 6px on desktop and 8px on mobile, with 18px padding', () => {
+    expect(tokens.card).toEqual({
+      radius: { desktop: 6, mobile: 8 },
+      padding: 18,
+    });
+  });
+});
+
 describe('gradient cards', () => {
   it('netWorthHistory runs top to bottom', () => {
     expect(gradients.netWorthHistory).toEqual({

@@ -17,12 +17,27 @@ module.exports = {
       // system font there, and extend wins over a plain theme key.
       fontFamily: { sans: [tokens.type.family] },
       // bg-ink, text-muted-2, border-lime-dark ...
-      colors: Object.fromEntries(
-        Object.entries(tokens.colors).map(([name, value]) => [
-          kebab(name),
-          value,
-        ]),
-      ),
+      // plus each glass recipe's fill and border:
+      // bg-glass-card, border-glass-card-border ...
+      colors: {
+        ...Object.fromEntries(
+          Object.entries(tokens.colors).map(([name, value]) => [
+            kebab(name),
+            value,
+          ]),
+        ),
+        ...Object.fromEntries(
+          Object.entries(tokens.glass).flatMap(([name, recipe]) => {
+            const key = `glass-${kebab(name)}`;
+            return [
+              [key, recipe.background],
+              ...(recipe.border
+                ? [[`${key}-border`, recipe.border.color]]
+                : []),
+            ];
+          }),
+        ),
+      },
       // Desktop frame geometry: h-frame-header, px-frame-x, pt-frame-top ...
       spacing: {
         'frame-header': px(desktop.headerHeight),
@@ -32,6 +47,8 @@ module.exports = {
         'frame-x': px(desktop.contentPadding.x),
         'frame-bottom': px(desktop.contentPadding.bottom),
         'frame-gap': px(desktop.gap),
+        // p-card: gradient and glass cards.
+        card: px(tokens.card.padding),
       },
       // rounded-4 ... rounded-14, plus the named mobile radii.
       borderRadius: {

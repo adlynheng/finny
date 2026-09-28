@@ -29,6 +29,22 @@ describe('tailwind theme', () => {
     expect(theme.colors.white).toBe(tokens.colors.white);
   });
 
+  it('names each glass recipe fill and border colour', () => {
+    // bg-glass-nav-pill, border-glass-nav-pill-border ...
+    const kebab = (name: string) =>
+      name.replace(/[A-Z]/g, c => `-${c.toLowerCase()}`);
+    for (const [name, recipe] of Object.entries(tokens.glass)) {
+      const key = `glass-${kebab(name)}`;
+      expect(theme.colors[key]).toBe(recipe.background);
+      expect(theme.colors[`${key}-border`]).toBe(recipe.border?.color);
+    }
+    expect(theme.colors['glass-card']).toBe('rgba(255,255,255,.62)');
+  });
+
+  it('names the card padding', () => {
+    expect(theme.spacing.card).toBe(`${tokens.card.padding}px`);
+  });
+
   it('has a rounded-<n> class for each radius in the scale', () => {
     for (const r of tokens.radii.scale) {
       expect(theme.borderRadius[String(r)]).toBe(`${r}px`);

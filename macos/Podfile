@@ -13,7 +13,11 @@ prepare_react_native_project!
 
 target 'finny-macOS' do
   platform :macos, '14.0'
-  use_native_modules!
+  # Expo (expo-blur) is iOS-only; Glass.macos.tsx draws a flat fill instead.
+  use_native_modules!(['node', File.join(__dir__, 'autolinking-config.js')])
+
+  # Finny's own backdrop blur for macOS (NSVisualEffectView), in place of expo-blur.
+  pod 'FinnyBlur', :path => './FinnyBlur'
 
   # Flags change depending on the env values.
   flags = get_default_flags()

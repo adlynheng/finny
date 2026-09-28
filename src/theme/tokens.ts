@@ -222,6 +222,11 @@ export const tokens = {
     mobileBottomPill: 20,
     mobileBottomTab: 15,
   },
+  /** The chrome shared by gradient cards and plain glass cards. */
+  card: {
+    radius: { desktop: 6, mobile: 8 },
+    padding: 18,
+  },
   glass,
   gradients,
   cardThemes,

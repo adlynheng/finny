@@ -12,6 +12,7 @@
 		1E290DCB781A97AE816A4D0C /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
 		4FBF8DA3E959552DBAD6D11F /* Urbanist-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 457ACE528FD1BF41EC44BD1E /* Urbanist-SemiBold.ttf */; };
 		5C14C009863DCD3C7FF7EACF /* Urbanist-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 92475096E4C854EC6490EDB7 /* Urbanist-Light.ttf */; };
+		69E561D67E90D04E59F19E61 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A2528C1037A995032329FB1 /* ExpoModulesProvider.swift */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		8288558B40285871AA31705B /* Urbanist-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F0767C76775EA9528F343AE8 /* Urbanist-Medium.ttf */; };
@@ -19,6 +20,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0A2528C1037A995032329FB1 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-Finny/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* Finny.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Finny.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Finny/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Finny/Info.plist; sourceTree = "<group>"; };
@@ -47,6 +49,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		01437E355833D81BE90BE01C /* Finny */ = {
+			isa = PBXGroup;
+			children = (
+				0A2528C1037A995032329FB1 /* ExpoModulesProvider.swift */,
+			);
+			name = Finny;
+			sourceTree = "<group>";
+		};
 		13B07FAE1A68108700A75B9A /* Finny */ = {
 			isa = PBXGroup;
 			children = (
@@ -68,6 +78,14 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		7C2AB06BD6B24FCA5A5AC7D9 /* ExpoModulesProviders */ = {
+			isa = PBXGroup;
+			children = (
+				01437E355833D81BE90BE01C /* Finny */,
+			);
+			name = ExpoModulesProviders;
+			sourceTree = "<group>";
+		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
 			isa = PBXGroup;
 			children = (
@@ -84,6 +102,7 @@
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				BBD78D7AC51CEA395F1C20DB /* Pods */,
 				EA97D816F4F042BC474FC445 /* Fonts */,
+				7C2AB06BD6B24FCA5A5AC7D9 /* ExpoModulesProviders */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -127,6 +146,7 @@
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "Finny" */;
 			buildPhases = (
 				C38B50BA6285516D6DCD4F65 /* [CP] Check Pods Manifest.lock */,
+				88ACA56EDEFE2B63252E7554 /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
@@ -225,6 +245,29 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Finny/Pods-Finny-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
+		88ACA56EDEFE2B63252E7554 /* [Expo] Configure project */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/.xcode.env",
+				"$(SRCROOT)/.xcode.env.local",
+				"$(SRCROOT)/Pods/Target Support Files/Pods-Finny/expo-configure-project.sh",
+			);
+			name = "[Expo] Configure project";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(SRCROOT)/Pods/Target Support Files/Pods-Finny/ExpoModulesProvider.swift",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-Finny/expo-configure-project.sh\"\n";
+		};
 		C38B50BA6285516D6DCD4F65 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -272,6 +315,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				761780ED2CA45674006654EE /* AppDelegate.swift in Sources */,
+				69E561D67E90D04E59F19E61 /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -300,6 +344,7 @@
 					"-ObjC",
 					"-lc++",
 				);
+				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
 				PRODUCT_BUNDLE_IDENTIFIER = com.adlynheng.finny;
 				PRODUCT_NAME = Finny;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -329,6 +374,7 @@
 					"-ObjC",
 					"-lc++",
 				);
+				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
 				PRODUCT_BUNDLE_IDENTIFIER = com.adlynheng.finny;
 				PRODUCT_NAME = Finny;
 				SWIFT_VERSION = 5.0;
