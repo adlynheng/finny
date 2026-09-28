@@ -42,6 +42,64 @@ describe('Segmented', () => {
     );
   });
 
+  it('field (the default): full width, even segments, 12px (13px on mobile)', async () => {
+    await render(
+      <Segmented
+        testID="tray"
+        options={types}
+        value="expense"
+        onChange={jest.fn()}
+      />,
+    );
+    expect(classes(screen.getByTestId('tray'))).toEqual(
+      expect.arrayContaining([
+        'rounded-8',
+        'ios:rounded-10',
+        'bg-segment-tray',
+      ]),
+    );
+    expect(classes(segment('Deposit'))).toEqual(
+      expect.arrayContaining(['flex-1', 'rounded-6', 'ios:rounded-8']),
+    );
+    expect(classes(screen.getByText('Deposit'))).toEqual(
+      expect.arrayContaining(['text-[12px]', 'ios:text-[13px]']),
+    );
+  });
+
+  it('compact: the in-card switch, sized to its labels on a fainter tray', async () => {
+    await render(
+      <Segmented
+        testID="tray"
+        size="compact"
+        options={types}
+        value="expense"
+        onChange={jest.fn()}
+      />,
+    );
+    expect(classes(screen.getByTestId('tray'))).toEqual(
+      expect.arrayContaining([
+        'self-start',
+        'rounded-6',
+        'bg-segment-tray-soft',
+      ]),
+    );
+    expect(classes(segment('Deposit'))).toContain('rounded-4');
+    expect(classes(segment('Deposit'))).not.toContain('flex-1');
+  });
+
+  it('rounds the pill like the segments', async () => {
+    await render(
+      <Segmented
+        size="compact"
+        options={types}
+        value="expense"
+        onChange={jest.fn()}
+      />,
+    );
+    await layOut();
+    expect(classes(screen.getByTestId('segment-pill'))).toContain('rounded-4');
+  });
+
   it('marks the selected segment with ink text, the others muted', async () => {
     await render(
       <Segmented options={types} value="deposit" onChange={jest.fn()} />,

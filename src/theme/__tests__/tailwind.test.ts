@@ -14,6 +14,7 @@ const theme = resolveConfig(tailwindConfig).theme as unknown as {
   fontFamily: Record<string, string[]>;
   spacing: Record<string, string>;
   opacity: Record<string, string>;
+  maxHeight: Record<string, string>;
 };
 
 describe('tailwind theme', () => {
@@ -45,14 +46,37 @@ describe('tailwind theme', () => {
   it('names the control treatments', () => {
     const { controls } = tokens;
     expect(theme.colors['segment-tray']).toBe(controls.segmented.tray);
+    expect(theme.colors['segment-tray-soft']).toBe(controls.segmented.traySoft);
     expect(theme.colors['ghost-hover']).toBe(controls.ghostHover);
+    expect(theme.colors['icon-hover']).toBe(controls.iconHover);
+    expect(theme.colors.soft).toBe(controls.soft);
+    expect(theme.colors['soft-hover']).toBe(controls.softHover);
     expect(theme.colors['danger-hover']).toBe(controls.dangerHover);
+    expect(theme.colors['outline-border']).toBe(controls.outlineBorder);
+    expect(theme.colors['chip-border']).toBe(controls.chipBorder);
+    expect(theme.colors['input-border']).toBe(controls.input.border);
     expect(theme.colors['toggle-off']).toBe(controls.toggle.offColor);
+    expect(theme.colors['sheet-handle']).toBe(tokens.dialog.mobile.handle);
     expect(theme.spacing['toggle-w']).toBe('34px');
     expect(theme.spacing['toggle-h']).toBe('20px');
     expect(theme.spacing['toggle-knob']).toBe('16px');
+    expect(theme.spacing.input).toBe('40px');
+    expect(theme.spacing['input-touch']).toBe('44px');
     expect(theme.opacity.dimmed).toBe('0.35');
-    expect(theme.opacity.disabled).toBe('0.4');
+    expect(theme.opacity.disabled).toBe('0.35');
+  });
+
+  it('names the dialog geometry', () => {
+    const { desktop, mobile } = tokens.dialog;
+    expect(theme.spacing['dialog-standard']).toBe('520px');
+    expect(theme.spacing['dialog-narrow']).toBe('500px');
+    expect(theme.spacing['dialog-wide']).toBe('540px');
+    expect(theme.spacing['dialog-pad']).toBe(`${desktop.padding}px`);
+    expect(theme.spacing['dialog-gap']).toBe(`${desktop.gap}px`);
+    expect(theme.spacing['sheet-pad']).toBe(`${mobile.padding}px`);
+    expect(theme.spacing['sheet-gap']).toBe(`${mobile.gap}px`);
+    expect(theme.spacing.action).toBe('48px');
+    expect(theme.maxHeight.sheet).toBe('92%');
   });
 
   it('names the card padding', () => {

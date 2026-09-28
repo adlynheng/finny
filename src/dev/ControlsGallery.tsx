@@ -9,6 +9,7 @@ import { View } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 import { Button } from '@/components/ui/Button';
 import { ChipRow } from '@/components/ui/ChipRow';
+import { Input } from '@/components/ui/Input';
 import { Segmented } from '@/components/ui/Segmented';
 import { Toggle } from '@/components/ui/Toggle';
 
@@ -56,19 +57,32 @@ export function ControlsGallery() {
   const [category, setCategory] = useState('Food');
   const [on, setOn] = useState(true);
   const [off, setOff] = useState(false);
+  const [note, setNote] = useState('');
 
   return (
     <View className="gap-y-3">
       <View className="flex-row flex-wrap items-center gap-3">
-        <Segmented options={types} value={type} onChange={setType} />
-        <Segmented options={ranges} value={range} onChange={setRange} />
         <Segmented
+          size="compact"
+          options={types}
+          value={type}
+          onChange={setType}
+        />
+        <Segmented
+          size="compact"
+          options={ranges}
+          value={range}
+          onChange={setRange}
+        />
+        <Segmented
+          size="compact"
           options={ranges}
           value="6M"
           onChange={() => {}}
           disabled
         />
       </View>
+      <Segmented options={types} value={type} onChange={setType} />
       <ChipRow options={accounts} value={from} onChange={setFrom} />
       <ChipRow
         options={accounts.map(a => ({ ...a, dimmed: a.value === from }))}
@@ -80,11 +94,42 @@ export function ControlsGallery() {
         <Button variant="primary" label="Add" icon={plus} onPress={() => {}} />
         <Button variant="ghost" label="Cancel" onPress={() => {}} />
         <Button variant="danger" label="Delete" onPress={() => {}} />
+        <Button variant="outline" size="sm" label="Sell" onPress={() => {}} />
+        <Button
+          variant="soft"
+          size="sm"
+          label="New account"
+          onPress={() => {}}
+        />
+        <Button
+          variant="primary"
+          size="sm"
+          label="Add transaction"
+          icon={plus}
+          onPress={() => {}}
+        />
         <Button
           variant="primary"
           label="Ask Finny"
           icon={plus}
           onPress={() => {}}
+          disabled
+        />
+      </View>
+      <View className="flex-row gap-3">
+        <Input
+          label="Description"
+          value={note}
+          onChangeText={setNote}
+          placeholder="e.g. Kopitiam"
+          className="w-64"
+        />
+        <Input
+          label="Current balance"
+          value="28,400"
+          onChangeText={() => {}}
+          prefix="S$"
+          className="w-48"
           disabled
         />
       </View>

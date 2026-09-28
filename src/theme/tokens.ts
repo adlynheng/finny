@@ -113,28 +113,68 @@ const glass = {
 } satisfies Record<string, GlassRecipe>;
 
 /**
- * The small controls' treatments. Task 32 names the colours and the toggle's
- * geometry; the tray, the washes' alpha, the segment shadow and the slide and
- * toggle timings are this build's reading of the design.
+ * The small controls' treatments, from the design's markup (the forms in
+ * FinnyOverview/Finance/Planner/Trading/Settings2 and FinnyMobile).
  */
 const controls = {
   segmented: {
-    tray: 'rgba(28,28,26,.06)',
-    selectedShadow: '0 1px 2px rgba(0,0,0,.06), 0 2px 6px rgba(0,0,0,.05)',
-    /** The selected pill's slide to a newly chosen segment. */
+    /** Form fields and Trading's mode switch. */
+    tray: 'rgba(28,28,26,.05)',
+    /** The in-card switches: List/Categories, the transaction filter, Positions tabs. */
+    traySoft: 'rgba(28,28,26,.04)',
+    selectedShadow: '0 1px 2px rgba(0,0,0,.08)',
+    /** The selected pill's slide to a newly chosen segment (not in the design). */
     slideMs: 200,
   },
+  /** Ghost buttons' hover. */
   ghostHover: 'rgba(28,28,26,.05)',
+  /** The close button's hover. */
+  iconHover: 'rgba(28,28,26,.06)',
+  /** Soft buttons: a panel action, the mobile Cancel. */
+  soft: 'rgba(28,28,26,.05)',
+  softHover: 'rgba(28,28,26,.1)',
   dangerHover: 'rgba(180,83,47,.08)',
+  /** Outline buttons (Trading's Sell). */
+  outlineBorder: 'rgba(28,28,26,.18)',
+  chipBorder: 'rgba(28,28,26,.08)',
+  input: {
+    border: 'rgba(28,28,26,.1)',
+    height: 40,
+    /** Mobile. */
+    touchHeight: 44,
+  },
   /** A chip that cannot be chosen, e.g. the transfer source in the destination row. */
   dimmedOpacity: 0.35,
-  disabledOpacity: 0.4,
+  /** A disabled action, e.g. Save before the form is valid. */
+  disabledOpacity: 0.35,
   toggle: {
     width: 34,
     height: 20,
     knob: 16,
     offColor: 'rgba(28,28,26,.14)',
+    knobShadow: '0 1px 2px rgba(0,0,0,.2)',
     durationMs: 200,
+  },
+} as const;
+
+/** The form containers: a centred modal on desktop, a bottom sheet on mobile. */
+const dialog = {
+  desktop: {
+    // standard: transaction and goal forms; narrow: recurring-charge and sell
+    // forms; wide: the new-position form.
+    widths: { standard: 520, narrow: 500, wide: 540 },
+    radius: 14,
+    padding: 26,
+    /** Between fields. */
+    gap: 18,
+  },
+  mobile: {
+    maxHeight: '92%',
+    padding: 20,
+    gap: 16,
+    handle: 'rgba(28,28,26,.18)',
+    /** The footer's touch targets. */
+    actionHeight: 48,
   },
 } as const;
 
@@ -255,6 +295,7 @@ export const tokens = {
   },
   glass,
   controls,
+  dialog,
   gradients,
   cardThemes,
   motion,
@@ -262,4 +303,5 @@ export const tokens = {
 
 export type ColorName = keyof typeof colors;
 export type GlassName = keyof typeof glass;
+export type DialogWidth = keyof typeof dialog.desktop.widths;
 export type MotionName = keyof typeof motion;

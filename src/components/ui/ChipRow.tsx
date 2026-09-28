@@ -1,13 +1,13 @@
 import type { ReactNode } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Platform, Pressable, Text, View } from 'react-native';
 import { tokens } from '@/theme/tokens';
 import { cx } from './cardChrome';
 
 export type ChipOption<T extends string> = {
   value: T;
   label: string;
-  /** A leading icon, drawn in the colour the chip's text takes. */
-  icon?: (color: string) => ReactNode;
+  /** A leading icon, drawn in the colour and size of the chip's text. */
+  icon?: (color: string, size: number) => ReactNode;
   /** Shown but not choosable, e.g. the transfer source among the destinations. */
   dimmed?: boolean;
 };
@@ -22,9 +22,13 @@ type Props<T extends string> = {
   testID?: string;
 };
 
+/** The icon beside a 12px label on macOS, a 13px one on iOS. */
+const iconSize = Platform.OS === 'ios' ? 13 : 12;
+
 /**
  * A wrapping row of choice chips: accounts, destinations and categories in the
- * forms. The selected chip is ink with white text, the others white with ink.
+ * forms. Every chip is hairline-outlined; the selected one is ink with white
+ * text, the others white with ink. Mobile chips are 38px touch targets.
  */
 export function ChipRow<T extends string>({
   options,
@@ -56,15 +60,15 @@ export function ChipRow<T extends string>({
             disabled={inactive}
             onPress={() => onChange(option.value)}
             className={cx(
-              'flex-row items-center gap-[6px] rounded-7 px-[11px] py-[7px]',
+              'flex-row items-center gap-[6px] rounded-7 border border-chip-border px-[11px] py-[7px] ios:h-[38px] ios:rounded-9 ios:px-[13px] ios:py-0',
               selected ? 'bg-ink' : 'bg-white',
               option.dimmed && 'opacity-dimmed',
             )}
           >
-            {option.icon?.(color)}
+            {option.icon?.(color, iconSize)}
             <Text
               className={cx(
-                'font-sans text-[12px] font-medium',
+                'font-sans text-[12px] ios:text-[13px]',
                 selected ? 'text-white' : 'text-ink',
               )}
             >

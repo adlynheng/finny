@@ -197,34 +197,71 @@ describe('card chrome', () => {
 });
 
 describe('controls', () => {
-  // Task 32 names the colours; the tray, the washes' exact alpha, the segment
-  // shadow and the timing are read off the design (see the Task 32 report).
-  it('toggle: 34×20 pill, 16px knob, 14% ink when off', () => {
+  // Read off the design's form markup.
+  it('toggle: 34×20 pill, 16px shadowed knob, 14% ink when off', () => {
     expect(tokens.controls.toggle).toEqual({
       width: 34,
       height: 20,
       knob: 16,
       offColor: 'rgba(28,28,26,.14)',
+      knobShadow: '0 1px 2px rgba(0,0,0,.2)',
       durationMs: 200,
     });
   });
 
-  it('ghost hover is a 5% ink wash; danger hover a tint of danger', () => {
-    expect(tokens.controls.ghostHover).toBe('rgba(28,28,26,.05)');
-    expect(tokens.controls.dangerHover).toBe('rgba(180,83,47,.08)');
+  it('button washes and borders', () => {
+    const c = tokens.controls;
+    expect(c.ghostHover).toBe('rgba(28,28,26,.05)');
+    expect(c.iconHover).toBe('rgba(28,28,26,.06)');
+    expect(c.soft).toBe('rgba(28,28,26,.05)');
+    expect(c.softHover).toBe('rgba(28,28,26,.1)');
+    expect(c.dangerHover).toBe('rgba(180,83,47,.08)');
+    expect(c.outlineBorder).toBe('rgba(28,28,26,.18)');
   });
 
-  it('segmented: a faint ink tray, the selected pill softly shadowed and sliding', () => {
+  it('chips and inputs are outlined', () => {
+    expect(tokens.controls.chipBorder).toBe('rgba(28,28,26,.08)');
+    expect(tokens.controls.input).toEqual({
+      border: 'rgba(28,28,26,.1)',
+      height: 40,
+      touchHeight: 44,
+    });
+  });
+
+  it('segmented: 5% ink tray (4% in cards), the selected pill softly shadowed', () => {
     expect(tokens.controls.segmented).toEqual({
-      tray: 'rgba(28,28,26,.06)',
-      selectedShadow: '0 1px 2px rgba(0,0,0,.06), 0 2px 6px rgba(0,0,0,.05)',
+      tray: 'rgba(28,28,26,.05)',
+      traySoft: 'rgba(28,28,26,.04)',
+      selectedShadow: '0 1px 2px rgba(0,0,0,.08)',
       slideMs: 200,
     });
   });
 
-  it('dims a chip and a disabled control differently', () => {
+  it('dims an unchoosable chip and a disabled action to 35%', () => {
     expect(tokens.controls.dimmedOpacity).toBe(0.35);
-    expect(tokens.controls.disabledOpacity).toBe(0.4);
+    expect(tokens.controls.disabledOpacity).toBe(0.35);
+  });
+});
+
+describe('dialogs', () => {
+  it('desktop modal: 520/500/540 wide, 14 radius, 26 padding, 18 between fields', () => {
+    expect(tokens.dialog.desktop).toEqual({
+      // Transaction and goal forms; recurring-charge and sell; new position.
+      widths: { standard: 520, narrow: 500, wide: 540 },
+      radius: 14,
+      padding: 26,
+      gap: 18,
+    });
+  });
+
+  it('mobile sheet: 92% max height, 20 padding, 16 between fields, 48px actions', () => {
+    expect(tokens.dialog.mobile).toEqual({
+      maxHeight: '92%',
+      padding: 20,
+      gap: 16,
+      handle: 'rgba(28,28,26,.18)',
+      actionHeight: 48,
+    });
   });
 });
 

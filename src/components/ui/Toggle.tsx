@@ -8,7 +8,7 @@ import Animated, {
 import { tokens } from '@/theme/tokens';
 import { cx } from './cardChrome';
 
-const { width, height, knob, durationMs } = tokens.controls.toggle;
+const { width, height, knob, knobShadow, durationMs } = tokens.controls.toggle;
 const inset = (height - knob) / 2;
 
 /** The knob's left offset: 2px in from whichever end it rests at. */
@@ -64,7 +64,7 @@ export function Toggle({
           'absolute top-[2px] size-toggle-knob rounded-full',
           value ? 'bg-lime' : 'bg-white',
         )}
-        style={knobStyle}
+        style={[{ boxShadow: knobShadow }, knobStyle]}
       />
     </Pressable>
   );

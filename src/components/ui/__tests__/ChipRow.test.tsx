@@ -27,6 +27,26 @@ describe('ChipRow', () => {
     );
   });
 
+  it('outlines every chip: 12px text, 38px tall and 13px on mobile', async () => {
+    await render(
+      <ChipRow options={accounts} value="ocbc" onChange={jest.fn()} />,
+    );
+    for (const { label } of accounts) {
+      expect(classes(chip(label))).toEqual(
+        expect.arrayContaining([
+          'border',
+          'border-chip-border',
+          'rounded-7',
+          'ios:rounded-9',
+          'ios:h-[38px]',
+        ]),
+      );
+      expect(classes(screen.getByText(label))).toEqual(
+        expect.arrayContaining(['text-[12px]', 'ios:text-[13px]']),
+      );
+    }
+  });
+
   it('fills the selected chip with ink and white text', async () => {
     await render(
       <ChipRow options={accounts} value="ocbc" onChange={jest.fn()} />,
@@ -76,8 +96,9 @@ describe('ChipRow', () => {
     await render(
       <ChipRow options={categories} value="food" onChange={jest.fn()} />,
     );
-    expect(icon).toHaveBeenCalledWith(tokens.colors.white);
-    expect(icon).toHaveBeenCalledWith(tokens.colors.ink);
+    // Jest renders the iOS build: 13px icons (12px on macOS).
+    expect(icon).toHaveBeenCalledWith(tokens.colors.white, 13);
+    expect(icon).toHaveBeenCalledWith(tokens.colors.ink, 13);
     // The icon comes before the label.
     const food = chip('Food') as unknown as { children: { props: any }[] };
     expect(food.children[0]?.props.testID).toBe(`icon-${tokens.colors.white}`);

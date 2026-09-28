@@ -3090,6 +3090,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@rn-primitives/portal@npm:1.5.3":
+  version: 1.5.3
+  resolution: "@rn-primitives/portal@npm:1.5.3"
+  dependencies:
+    zustand: ^5.0.4
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+    react-native-web: "*"
+  peerDependenciesMeta:
+    react-native:
+      optional: true
+    react-native-web:
+      optional: true
+  checksum: 4940408b5b6fb9f7e9bcde4df126f01be1fe45cc915795ca075670a895a96edb28fc62991dc4d68c633c9a8c435f4d0e2ec3cc4c7b115f25c69ee0551b394f39
+  languageName: node
+  linkType: hard
+
 "@sideway/address@npm:^4.1.5":
   version: 4.1.5
   resolution: "@sideway/address@npm:4.1.5"
@@ -6215,6 +6233,7 @@ __metadata:
     "@react-native/eslint-config": 0.81.6
     "@react-native/metro-config": 0.81.6
     "@react-native/typescript-config": 0.81.6
+    "@rn-primitives/portal": 1.5.3
     "@supabase/supabase-js": ^2.117.2
     "@tanstack/react-query": ^5.104.0
     "@testing-library/react-native": ^14.0.1
@@ -12088,7 +12107,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zustand@npm:^5.0.15":
+"zustand@npm:^5.0.15, zustand@npm:^5.0.4":
   version: 5.0.15
   resolution: "zustand@npm:5.0.15"
   peerDependencies:

@@ -46,6 +46,13 @@ describe('Toggle', () => {
     expect(knobLeft(true)).toBe(16);
   });
 
+  it('lifts the knob with a small shadow', async () => {
+    await renderToggle({ value: false });
+    expect(screen.getByTestId('toggle-knob')).toHaveStyle({
+      boxShadow: '0 1px 2px rgba(0,0,0,.2)',
+    });
+  });
+
   it('rests the knob at its side', async () => {
     await renderToggle({ value: true });
     expect(screen.getByTestId('toggle-knob')).toHaveStyle({ left: 16 });

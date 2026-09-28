@@ -1,3 +1,4 @@
+import { Portal } from '@rn-primitives/portal';
 import { Text } from 'react-native';
 import { render, screen } from '@testing-library/react-native';
 import {
@@ -59,4 +60,23 @@ it('uses the client it is given', async () => {
   );
 
   expect(seen).toBe(client);
+});
+
+it('hosts portals over the app, inside the query client', async () => {
+  // Sheets draw through a portal; the form inside still needs the client.
+  function Portaled() {
+    const seenClient = useQueryClient();
+    return <Text>{seenClient === client ? 'portal has client' : 'no'}</Text>;
+  }
+
+  await render(
+    <AppProviders client={client}>
+      <Text>page</Text>
+      <Portal name="probe">
+        <Portaled />
+      </Portal>
+    </AppProviders>,
+  );
+
+  expect(await screen.findByText('portal has client')).toBeTruthy();
 });

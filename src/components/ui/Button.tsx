@@ -3,10 +3,18 @@ import { Pressable, Text } from 'react-native';
 import { tokens, type ColorName } from '@/theme/tokens';
 import { cx } from './cardChrome';
 
-export type ButtonVariant = 'primary' | 'ghost' | 'danger';
+export type ButtonVariant = 'primary' | 'ghost' | 'danger' | 'outline' | 'soft';
+
+/**
+ * md: a modal's actions (Save, Cancel, Delete). sm: a card's actions (Add
+ * transaction, New goal) and Trading's row actions. touch: the mobile sheet's
+ * 48px footer.
+ */
+export type ButtonSize = 'md' | 'sm' | 'touch';
 
 type Props = {
   variant: ButtonVariant;
+  size?: ButtonSize;
   label: string;
   onPress: () => void;
   /** A leading icon, drawn in the colour the variant gives it. */
@@ -22,7 +30,14 @@ type Props = {
  */
 const look: Record<
   ButtonVariant,
-  { rest: string | null; hover: string; text: string; icon: ColorName }
+  {
+    rest: string | null;
+    hover: string;
+    text: string;
+    /** The label's hover, through the Pressable's `group`. */
+    textHover?: string;
+    icon: ColorName;
+  }
 > = {
   primary: {
     rest: 'bg-ink',
@@ -43,15 +58,58 @@ const look: Record<
     text: 'text-danger',
     icon: 'danger',
   },
+  // Trading's Sell: fills with ink on hover, its label turning white.
+  outline: {
+    rest: 'border border-outline-border',
+    hover: 'hover:border-ink hover:bg-ink',
+    text: 'text-ink',
+    textHover: 'group-hover:text-white',
+    icon: 'ink',
+  },
+  // A panel's secondary action; the mobile sheet's Cancel.
+  soft: {
+    rest: 'bg-soft',
+    hover: 'hover:bg-soft-hover',
+    text: 'text-ink',
+    icon: 'ink',
+  },
+};
+
+/** Each size's corners and label size. */
+const sized: Record<ButtonSize, { box: string; text: string }> = {
+  md: { box: 'rounded-8', text: 'text-[13px]' },
+  sm: { box: 'rounded-6', text: 'text-[12px]' },
+  touch: { box: 'h-action rounded-12 px-[16px]', text: 'text-[14px]' },
+};
+
+/** The design's padding differs by variant as well as size. */
+const padding: Record<ButtonSize, Partial<Record<ButtonVariant, string>>> = {
+  md: {
+    primary: 'px-[18px] py-[10px]',
+    ghost: 'px-[16px] py-[10px]',
+    danger: 'px-[14px] py-[10px]',
+    outline: 'px-[16px] py-[10px]',
+    soft: 'px-[16px] py-[10px]',
+  },
+  sm: {
+    primary: 'px-[12px] py-[8px]',
+    ghost: 'px-[12px] py-[8px]',
+    danger: 'px-[12px] py-[8px]',
+    outline: 'h-[28px] px-[14px]',
+    soft: 'px-[12px] py-[7px]',
+  },
+  touch: {},
 };
 
 /**
- * Primary (ink, white text, lime icon), ghost (transparent, a 5% ink wash on
- * hover) and danger text buttons. Disabled fades and neither presses nor
- * hovers, which the Ask Finny button relies on.
+ * Primary (ink, white text, lime icon), ghost (a 5% ink wash on hover),
+ * danger text, outline (a hairline border that fills with ink on hover) and
+ * soft (a faint ink fill). Disabled fades and neither presses nor hovers,
+ * which the Ask Finny button relies on.
  */
 export function Button({
   variant,
+  size = 'md',
   label,
   onPress,
   icon,
@@ -59,7 +117,7 @@ export function Button({
   className,
   testID,
 }: Props) {
-  const { rest, hover, text, icon: iconColor } = look[variant];
+  const { rest, hover, text, textHover, icon: iconColor } = look[variant];
   return (
     <Pressable
       testID={testID}
@@ -69,7 +127,9 @@ export function Button({
       disabled={disabled}
       onPress={onPress}
       className={cx(
-        'flex-row items-center justify-center gap-[6px] self-start rounded-8 px-[14px] py-[8px]',
+        'group flex-row items-center justify-center gap-[7px] self-start',
+        sized[size].box,
+        padding[size][variant],
         rest,
         // Left off when disabled, so a disabled button never lights up.
         disabled ? 'opacity-disabled' : hover,
@@ -77,7 +137,14 @@ export function Button({
       )}
     >
       {icon?.(tokens.colors[iconColor])}
-      <Text className={cx('font-sans text-[13px] font-medium', text)}>
+      <Text
+        className={cx(
+          'font-sans',
+          sized[size].text,
+          text,
+          !disabled && textHover,
+        )}
+      >
         {label}
       </Text>
     </Pressable>
