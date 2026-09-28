@@ -182,3 +182,59 @@ export function tickPaths(
   }
   return { centre, sides };
 }
+
+/** A few adjacent ticks, drawn and animated in as one layer. */
+export type TickChunk = {
+  /** The first tick's index round the whole ring: its entrance stagger. */
+  firstIndex: number;
+  centre: string;
+  sides: string;
+};
+
+export type RingGroup = {
+  start: number;
+  end: number;
+  /** The group's first tick's index round the whole ring. */
+  firstIndex: number;
+  ticks: Tick[];
+  chunks: TickChunk[];
+};
+
+/**
+ * A ring of tick groups as the sphere and the portfolio mix draw them: ticks
+ * shared out by `distributeTicks`, group `k`'s ticks `lengths[k]` long with the
+ * designs' wobble (.84–1× by position round the ring), cut into runs of
+ * `perLayer` for the entrance layers.
+ */
+export function tickRing(
+  values: readonly number[],
+  lengths: readonly number[],
+  opts: {
+    count: number;
+    gap: number;
+    inner: number;
+    spread: number;
+    side: number;
+    perLayer: number;
+  },
+): RingGroup[] {
+  const { groups } = distributeTicks(values, opts);
+  let index = 0;
+  return groups.map((group, k) => {
+    const firstIndex = index;
+    const base = lengths[k]!;
+    const ticks = group.ticks.map((angle, j) => ({
+      angle,
+      length: base * (0.84 + 0.16 * Math.sin((firstIndex + j) * 1.9 + j * 0.7)),
+    }));
+    index += ticks.length;
+    const chunks: TickChunk[] = [];
+    for (let j = 0; j < ticks.length; j += opts.perLayer) {
+      chunks.push({
+        firstIndex: firstIndex + j,
+        ...tickPaths(ticks.slice(j, j + opts.perLayer), opts),
+      });
+    }
+    return { start: group.start, end: group.end, firstIndex, ticks, chunks };
+  });
+}

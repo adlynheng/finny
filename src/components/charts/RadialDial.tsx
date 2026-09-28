@@ -14,7 +14,7 @@ import Animated, { useAnimatedProps } from 'react-native-reanimated';
 import { Circle, Path, Text as SvgText } from 'react-native-svg';
 import { tokens } from '@/theme/tokens';
 import { dialGeometry, type DialConfig, type LaidGroup } from './dialLayout';
-import { Layer, Pulse, SpinRing, TickLayer } from './ringParts';
+import { Layer, Pulse, SpinRing, TickLayer, emphasis } from './ringParts';
 import { useEased } from './useEased';
 
 const AnimatedSvgText = Animated.createAnimatedComponent(SvgText);
@@ -34,11 +34,6 @@ type Props = DialConfig & {
   animate?: boolean;
   testID?: string;
 };
-
-const emphasis = (key: string, selected: string | null) => ({
-  on: !selected || selected === key,
-  hot: selected === key,
-});
 
 function TickGroup({
   group,

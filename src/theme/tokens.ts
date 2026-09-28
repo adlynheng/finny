@@ -263,6 +263,44 @@ const dial = {
 } as const;
 
 /**
+ * Trading's portfolio-health rings, from the design's `rings()`: white on the
+ * portfolioHealth gradient, in a 160-unit viewBox.
+ */
+const rings = {
+  half: 80,
+  /** The dashed outer ring, turning on fnSpinPortfolioHealth. */
+  spinRing: { radius: 74, opacity: 0.45, width: 0.6, dash: '1 4' },
+  /** The first metric's radius; each next one is `step` further in. */
+  radius: 64,
+  step: 13,
+  track: { opacity: 0.22, width: 0.7 },
+  arc: { width: 1.3 },
+  /** The arc's end: lime on the outermost ring, white on the rest. */
+  cap: { radius: 2.6 },
+  centre: {
+    scoreY: 7,
+    scoreSize: 26,
+    labelY: 20,
+    labelSize: 7.5,
+    labelOpacity: 0.9,
+  },
+} as const;
+
+/**
+ * Trading's portfolio mix ring, from the design's `mixRing()`, in a 256-unit
+ * viewBox. The tick strokes and bead match the sphere's; its other groups dim
+ * a little further (.3 against the sphere's .35).
+ */
+const mix = {
+  outerRing: { opacity: 0.1, width: 0.7 },
+  innerRing: { opacity: 0.09, width: 0.7 },
+  spinRing: { opacity: 0.25, width: 0.6, dash: '1 4' },
+  tickDim: 0.3,
+  head: { radius: 4, pulseRadius: 8 },
+  centre: { primaryY: 4, primarySize: 22, secondaryY: 18, secondarySize: 8.5 },
+} as const;
+
+/**
  * The Overview's net-worth history, from the design's `hist()`: white strokes
  * on the green card, at these opacities and widths in points (the strokes do
  * not scale with the stretched chart).
@@ -425,6 +463,8 @@ export const tokens = {
   table,
   sphere,
   dial,
+  rings,
+  mix,
   history,
   dialog,
   gradients,

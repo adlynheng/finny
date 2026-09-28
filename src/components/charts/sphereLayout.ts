@@ -7,13 +7,13 @@
 import { formatKMoney } from '@/utils/format/money';
 import {
   arcPath,
-  distributeTicks,
   labelAnchor,
   polar,
-  tickPaths,
+  tickRing,
   type Anchor,
   type Point,
   type Tick,
+  type TickChunk,
 } from './geometry';
 import { textWidth } from './textWidth';
 
@@ -99,15 +99,7 @@ export function latitudes(classes: readonly SphereClass[]): Latitude[] {
   });
 }
 
-export type { Tick } from './geometry';
-
-/** A few adjacent ticks, drawn and animated in as one layer. */
-export type TickChunk = {
-  /** The first tick's index round the whole ring: its entrance stagger. */
-  firstIndex: number;
-  centre: string;
-  sides: string;
-};
+export type { Tick, TickChunk } from './geometry';
 
 export type ClassLabel = {
   x: number;
@@ -175,41 +167,22 @@ function classLabel(
 /** The tick ring: each class's span, ticks, hit arc, bead and label. */
 export function tickGroups(classes: readonly SphereClass[]): TickGroup[] {
   const total = classes.reduce((s, c) => s + c.cents, 0);
-  const { count, gap, perLayer } = SPHERE.ticks;
-  const layout = distributeTicks(
+  const lengths = classes.map(c => TICK_LENGTH[c.label] ?? DEFAULT_TICK_LENGTH);
+  const ring = tickRing(
     classes.map(c => c.cents),
-    { count, gap },
+    lengths,
+    SPHERE.ticks,
   );
-  let index = 0;
   return classes.map((c, k) => {
-    const group = layout.groups[k]!;
-    const firstIndex = index;
-    const tickLength = TICK_LENGTH[c.label] ?? DEFAULT_TICK_LENGTH;
-    const ticks = group.ticks.map((angle, j) => ({
-      angle,
-      length:
-        tickLength * (0.84 + 0.16 * Math.sin((firstIndex + j) * 1.9 + j * 0.7)),
-    }));
-    index += ticks.length;
-    const chunks: TickChunk[] = [];
-    for (let j = 0; j < ticks.length; j += perLayer) {
-      chunks.push({
-        firstIndex: firstIndex + j,
-        ...tickPaths(ticks.slice(j, j + perLayer), SPHERE.ticks),
-      });
-    }
+    const group = ring[k]!;
     const value = formatKMoney(c.cents);
     const percent = `${Math.round((c.cents / total) * 100)}%`;
     return {
       ...c,
-      start: group.start,
-      end: group.end,
-      firstIndex,
-      tickLength,
-      ticks,
-      chunks,
+      ...group,
+      tickLength: lengths[k]!,
       hitPath: arcPath(SPHERE.hit.radius, group.start, group.end),
-      bead: polar(SPHERE.bead, group.start - gap / 2),
+      bead: polar(SPHERE.bead, group.start - SPHERE.ticks.gap / 2),
       value,
       percent,
       labelAt: classLabel(

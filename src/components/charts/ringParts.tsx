@@ -1,5 +1,5 @@
 /**
- * The moving parts the sphere and the radial dials share, layered per the
+ * The moving parts the sphere, the radial dials and the rings share, layered per the
  * Phase A spike rules (report §3): react-native-svg repaints a whole <Svg>
  * when any child changes, so everything that moves on its own is its own <Svg>
  * inside an Animated.View, and only the view animates.
@@ -21,6 +21,8 @@ import Animated, {
 import Svg, { Circle, Path } from 'react-native-svg';
 import { motion, type MotionSpec } from '@/theme/motion';
 import { tokens } from '@/theme/tokens';
+import type { TickChunk } from './geometry';
+import { useEased } from './useEased';
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
 
@@ -141,19 +143,93 @@ export function TickLayer({
   );
 }
 
-/** fnSpin: a dashed ring that turns once every two minutes. */
+/**
+ * A group's standing when one may be highlighted: `on` unless another group
+ * is, `hot` when it is the one.
+ */
+export const emphasis = (key: string, selected: string | null) => ({
+  on: !selected || selected === key,
+  hot: selected === key,
+});
+
+/**
+ * One group's ticks round a ring, as the sphere and the portfolio mix draw
+ * them: the highlighted group's strokes darker and heavier, everyone else's at
+ * `dim` of rest, easing between. Each run grows in on fnGrow, staggered 12 ms
+ * a tick round the ring.
+ */
+export function RingTicks({
+  groupKey,
+  chunks,
+  selected,
+  dim,
+  half,
+  animate,
+  idPrefix,
+}: {
+  groupKey: string;
+  chunks: readonly TickChunk[];
+  selected: string | null;
+  /** Other groups' strokes, as a multiplier of rest. */
+  dim: number;
+  half: number;
+  animate: boolean;
+  idPrefix: string;
+}) {
+  const { on, hot } = emphasis(groupKey, selected);
+  const t = look.tick;
+  const k = on ? 1 : dim;
+  const centre = useEased(
+    (hot ? t.centre.hotOpacity : t.centre.opacity) * k,
+    t.transitionMs,
+  );
+  const side = useEased(
+    (hot ? t.side.hotOpacity : t.side.opacity) * k,
+    t.transitionMs,
+  );
+  return (
+    <>
+      {chunks.map((chunk, index) => (
+        <TickLayer
+          key={chunk.firstIndex}
+          run={chunk}
+          half={half}
+          animate={animate}
+          delayMs={chunk.firstIndex * motion.fnGrow.staggerMs}
+          centre={centre}
+          side={side}
+          centreWidth={hot ? t.centre.hotWidth : t.centre.width}
+          idPrefix={idPrefix}
+          idKey={`${groupKey}-${index}`}
+        />
+      ))}
+    </>
+  );
+}
+
+type RingStroke = { opacity: number; width: number; dash: string };
+
+/**
+ * fnSpin: a dashed ring that turns once every two minutes, in the sphere's
+ * ink stroke unless given another colour, stroke and spin.
+ */
 export function SpinRing({
   half,
   radius,
   animate,
   testID,
+  color = ink,
+  stroke = look.spinRing,
+  spec = motion.fnSpin,
 }: {
   half: number;
   radius: number;
   animate: boolean;
   testID: string;
+  color?: string;
+  stroke?: RingStroke;
+  spec?: MotionSpec;
 }) {
-  const spec = motion.fnSpin;
   const turn = useSharedValue(0);
   useEffect(() => {
     if (!animate) return;
@@ -169,16 +245,15 @@ export function SpinRing({
   const style = useAnimatedStyle(() => ({
     transform: [{ rotate: `${turn.value}deg` }],
   }));
-  const r = look.spinRing;
   return (
     <Layer half={half} style={style} testID={testID}>
       <Circle
         r={radius}
         fill="none"
-        stroke={ink}
-        strokeOpacity={r.opacity}
-        strokeWidth={r.width}
-        strokeDasharray={r.dash}
+        stroke={color}
+        strokeOpacity={stroke.opacity}
+        strokeWidth={stroke.width}
+        strokeDasharray={stroke.dash}
       />
     </Layer>
   );

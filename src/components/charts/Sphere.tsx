@@ -42,7 +42,7 @@ import {
   type SphereClass,
   type TickGroup,
 } from './sphereLayout';
-import { Layer, Pulse, SpinRing, TickLayer } from './ringParts';
+import { Layer, Pulse, RingTicks, SpinRing, emphasis } from './ringParts';
 import { useEased } from './useEased';
 
 const AnimatedEllipse = Animated.createAnimatedComponent(Ellipse);
@@ -69,13 +69,6 @@ type Props = {
   animate?: boolean;
   testID?: string;
 };
-
-type Emphasis = { on: boolean; hot: boolean };
-
-const emphasis = (key: string, selected: string | null): Emphasis => ({
-  on: !selected || selected === key,
-  hot: selected === key,
-});
 
 // fnMeridian: scaleX 1 → −1 and back, each meridian a tenth of a cycle ahead.
 // One clock runs 0 → 2 (out and back) for all ten.
@@ -219,49 +212,6 @@ function ClassLabel({
   );
 }
 
-function TickClass({
-  group,
-  selected,
-  half,
-  animate,
-}: {
-  group: TickGroup;
-  selected: string | null;
-  half: number;
-  animate: boolean;
-}) {
-  const { on, hot } = emphasis(group.key, selected);
-  const t = look.tick;
-  const dim = on ? 1 : t.dim;
-  const centre = useEased(
-    (hot ? t.centre.hotOpacity : t.centre.opacity) * dim,
-    t.transitionMs,
-  );
-  const side = useEased(
-    (hot ? t.side.hotOpacity : t.side.opacity) * dim,
-    t.transitionMs,
-  );
-  return (
-    <>
-      {group.chunks.map((chunk, index) => (
-        // fnGrow, staggered 12 ms a tick by each layer's first tick.
-        <TickLayer
-          key={chunk.firstIndex}
-          run={chunk}
-          half={half}
-          animate={animate}
-          delayMs={chunk.firstIndex * motion.fnGrow.staggerMs}
-          centre={centre}
-          side={side}
-          centreWidth={hot ? t.centre.hotWidth : t.centre.width}
-          idPrefix="sphere"
-          idKey={`${group.key}-${index}`}
-        />
-      ))}
-    </>
-  );
-}
-
 export function Sphere({
   classes,
   oldest,
@@ -395,12 +345,15 @@ export function Sphere({
         <Circle cx={0} cy={-R} r={look.pole.radius} fill={lime} />
       </Layer>
       {geo.groups.map(g => (
-        <TickClass
+        <RingTicks
           key={g.key}
-          group={g}
+          groupKey={g.key}
+          chunks={g.chunks}
           selected={selected}
+          dim={look.tick.dim}
           half={half}
           animate={animate}
+          idPrefix="sphere"
         />
       ))}
       <HoverSurface testID="sphere-hover" onHover={onHover} />
