@@ -196,6 +196,38 @@ describe('card chrome', () => {
   });
 });
 
+describe('controls', () => {
+  // Task 32 names the colours; the tray, the washes' exact alpha, the segment
+  // shadow and the timing are read off the design (see the Task 32 report).
+  it('toggle: 34×20 pill, 16px knob, 14% ink when off', () => {
+    expect(tokens.controls.toggle).toEqual({
+      width: 34,
+      height: 20,
+      knob: 16,
+      offColor: 'rgba(28,28,26,.14)',
+      durationMs: 200,
+    });
+  });
+
+  it('ghost hover is a 5% ink wash; danger hover a tint of danger', () => {
+    expect(tokens.controls.ghostHover).toBe('rgba(28,28,26,.05)');
+    expect(tokens.controls.dangerHover).toBe('rgba(180,83,47,.08)');
+  });
+
+  it('segmented: a faint ink tray, the selected pill softly shadowed and sliding', () => {
+    expect(tokens.controls.segmented).toEqual({
+      tray: 'rgba(28,28,26,.06)',
+      selectedShadow: '0 1px 2px rgba(0,0,0,.06), 0 2px 6px rgba(0,0,0,.05)',
+      slideMs: 200,
+    });
+  });
+
+  it('dims a chip and a disabled control differently', () => {
+    expect(tokens.controls.dimmedOpacity).toBe(0.35);
+    expect(tokens.controls.disabledOpacity).toBe(0.4);
+  });
+});
+
 describe('gradient cards', () => {
   it('netWorthHistory runs top to bottom', () => {
     expect(gradients.netWorthHistory).toEqual({

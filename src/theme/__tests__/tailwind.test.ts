@@ -13,6 +13,7 @@ const theme = resolveConfig(tailwindConfig).theme as unknown as {
   borderRadius: Record<string, string>;
   fontFamily: Record<string, string[]>;
   spacing: Record<string, string>;
+  opacity: Record<string, string>;
 };
 
 describe('tailwind theme', () => {
@@ -39,6 +40,19 @@ describe('tailwind theme', () => {
       expect(theme.colors[`${key}-border`]).toBe(recipe.border?.color);
     }
     expect(theme.colors['glass-card']).toBe('rgba(255,255,255,.62)');
+  });
+
+  it('names the control treatments', () => {
+    const { controls } = tokens;
+    expect(theme.colors['segment-tray']).toBe(controls.segmented.tray);
+    expect(theme.colors['ghost-hover']).toBe(controls.ghostHover);
+    expect(theme.colors['danger-hover']).toBe(controls.dangerHover);
+    expect(theme.colors['toggle-off']).toBe(controls.toggle.offColor);
+    expect(theme.spacing['toggle-w']).toBe('34px');
+    expect(theme.spacing['toggle-h']).toBe('20px');
+    expect(theme.spacing['toggle-knob']).toBe('16px');
+    expect(theme.opacity.dimmed).toBe('0.35');
+    expect(theme.opacity.disabled).toBe('0.4');
   });
 
   it('names the card padding', () => {

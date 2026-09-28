@@ -14,6 +14,7 @@ import {
 import { GradientFill } from '@/components/ui/GradientFill';
 import { gradients } from '@/theme/gradients';
 import { tokens, type GlassName } from '@/theme/tokens';
+import { ControlsGallery } from './ControlsGallery';
 
 const cards: CardGradientName[] = [
   'netWorthHistory',
@@ -59,6 +60,9 @@ const tile = 'absolute bottom-1 left-5 right-1 top-5 justify-end p-2';
 export function SurfacesGallery() {
   return (
     <ScrollView contentContainerClassName="gap-y-4 pb-4">
+      <Label>Controls (Task 32)</Label>
+      <ControlsGallery />
+
       <Label>Gradient cards, then heroGlow and heroGlowDial</Label>
       <View className="flex-row flex-wrap gap-frame-gap">
         {cards.map(name => (

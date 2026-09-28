@@ -2,6 +2,7 @@
 const { tokens } = require('./src/theme/tokens');
 
 const { desktop } = tokens.frame;
+const { controls } = tokens;
 const px = n => `${n}px`;
 
 const kebab = name => name.replace(/[A-Z0-9]/g, c => `-${c.toLowerCase()}`);
@@ -37,6 +38,16 @@ module.exports = {
             ];
           }),
         ),
+        // bg-segment-tray, hover washes, the toggle's off track.
+        'segment-tray': controls.segmented.tray,
+        'ghost-hover': controls.ghostHover,
+        'danger-hover': controls.dangerHover,
+        'toggle-off': controls.toggle.offColor,
+      },
+      // opacity-dimmed (an unchoosable chip), opacity-disabled.
+      opacity: {
+        dimmed: String(controls.dimmedOpacity),
+        disabled: String(controls.disabledOpacity),
       },
       // Desktop frame geometry: h-frame-header, px-frame-x, pt-frame-top ...
       spacing: {
@@ -49,6 +60,10 @@ module.exports = {
         'frame-gap': px(desktop.gap),
         // p-card: gradient and glass cards.
         card: px(tokens.card.padding),
+        // w-toggle-w h-toggle-h, size-toggle-knob.
+        'toggle-w': px(controls.toggle.width),
+        'toggle-h': px(controls.toggle.height),
+        'toggle-knob': px(controls.toggle.knob),
       },
       // rounded-4 ... rounded-14, plus the named mobile radii.
       borderRadius: {

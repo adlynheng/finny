@@ -8,11 +8,9 @@ import type { ComponentType } from 'react';
 import { Text } from 'react-native';
 import type { GlassProps } from '@/components/ui/Glass';
 import { tokens, type GlassName } from '@/theme/tokens';
+import { classes } from './classes';
 
 type Host = { props: Record<string, any>; children: unknown[] };
-
-export const classes = (el: { props: { className?: string } }) =>
-  (el.props.className ?? '').split(/\s+/).filter(Boolean);
 
 // The class names each recipe draws with: the fill, then the border.
 export const expected: Record<GlassName, { fill: string; border: string[] }> = {

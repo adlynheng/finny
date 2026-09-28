@@ -112,6 +112,32 @@ const glass = {
   },
 } satisfies Record<string, GlassRecipe>;
 
+/**
+ * The small controls' treatments. Task 32 names the colours and the toggle's
+ * geometry; the tray, the washes' alpha, the segment shadow and the slide and
+ * toggle timings are this build's reading of the design.
+ */
+const controls = {
+  segmented: {
+    tray: 'rgba(28,28,26,.06)',
+    selectedShadow: '0 1px 2px rgba(0,0,0,.06), 0 2px 6px rgba(0,0,0,.05)',
+    /** The selected pill's slide to a newly chosen segment. */
+    slideMs: 200,
+  },
+  ghostHover: 'rgba(28,28,26,.05)',
+  dangerHover: 'rgba(180,83,47,.08)',
+  /** A chip that cannot be chosen, e.g. the transfer source in the destination row. */
+  dimmedOpacity: 0.35,
+  disabledOpacity: 0.4,
+  toggle: {
+    width: 34,
+    height: 20,
+    knob: 16,
+    offColor: 'rgba(28,28,26,.14)',
+    durationMs: 200,
+  },
+} as const;
+
 const fnSpin: MotionToken = {
   durationMs: 120000,
   easing: 'linear',
@@ -228,6 +254,7 @@ export const tokens = {
     padding: 18,
   },
   glass,
+  controls,
   gradients,
   cardThemes,
   motion,
