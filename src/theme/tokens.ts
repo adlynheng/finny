@@ -110,6 +110,13 @@ const glass = {
     blur: null,
     shadow: '0 18px 44px rgba(0,0,0,.14)',
   },
+  /** The net-worth history's hover tooltip, over the green card. */
+  tooltip: {
+    background: 'rgba(255,255,255,.2)',
+    border: { width: 1, color: 'rgba(255,255,255,.3)' },
+    blur: 14,
+    shadow: null,
+  },
 } satisfies Record<string, GlassRecipe>;
 
 /**
@@ -232,6 +239,27 @@ const sphere = {
   bead: { radius: 2.2, opacity: 0.5 },
   /** Other classes' value labels. */
   valueDimOpacity: 0.45,
+} as const;
+
+/**
+ * The Overview's net-worth history, from the design's `hist()`: white strokes
+ * on the green card, at these opacities and widths in points (the strokes do
+ * not scale with the stretched chart).
+ */
+const history = {
+  /** Three strands between each pair of neighbouring bands. */
+  echo: { opacity: 0.2, width: 0.8, at: [0.25, 0.5, 0.75] },
+  band: { opacity: 0.6, width: 1 },
+  net: { opacity: 1, width: 1.6 },
+  crosshair: { opacity: 0.5, dash: '2 3' },
+  /** Headroom above the highest net worth. */
+  headroom: 1.08,
+  /** The right-edge labels: Net at full strength, the rest at .85. */
+  labelOpacity: 0.85,
+  /** Past this share of the width the tooltip sits left of the crosshair. */
+  flipAt: 0.6,
+  /** The tooltip's distance from the crosshair (desktop) or the chart's top (mobile). */
+  tooltipGap: { desktop: 12, mobile: 6 },
 } as const;
 
 /** The form containers: a centred modal on desktop, a bottom sheet on mobile. */
@@ -375,6 +403,7 @@ export const tokens = {
   calendar,
   table,
   sphere,
+  history,
   dialog,
   gradients,
   cardThemes,

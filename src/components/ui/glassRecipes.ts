@@ -48,6 +48,7 @@ export const glassFill: Record<GlassName, string> = {
   sheet: 'bg-glass-sheet',
   sheetScrim: 'bg-glass-sheet-scrim',
   popover: 'bg-glass-popover',
+  tooltip: 'bg-glass-tooltip',
 };
 
 /** Each recipe's 1px hairline, or null for none. */
@@ -61,6 +62,7 @@ export const glassBorder: Record<GlassName, string | null> = {
   sheet: null,
   sheetScrim: null,
   popover: 'border border-glass-popover-border',
+  tooltip: 'border border-glass-tooltip-border',
 };
 
 /**

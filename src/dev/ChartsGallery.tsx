@@ -6,9 +6,12 @@
 
 import { useState } from 'react';
 import { Platform, Text, View } from 'react-native';
+import { MultiStrandLine } from '@/components/charts/MultiStrandLine';
 import { Sphere } from '@/components/charts/Sphere';
 import type { SphereClass } from '@/components/charts/sphereLayout';
 import { ChipRow } from '@/components/ui/ChipRow';
+import { GradientCard } from '@/components/ui/GradientCard';
+import { designHistory } from '../../test/historyCases';
 
 // The Overview design's breakdown and its Oct 2024 / Sep 2026 net worth.
 const classes: SphereClass[] = [
@@ -20,10 +23,41 @@ const classes: SphereClass[] = [
 
 const desktop = Platform.OS === 'macos';
 
+const ranges = ['6', '12', '24'] as const;
+
 export function ChartsGallery() {
   const [selected, setSelected] = useState<string | null>(null);
+  const [range, setRange] = useState<string>('24');
   return (
     <View className="gap-y-2">
+      <Text className="font-sans text-[11px] text-muted">
+        {desktop
+          ? 'History: hover for the crosshair; switch range to replay the reveal'
+          : 'History: drag or tap for the crosshair'}
+      </Text>
+      <ChipRow
+        options={ranges.map(r => ({ value: r, label: `${r}M` }))}
+        value={range}
+        onChange={r => setRange(r ?? '24')}
+      />
+      <GradientCard
+        gradient="netWorthHistory"
+        className={desktop ? 'h-[272px] w-[460px]' : 'w-full'}
+      >
+        <Text className="font-sans text-[13px] text-white">
+          Net worth history
+        </Text>
+        <View
+          className={
+            desktop ? 'mb-2 mt-[18px] flex-1' : 'mb-2 mt-[52px] h-[170px]'
+          }
+        >
+          <MultiStrandLine
+            points={designHistory.slice(-Number(range))}
+            compact={!desktop}
+          />
+        </View>
+      </GradientCard>
       <Text className="font-sans text-[11px] text-muted">
         {desktop
           ? 'Sphere: hover a tick group'

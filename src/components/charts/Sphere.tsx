@@ -62,6 +62,7 @@ const look = tokens.sphere;
 const { ink, muted, lime } = tokens.colors;
 const FONT = tokens.type.family;
 const R = SPHERE.radius;
+const pct = (fraction: number): `${number}%` => `${fraction * 100}%`;
 
 const easing = (spec: MotionSpec) =>
   spec.easing === 'linear' ? Easing.linear : Easing.bezier(...spec.easing);
@@ -426,16 +427,29 @@ function Pulse({ half, animate }: { half: number; animate: boolean }) {
         }
       : { opacity: look.pole.pulseRestOpacity },
   );
-  // Scale about the pole, not the centre.
-  const origin = `50% ${(((half - R) / (half * 2)) * 100).toFixed(3)}%`;
+  // A square just big enough for the dot, centred on the pole, so the default
+  // origin (its own centre) is the pole. A transformOrigin on a full-size
+  // layer is ignored on macOS, where the dot then drifted as it grew. Yoga
+  // takes percentage margins from the parent's width; the sphere is square.
+  const d = look.pole.pulseRadius * 2;
+  const box = {
+    left: '50%',
+    top: pct((half - R) / (half * 2)),
+    width: pct(d / (half * 2)),
+    marginLeft: pct(-d / 2 / (half * 2)),
+    marginTop: pct(-d / 2 / (half * 2)),
+  } as const;
   return (
-    <Layer
-      half={half}
-      style={[{ transformOrigin: origin }, style]}
+    <Animated.View
       testID="sphere-pulse"
+      pointerEvents="none"
+      className="absolute aspect-square"
+      style={[box, style]}
     >
-      <Circle cx={0} cy={-R} r={look.pole.pulseRadius} fill={lime} />
-    </Layer>
+      <Svg width="100%" height="100%" viewBox={`${-d / 2} ${-d / 2} ${d} ${d}`}>
+        <Circle r={look.pole.pulseRadius} fill={lime} />
+      </Svg>
+    </Animated.View>
   );
 }
 

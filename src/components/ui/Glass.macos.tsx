@@ -21,6 +21,8 @@ const blurFor: Partial<Record<GlassName, 'light' | 'dark' | 'none'>> = {
   // A 10% white over a dark gradient: any material greys the gradient out and
   // the white text with it, so it keeps only its faint fill.
   onGradient: 'none',
+  // The history tooltip, also over a gradient card: the same reasoning.
+  tooltip: 'none',
 };
 
 /**

@@ -238,6 +238,22 @@ describe('Sphere', () => {
       expect(parseFloat(turn())).toBeCloseTo(90, 0);
     });
 
+    it('pulses about the pole itself', async () => {
+      await draw({ animate: true, labels: false });
+      // Half 262: the pole is (262 − 170) / 524 down; the dot is 18 across.
+      expect(byId('sphere-pulse').props.style).toEqual(
+        expect.arrayContaining([
+          {
+            left: '50%',
+            top: `${(92 / 524) * 100}%`,
+            width: `${(18 / 524) * 100}%`,
+            marginLeft: `${(-9 / 524) * 100}%`,
+            marginTop: `${(-9 / 524) * 100}%`,
+          },
+        ]),
+      );
+    });
+
     it('pulses the pole out and back', async () => {
       await draw({ animate: true });
       expect(layerOpacity('sphere-pulse')).toBeCloseTo(0.35);

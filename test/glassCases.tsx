@@ -41,6 +41,10 @@ export const expected: Record<GlassName, { fill: string; border: string[] }> = {
     fill: 'bg-glass-popover',
     border: ['border', 'border-glass-popover-border'],
   },
+  tooltip: {
+    fill: 'bg-glass-tooltip',
+    border: ['border', 'border-glass-tooltip-border'],
+  },
 };
 
 export const recipes = Object.keys(tokens.glass) as GlassName[];

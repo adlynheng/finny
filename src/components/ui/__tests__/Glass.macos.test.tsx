@@ -37,11 +37,14 @@ describe('Glass on macOS', () => {
     });
   });
 
-  it('onGradient: keeps only its faint fill, as a light material would grey out the gradient', async () => {
-    await render(<Glass recipe="onGradient" />);
-    expect(screen.queryByTestId('glass-blur')).toBeNull();
-    expect(screen.getByTestId('glass-fill')).toBeTruthy();
-  });
+  it.each(['onGradient', 'tooltip'] as const)(
+    '%s: keeps only its faint fill, as a light material would grey out the gradient',
+    async recipe => {
+      await render(<Glass recipe={recipe} />);
+      expect(screen.queryByTestId('glass-blur')).toBeNull();
+      expect(screen.getByTestId('glass-fill')).toBeTruthy();
+    },
+  );
 
   it('covers every blurred recipe', () => {
     expect([...blurred].sort()).toEqual(
@@ -52,6 +55,7 @@ describe('Glass on macOS', () => {
         'navPill',
         'onGradient',
         'sheetScrim',
+        'tooltip',
       ].sort(),
     );
   });

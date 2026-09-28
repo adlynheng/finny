@@ -108,7 +108,7 @@ describe('radii', () => {
 });
 
 describe('glass recipes', () => {
-  it('has exactly the nine recipes', () => {
+  it('has exactly the ten recipes', () => {
     expect(Object.keys(tokens.glass).sort()).toEqual(
       [
         'card',
@@ -120,6 +120,7 @@ describe('glass recipes', () => {
         'popover',
         'sheet',
         'sheetScrim',
+        'tooltip',
       ].sort(),
     );
   });
@@ -183,6 +184,12 @@ describe('glass recipes', () => {
       border: { width: 1, color: 'rgba(28,28,26,.08)' },
       blur: null,
       shadow: '0 18px 44px rgba(0,0,0,.14)',
+    });
+    expect(tokens.glass.tooltip).toEqual({
+      background: 'rgba(255,255,255,.2)',
+      border: { width: 1, color: 'rgba(255,255,255,.3)' },
+      blur: 14,
+      shadow: null,
     });
   });
 });
