@@ -16,18 +16,11 @@
 
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { Text, View } from 'react-native';
-import Animated, {
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
 import Svg, { Line, Path } from 'react-native-svg';
 import { Glass } from '@/components/ui/Glass';
 import { ScrubSurface } from '@/components/ui/ScrubSurface';
 import { cx } from '@/components/ui/cardChrome';
 import type { HoverPoint } from '@/components/ui/hoverTypes';
-import { motion } from '@/theme/motion';
 import { tokens } from '@/theme/tokens';
 import type { HistoryPoint } from '@/utils/derive/networth';
 import {
@@ -38,6 +31,7 @@ import {
   type HistoryTip,
   type Strand,
 } from './historyLayout';
+import { Reveal } from './Reveal';
 
 const look = tokens.history;
 const { white } = tokens.colors;
@@ -85,6 +79,7 @@ export function MultiStrandLine({
         <Reveal
           key={geo.n}
           width={width}
+          name="fnReveal"
           animate={animate}
           testID={`${testID}-reveal`}
         >
@@ -153,63 +148,6 @@ const Strands = memo(function Strands({
     </Svg>
   );
 });
-
-/**
- * The design's `fnReveal`: a clip that opens left to right. React Native has
- * no clip-path, so a clipping view slides in from the left while its content
- * slides the other way by as much, holding the strands still under an edge
- * that sweeps across. Both are transforms, so the reveal stays on the
- * compositor. It plays once per mount; the chart remounts it for a new series.
- */
-function Reveal({
-  width,
-  animate,
-  testID,
-  children,
-}: {
-  width: number;
-  animate: boolean;
-  testID: string;
-  children: React.ReactNode;
-}) {
-  const shown = useSharedValue(animate ? 0 : 1);
-  const measured = width > 0;
-
-  useEffect(() => {
-    if (!animate || !measured) return;
-    const { durationMs, easing } = motion.fnReveal;
-    shown.value = withTiming(1, {
-      duration: durationMs,
-      easing: easing === 'linear' ? Easing.linear : Easing.bezier(...easing),
-    });
-  }, [animate, measured, shown]);
-
-  const clip = useAnimatedStyle(
-    () => ({ transform: [{ translateX: -width * (1 - shown.value) }] }),
-    [width],
-  );
-  const content = useAnimatedStyle(
-    () => ({ transform: [{ translateX: width * (1 - shown.value) }] }),
-    [width],
-  );
-
-  return (
-    <Animated.View
-      testID={testID}
-      pointerEvents="none"
-      className="absolute inset-0 overflow-hidden"
-      style={clip}
-    >
-      <Animated.View
-        testID={`${testID}-content`}
-        className="absolute inset-0"
-        style={content}
-      >
-        {children}
-      </Animated.View>
-    </Animated.View>
-  );
-}
 
 /** The dashed line at the hovered month, full height. */
 function Crosshair({ left, testID }: { left: number; testID: string }) {

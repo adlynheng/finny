@@ -4,14 +4,16 @@
  * pages exist (Phase H); delete it then.
  */
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Platform, Text, View } from 'react-native';
+import { EchoLine } from '@/components/charts/EchoLine';
 import { MixRing } from '@/components/charts/MixRing';
 import type { MixPart } from '@/components/charts/mixLayout';
 import { MultiStrandLine } from '@/components/charts/MultiStrandLine';
 import { RadialDial } from '@/components/charts/RadialDial';
 import { Rings } from '@/components/charts/Rings';
 import { allocationDial, budgetDial } from '@/components/charts/dialConfigs';
+import { Sparkline } from '@/components/charts/Sparkline';
 import { Sphere } from '@/components/charts/Sphere';
 import type { SphereClass } from '@/components/charts/sphereLayout';
 import { ChipRow } from '@/components/ui/ChipRow';
@@ -50,6 +52,82 @@ const mixParts: MixPart[] = [
 ];
 const USD_SGD = 1.3512;
 
+// Six months of unrealised P&L in S$ that dips below zero and recovers, and
+// the same shifted up so it never crosses.
+const pnlCases: Record<string, number[]> = {
+  crossing: Array.from({ length: 181 }, (_, i) =>
+    Math.round(2600 * Math.sin(i / 28) + 18 * i - 900 + 260 * Math.sin(i / 5)),
+  ),
+};
+pnlCases.above = pnlCases.crossing!.map(v => v + 4000);
+
+// The design's scale: the range fills y 6 to 80 of the 100-unit box.
+const pnlScale = (values: readonly number[]) => {
+  const lo = Math.min(...values);
+  const hi = Math.max(...values);
+  return (v: number) => 6 + (1 - (v - lo) / (hi - lo || 1)) * 74;
+};
+
+// Thirty days of prices for a few Watchlist rows, and today's change.
+const sparks = [
+  { sym: 'NVDA', dayChange: 2.14, drift: 0.9 },
+  { sym: 'AAPL', dayChange: -0.62, drift: -0.4 },
+  { sym: 'D05', dayChange: 0.18, drift: 0.2 },
+  { sym: 'TSLA', dayChange: -3.4, drift: -1.2 },
+].map(s => ({
+  ...s,
+  values: Array.from(
+    { length: 29 },
+    (_, j) => 100 + s.drift * j + 4 * Math.sin(j / 2 + s.sym.length),
+  ),
+}));
+
+/**
+ * The P&L chart with its own hover state, so hovering it re-renders only this
+ * demo, not every chart in the gallery (the Trading screen must do the same).
+ */
+function EchoDemo() {
+  const [pnlCase, setPnlCase] = useState<string>('crossing');
+  const [pnlHover, setPnlHover] = useState<number | null>(null);
+  const pnl = pnlCases[pnlCase]!;
+  const pnlY = useMemo(() => pnlScale(pnl), [pnl]);
+  return (
+    <>
+      <Text className="font-sans text-[11px] text-muted">
+        {`P&L echo line: ${desktop ? 'hover' : 'drag'} the chart · `}
+        {pnlHover === null
+          ? 'no day hovered'
+          : `day ${pnlHover}: S$${pnl[pnlHover]!.toLocaleString('en-US')}`}
+      </Text>
+      <ChipRow
+        options={[
+          { value: 'crossing', label: 'Crosses zero' },
+          { value: 'above', label: 'Stays up' },
+        ]}
+        value={pnlCase}
+        onChange={c => {
+          setPnlCase(c ?? 'crossing');
+          setPnlHover(null);
+        }}
+      />
+      <View
+        className={
+          desktop
+            ? 'h-[260px] w-[560px] pr-[44px]'
+            : 'h-[200px] w-full pr-[44px]'
+        }
+      >
+        <EchoLine
+          values={pnl}
+          y={pnlY}
+          onHover={setPnlHover}
+          revealKey={pnlCase}
+        />
+      </View>
+    </>
+  );
+}
+
 export function ChartsGallery() {
   const [selected, setSelected] = useState<string | null>(null);
   const [range, setRange] = useState<string>('24');
@@ -60,6 +138,31 @@ export function ChartsGallery() {
   const over = dialState === 'over';
   return (
     <View className="gap-y-2">
+      <EchoDemo />
+      <Text className="font-sans text-[11px] text-muted">
+        Watchlist sparklines: danger on a down day
+      </Text>
+      {sparks.map(s => (
+        <View key={s.sym} className="flex-row items-center gap-x-3">
+          <Text className="w-12 font-sans text-[12px] text-ink">{s.sym}</Text>
+          <Sparkline
+            values={s.values}
+            dayChange={s.dayChange}
+            compact={!desktop}
+          />
+          <Text
+            className={
+              s.dayChange < 0
+                ? 'font-sans text-[12px] text-danger'
+                : 'font-sans text-[12px] text-ink'
+            }
+          >
+            {`${s.dayChange < 0 ? '−' : '+'}${Math.abs(s.dayChange).toFixed(
+              2,
+            )}%`}
+          </Text>
+        </View>
+      ))}
       <Text className="font-sans text-[11px] text-muted">
         Portfolio mix ring: tap a type to highlight it (the page will use the
         list's rows)

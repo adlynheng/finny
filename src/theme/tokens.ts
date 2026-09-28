@@ -301,6 +301,29 @@ const mix = {
 } as const;
 
 /**
+ * Trading's P&L chart, from the design's `chart()`: ink strokes in a 100-unit
+ * viewBox stretched to the chart (widths in points; the strokes do not scale).
+ * Six echoes sit 2.3 units apart below the line, fading with depth.
+ */
+const echo = {
+  line: { opacity: 0.9, width: 1.5 },
+  echoes: { count: 6, step: 2.3, opacity: 0.2, fade: 0.025, width: 0.7 },
+  zeroLine: { opacity: 0.3, width: 0.8, dash: '2 4' },
+  /** Evenly spaced sample dots along the line, in points. */
+  samples: { count: 8, size: 7, hotSize: 9 },
+  /** The hover halo and its dot, in points. */
+  halo: { size: 22, dotSize: 8 },
+} as const;
+
+/** The Watchlist's 30-day micro-chart, in a 48 × 22 viewBox. */
+const spark = {
+  box: { width: 48, height: 22 },
+  /** The line spans y 2 to 20: two units of room above and below. */
+  inset: 2,
+  width: 1,
+} as const;
+
+/**
  * The Overview's net-worth history, from the design's `hist()`: white strokes
  * on the green card, at these opacities and widths in points (the strokes do
  * not scale with the stretched chart).
@@ -465,6 +488,8 @@ export const tokens = {
   dial,
   rings,
   mix,
+  echo,
+  spark,
   history,
   dialog,
   gradients,
