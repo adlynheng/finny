@@ -15,7 +15,7 @@ type Props = Omit<TextInputProps, 'style' | 'editable'> & {
 
 // macOS draws a focus ring around a focused TextInput; the design has none.
 // The prop is react-native-macos's own, so it is not in the iOS types.
-const noFocusRing = { enableFocusRing: false } as object;
+export const noFocusRing = { enableFocusRing: false } as object;
 
 /**
  * The form text field: a white, hairline-outlined box, 40px tall with 8px

@@ -30,19 +30,21 @@ type Props = GlassProps & {
 export function GlassBase({
   recipe,
   radius,
+  fill,
   blurLayer,
   className,
   children,
   ...rest
 }: Props) {
   const rounded = radius === undefined ? null : glassRadius[radius];
+  const tint = fill ?? glassFill[recipe];
 
   if (tokens.glass[recipe].blur === null) {
     return (
       <View
         {...rest}
         className={cx(
-          glassFill[recipe],
+          tint,
           glassBorder[recipe],
           rounded,
           className,
@@ -68,7 +70,7 @@ export function GlassBase({
         {blurLayer}
         <View
           testID="glass-fill"
-          className={cx('absolute inset-0', glassFill[recipe])}
+          className={cx('absolute inset-0', tint)}
         />
       </View>
       {children}

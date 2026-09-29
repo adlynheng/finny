@@ -6,6 +6,7 @@ import {
   goalStatus,
   monthsUntil,
   potCents,
+  reachDate,
   requiredMonthlyCents,
   type Goal,
 } from '../goals';
@@ -128,6 +129,18 @@ describe('etaMonths', () => {
 
   it('is empty with no contribution', () => {
     expect(etaMonths(goal(1_000_000, 400_000), 0)).toBeNull();
+  });
+});
+
+describe('reachDate', () => {
+  it('is the ETA in months on from today', () => {
+    // S$3,000 left at S$1,500 a month: two months.
+    expect(reachDate(goal(2_400_000, 2_100_000), 150_000)).toBe('2026-11-24');
+  });
+
+  it('is today once reached, and null with no contribution', () => {
+    expect(reachDate(goal(100, 100), 0)).toBe('2026-09-24');
+    expect(reachDate(goal(100, 0), 0)).toBeNull();
   });
 });
 

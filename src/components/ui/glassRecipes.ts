@@ -34,6 +34,8 @@ export type GlassProps = Omit<ViewProps, 'style'> & {
   recipe: GlassName;
   /** Corner radius; square when omitted. Do not pass `rounded-*` in className. */
   radius?: GlassRadius;
+  /** A `bg-*` class in place of the recipe's tint, for a surface that lightens on hover. */
+  fill?: string;
   className?: string;
 };
 
@@ -43,6 +45,7 @@ export const glassFill: Record<GlassName, string> = {
   navPill: 'bg-glass-nav-pill',
   card: 'bg-glass-card',
   onGradient: 'bg-glass-on-gradient',
+  onGradientTray: 'bg-glass-on-gradient-tray',
   modal: 'bg-glass-modal',
   modalScrim: 'bg-glass-modal-scrim',
   sheet: 'bg-glass-sheet',
@@ -58,6 +61,7 @@ export const glassBorder: Record<GlassName, string | null> = {
   navPill: 'border border-glass-nav-pill-border',
   card: 'border border-glass-card-border',
   onGradient: 'border border-glass-on-gradient-border',
+  onGradientTray: 'border border-glass-on-gradient-tray-border',
   modal: 'border border-glass-modal-border',
   modalScrim: null,
   sheet: null,

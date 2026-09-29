@@ -2,7 +2,7 @@
  * The Overview's net-worth history, from the design's `hist()` in
  * FinnyOverview.dc.html (and FinnyMobile.html): four cumulative bands — cash,
  * + investments, + CPF, net — as smoothed white lines, with three echo strands
- * between each neighbouring pair, revealed left to right. Hovering (macOS) or
+ * between each neighbouring pair and under cash, revealed left to right. Hovering (macOS) or
  * dragging (iOS) snaps a crosshair to the nearest month and shows its figures.
  *
  * The 1000 × 400 viewBox stretches to fill the chart's box, so strokes keep
@@ -116,7 +116,7 @@ export function MultiStrandLine({
 }
 
 /**
- * The thirteen strands in one SVG, drawn once per series: hover never
+ * The sixteen strands in one SVG, drawn once per series: hover never
  * repaints them.
  */
 const Strands = memo(function Strands({

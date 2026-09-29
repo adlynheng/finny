@@ -1,9 +1,11 @@
 import {
   assetClassSplit,
   cardsOwedCents,
+  classIdOf,
   historySeries,
   monthDelta,
   netWorth,
+  rangeChange,
   shareOfAssets,
   type NetWorthAccount,
   type Snapshot,
@@ -154,6 +156,19 @@ describe('shareOfAssets', () => {
   });
 });
 
+describe('classIdOf', () => {
+  it('is the account’s own class, or Other when it has none', () => {
+    expect(classIdOf(ibkr, classes)).toBe(3);
+    expect(classIdOf(loose, classes)).toBe(5);
+    expect(classIdOf({ asset_class_id: 99 }, classes)).toBe(5);
+  });
+
+  it('agrees with the class split, so both cards place an account alike', () => {
+    const split = assetClassSplit([loose], classes);
+    expect(split.map(s => s.id)).toEqual([classIdOf(loose, classes)]);
+  });
+});
+
 describe('cardsOwedCents', () => {
   it('totals the active credit card balances', () => {
     expect(cardsOwedCents(accounts)).toBe(150_000);
@@ -238,7 +253,7 @@ describe('monthDelta', () => {
         snapshot('2026-08-01', 10_000, {}),
         snapshot('2026-07-01', 1, {}),
       ]),
-    ).toEqual({ deltaCents: 1_000, percent: 10, previousMonth: 'Aug' });
+    ).toEqual({ deltaCents: 1_000, percent: 10, previousMonth: 'August' });
   });
 
   it('has no delta with fewer than two snapshots', () => {
@@ -252,6 +267,23 @@ describe('monthDelta', () => {
         snapshot('2026-08-01', 0, {}),
         snapshot('2026-09-01', 500, {}),
       ]),
-    ).toEqual({ deltaCents: 500, percent: null, previousMonth: 'Aug' });
+    ).toEqual({ deltaCents: 500, percent: null, previousMonth: 'August' });
+  });
+});
+
+describe('rangeChange', () => {
+  it('is the change from the first snapshot to the last, from the first’s date', () => {
+    expect(
+      rangeChange([
+        snapshot('2026-09-01', 11_000, {}),
+        snapshot('2024-10-01', 7_500, {}),
+        snapshot('2025-06-01', 1, {}),
+      ]),
+    ).toEqual({ deltaCents: 3_500, since: '2024-10-01' });
+  });
+
+  it('has nothing to compare with fewer than two snapshots', () => {
+    expect(rangeChange([])).toBeNull();
+    expect(rangeChange([snapshot('2026-09-01', 11_000, {})])).toBeNull();
   });
 });

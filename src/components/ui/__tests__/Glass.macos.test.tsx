@@ -37,7 +37,7 @@ describe('Glass on macOS', () => {
     });
   });
 
-  it.each(['onGradient', 'tooltip'] as const)(
+  it.each(['onGradient', 'onGradientTray', 'tooltip'] as const)(
     '%s: keeps only its faint fill, as a light material would grey out the gradient',
     async recipe => {
       await render(<Glass recipe={recipe} />);
@@ -55,6 +55,7 @@ describe('Glass on macOS', () => {
         'modalScrim',
         'navPill',
         'onGradient',
+        'onGradientTray',
         'sheetScrim',
         'tooltip',
       ].sort(),

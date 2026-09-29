@@ -140,6 +140,26 @@ describe('GradientFill', () => {
     expect(rect!.props.filter).toBe(filter!.props.name);
   });
 
+  it('lets a glow’s blur bleed three deviations past its box, as CSS blur does', async () => {
+    const fill = await renderFill(gradients.heroGlow);
+    const [svg] = findAll(fill, 'RNSVGSvgView');
+    const [filter] = findAll(fill, 'RNSVGFilter');
+    // The last group: react-native-svg wraps the drawing in its own first.
+    const group = findAll(fill, 'RNSVGGroup').at(-1);
+    const [rect] = findAll(fill, 'RNSVGRect');
+    expect(svg!.props.bbWidth).toBe(320 + 2 * 102);
+    expect(svg!.props.bbHeight).toBe(180 + 2 * 102);
+    expect(svg!.props.style).toContainEqual({ margin: -102 });
+    expect(filter!.props).toMatchObject({
+      x: -102,
+      y: -102,
+      width: 524,
+      height: 384,
+    });
+    expect(group!.props.matrix.slice(4)).toEqual([102, 102]);
+    expect(rect!.props).toMatchObject({ width: 320, height: 180 });
+  });
+
   it('does not blur a card gradient', async () => {
     const fill = await renderFill(gradients.thisMonth);
     expect(findAll(fill, 'RNSVGFilter')).toEqual([]);

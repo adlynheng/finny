@@ -73,10 +73,14 @@ const glass = {
     border: { width: 1, color: 'rgba(255,255,255,.18)' },
     blur: 12,
     shadow: null,
-    variants: {
-      background: ['rgba(255,255,255,.12)', 'rgba(255,255,255,.14)'],
-      borderColor: ['rgba(255,255,255,.2)'],
-    },
+    variants: { background: ['rgba(255,255,255,.12)'] },
+  },
+  /** A control's tray on a gradient card: the history card's range toggle. */
+  onGradientTray: {
+    background: 'rgba(255,255,255,.14)',
+    border: { width: 1, color: 'rgba(255,255,255,.2)' },
+    blur: 12,
+    shadow: null,
   },
   modal: {
     background: 'rgba(255,255,255,.88)',
@@ -227,8 +231,8 @@ const table = {
  * `dim` every other class.
  */
 const sphere = {
-  reference: { opacity: 0.35, width: 0.8, dash: '2 4', labelSize: 9 },
-  meridian: { opacity: 0.32, dimOpacity: 0.16, width: 0.7 },
+  reference: { opacity: 0.35, width: 0.8, dash: '2 4' },
+  meridian: { opacity: 0.32, dimOpacity: 0.16, width: 1 },
   latitude: {
     rest: { opacity: 0.42, width: 0.8 },
     hot: { opacity: 0.9, width: 1.1 },
@@ -236,7 +240,7 @@ const sphere = {
     transitionMs: 300,
   },
   pole: { radius: 5, pulseRadius: 9, pulseRestOpacity: 0.3 },
-  outerRing: { opacity: 0.1, width: 0.7 },
+  outerRing: { opacity: 0.1, width: 1.2 },
   spinRing: { opacity: 0.25, width: 0.6, dash: '1 5' },
   tick: {
     centre: { opacity: 0.55, hotOpacity: 0.95, width: 0.9, hotWidth: 1.2 },
@@ -364,14 +368,14 @@ const cashflow = {
  * not scale with the stretched chart).
  */
 const history = {
-  /** Three strands between each pair of neighbouring bands. */
+  /** Three strands between each pair of neighbouring bands, and under cash. */
   echo: { opacity: 0.2, width: 0.8, at: [0.25, 0.5, 0.75] },
   band: { opacity: 0.6, width: 1 },
   net: { opacity: 1, width: 1.6 },
   crosshair: { opacity: 0.5, dash: '2 3' },
   /** Headroom above the highest net worth. */
   headroom: 1.08,
-  /** The right-edge labels: Net at full strength, the rest at .85. */
+  /** The right-edge band labels (the net line has only its end dot). */
   labelOpacity: 0.85,
   /** Past this share of the width the tooltip sits left of the crosshair. */
   flipAt: 0.6,
@@ -480,6 +484,15 @@ export const tokens = {
       gap: 14,
       /** The app mark's tile. */
       markShadow: '0 1px 2px rgba(0,0,0,.05)',
+      /**
+       * The Overview grid's second row, 272px. The hero's text sits 6px in, and
+       * its sphere square starts 240px from the hero's left edge.
+       */
+      overview: {
+        bottomRowHeight: 272,
+        heroInset: 6,
+        sphereLeft: 240,
+      },
     },
     mobile: {
       width: 390,

@@ -1,24 +1,24 @@
 import { Platform, Pressable } from 'react-native';
 import { PortalHost } from '@rn-primitives/portal';
 import { NavigationContainer, useNavigation } from '@react-navigation/native';
-import {
-  fireEvent,
-  render,
-  screen,
-  within,
-} from '@testing-library/react-native';
+import { fireEvent, screen, within } from '@testing-library/react-native';
 
 import { RootNavigator } from '../RootNavigator';
 import { SCREENS } from '../routes';
+import { renderWithClient } from '../../../test/queryTestUtils';
 
 jest.mock('@/lib/supabase', () => ({
-  supabase: { auth: { signOut: jest.fn() } },
+  supabase: {
+    ...require('../../../test/supabaseStub').createSupabaseStub(),
+    auth: { signOut: jest.fn() },
+  },
 }));
 
 afterEach(() => jest.restoreAllMocks());
 
+// Overview reads the accounts and snapshots, so the screens need a query client.
 const draw = (extra?: React.ReactNode) =>
-  render(
+  renderWithClient(
     <NavigationContainer>
       <RootNavigator />
       {extra}

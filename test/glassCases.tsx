@@ -34,6 +34,10 @@ export const expected: Record<GlassName, { fill: string; border: string[] }> = {
     fill: 'bg-glass-on-gradient',
     border: ['border', 'border-glass-on-gradient-border'],
   },
+  onGradientTray: {
+    fill: 'bg-glass-on-gradient-tray',
+    border: ['border', 'border-glass-on-gradient-tray-border'],
+  },
   modal: {
     fill: 'bg-glass-modal',
     border: ['border', 'border-glass-modal-border'],

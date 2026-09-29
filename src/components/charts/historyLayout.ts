@@ -1,8 +1,9 @@
 /**
  * The net-worth history's layout, from the design's `hist()` in
- * FinnyOverview.dc.html: thirteen smoothed strands in a 1000 × 400 viewBox
+ * FinnyOverview.dc.html: sixteen smoothed strands in a 1000 × 400 viewBox
  * that the chart stretches to fill its box, plus where the labels, the end dot
- * and the hover tooltip sit, as fractions of that box.
+ * and the hover tooltip sit, as fractions of that box. Unlike the design, three
+ * echoes also run under the cash line, so it has texture beneath it too.
  */
 
 import { tokens } from '@/theme/tokens';
@@ -68,8 +69,10 @@ export function historyGeometry(
     );
 
   const strands: Strand[] = [];
-  const stack = [b.cash, b.investments, b.cpf, b.net];
-  for (let k = 0; k < 3; k++) {
+  // The floor first, so the echoes under the cash line scale it towards zero.
+  const floor = points.map(() => 0);
+  const stack = [floor, b.cash, b.investments, b.cpf, b.net];
+  for (let k = 0; k < stack.length - 1; k++) {
     for (const t of look.echo.at) {
       strands.push({
         kind: 'echo',
@@ -99,7 +102,6 @@ export function historyGeometry(
     n,
     strands,
     labels: [
-      { text: 'Net', top: last(b.net), opacity: 1 },
       { text: '+ CPF', top: last(b.cpf), opacity: look.labelOpacity },
       {
         text: '+ Invest.',

@@ -6,6 +6,7 @@
     "ios": "react-native run-ios",
     "macos": "react-native run-macos",
     "start": "react-native start",
+    "start:local": "scripts/start-local.sh",
     "test": "jest",
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit",

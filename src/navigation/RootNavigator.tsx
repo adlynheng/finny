@@ -3,10 +3,10 @@
  * Navigation's ready-made navigators need react-native-screens, which has no macOS support, so
  * this is a small navigator on its tab router that draws no chrome of its own.
  *
- * The screens are stand-ins until the pages arrive, from Phase I on.
+ * Screens without a page yet are stand-ins.
  */
 
-import { useState, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { Platform, Pressable, Text, View } from 'react-native';
 import {
   createNavigatorFactory,
@@ -16,8 +16,10 @@ import {
 
 import { AppFrame } from '@/components/ui/AppFrame';
 import { MobileFrame } from '@/components/ui/MobileFrame';
-import { Sheet } from '@/components/ui/Sheet';
 import { supabase } from '@/lib/supabase';
+import { OverviewScreen } from '@/modules/net-worth/OverviewScreen';
+import { NewTransactionSheet } from '@/modules/transactions/NewTransactionSheet';
+import { useUiStore } from '@/stores/uiStore';
 import { BottomBar } from './BottomBar';
 import { DesktopHeader } from './DesktopHeader';
 import { SCREENS, type ScreenName } from './routes';
@@ -31,10 +33,16 @@ function FinnyNavigator({ initialRouteName, children }: NavigatorProps) {
   );
   const route = state.routes[state.index]!;
   const select = (name: ScreenName) => navigation.navigate(name);
-  const [newOpen, setNewOpen] = useState(false);
+  const newOpen = useUiStore(s => s.newTransactionOpen);
+  const setUi = useUiStore(s => s.set);
   const screen = (
     <View testID={`screen-${route.name}`} className="flex-1">
       {descriptors[route.key]!.render()}
+      {newOpen && (
+        <NewTransactionSheet
+          onClose={() => setUi({ newTransactionOpen: false })}
+        />
+      )}
     </View>
   );
 
@@ -53,21 +61,11 @@ function FinnyNavigator({ initialRouteName, children }: NavigatorProps) {
         <BottomBar
           current={route.name}
           onSelect={select}
-          onNew={() => setNewOpen(true)}
+          onNew={() => setUi({ newTransactionOpen: true })}
         />
       }
     >
       {screen}
-      {/* The form itself comes with Task 54. */}
-      <Sheet
-        open={newOpen}
-        onClose={() => setNewOpen(false)}
-        title="New transaction"
-      >
-        <Text className="font-sans text-[13px] text-muted">
-          The form comes next.
-        </Text>
-      </Sheet>
     </MobileFrame>,
   );
 }
@@ -78,7 +76,11 @@ export function RootNavigator() {
   return (
     <Finny.Navigator initialRouteName="Overview">
       {SCREENS.map(({ name }) => (
-        <Finny.Screen key={name} name={name} component={Placeholder} />
+        <Finny.Screen
+          key={name}
+          name={name}
+          component={name === 'Overview' ? OverviewScreen : Placeholder}
+        />
       ))}
     </Finny.Navigator>
   );

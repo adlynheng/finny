@@ -78,16 +78,20 @@ describe('Sphere', () => {
       expect(byId('sphere-percent-inv').props.x).toEqual([inv.percentX]);
     });
 
-    it('draws the dashed reference circle with the oldest month and value', async () => {
+    it('draws the dashed reference circle, sized by the oldest net worth', async () => {
       await draw();
       expect(byId('sphere-reference').props.r).toBeCloseTo(
         170 * Math.sqrt(168200 / 242420),
       );
-      expect(text('sphere-reference-label')).toBe('Oct 2024 · S$168.2k');
     });
 
     it('leaves the reference circle out when a net worth is not positive', async () => {
       await draw({ oldest: { month: '2024-10', cents: -500 } });
+      expect(allById(/^sphere-reference/)).toHaveLength(0);
+    });
+
+    it('leaves the reference circle out before the first snapshot', async () => {
+      await draw({ oldest: null });
       expect(allById(/^sphere-reference/)).toHaveLength(0);
     });
 

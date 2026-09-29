@@ -7,20 +7,30 @@ import { useSlidingPill } from './useSlidingPill';
 export type SegmentOption<T extends string> = { value: T; label: string };
 
 /**
- * field: a form field's full-width switch (the transaction type, an interval).
- *   It takes its parent's width, so it belongs in a column, not a row.
+ * field: a form field's full-width switch (an interval, a drawer field). It
+ *   takes its parent's width, so it belongs in a column, not a row.
+ * type: the transaction form's Expense / Deposit / Transfer switch, a field
+ *   a step larger on desktop (13px labels, 8px padding).
  * compact: the in-card switches sized to their labels (List/Categories, the
  * transaction filter, Growth/Position, Positions/Watchlist/Portfolio).
  * nav: the desktop header's tab pill. Its tray is clear, since the header sets
  *   it in navPill glass; muted labels darken on hover.
+ * onGradient: white on a gradient card (the history card's range toggle). Its
+ *   tray is clear too, set in onGradientTray glass; the pill is a white wash.
  */
-export type SegmentedSize = 'field' | 'compact' | 'nav';
+export type SegmentedSize =
+  | 'field'
+  | 'type'
+  | 'compact'
+  | 'nav'
+  | 'onGradient';
 
 const { selectedShadow, navShadow } = tokens.controls.segmented;
 
 /**
  * The tray (with its padding), each segment, the pill (rounded like a segment,
- * inset like the tray's padding), its shadow, and the label at rest.
+ * inset like the tray's padding, and its fill), its shadow, and the label
+ * selected and at rest.
  */
 const sized: Record<
   SegmentedSize,
@@ -28,34 +38,56 @@ const sized: Record<
     tray: string;
     segment: string;
     pill: string;
-    shadow: string;
+    shadow: string | null;
     text: string;
+    selected: string;
     muted: string;
   }
 > = {
   field: {
     tray: 'self-stretch rounded-8 bg-segment-tray p-[3px] ios:rounded-10',
     segment: 'flex-1 rounded-6 py-[7px] ios:rounded-8 ios:py-[11px]',
-    pill: 'bottom-[3px] top-[3px] rounded-6 ios:rounded-8',
+    pill: 'bottom-[3px] top-[3px] rounded-6 bg-white ios:rounded-8',
     shadow: selectedShadow,
     text: 'text-[12px] ios:text-[13px]',
+    selected: 'text-ink',
+    muted: 'text-muted',
+  },
+  type: {
+    tray: 'self-stretch rounded-8 bg-segment-tray p-[3px] ios:rounded-10',
+    segment: 'flex-1 rounded-6 py-[8px] ios:rounded-8 ios:py-[11px]',
+    pill: 'bottom-[3px] top-[3px] rounded-6 bg-white ios:rounded-8',
+    shadow: selectedShadow,
+    text: 'text-[13px]',
+    selected: 'text-ink',
     muted: 'text-muted',
   },
   compact: {
     tray: 'self-start rounded-6 bg-segment-tray-soft p-[3px]',
     segment: 'rounded-4 px-[10px] py-[4px]',
-    pill: 'bottom-[3px] top-[3px] rounded-4',
+    pill: 'bottom-[3px] top-[3px] rounded-4 bg-white',
     shadow: selectedShadow,
     text: 'text-[12px]',
+    selected: 'text-ink',
     muted: 'text-muted',
   },
   nav: {
     tray: 'p-[4px]',
     segment: 'group rounded-6 px-[16px] py-[7px]',
-    pill: 'bottom-[4px] top-[4px] rounded-6',
+    pill: 'bottom-[4px] top-[4px] rounded-6 bg-white',
     shadow: navShadow,
     text: 'text-[13px]',
+    selected: 'text-ink',
     muted: 'text-muted group-hover:text-ink',
+  },
+  onGradient: {
+    tray: 'p-[3px]',
+    segment: 'rounded-4 px-[9px] py-[4px]',
+    pill: 'bottom-[3px] top-[3px] rounded-4 bg-white/[.34]',
+    shadow: null,
+    text: 'text-[11px]',
+    selected: 'text-white',
+    muted: 'text-white',
   },
 };
 
@@ -105,8 +137,8 @@ export function Segmented<T extends string>({
         <Animated.View
           testID="segment-pill"
           pointerEvents="none"
-          className={cx('absolute bg-white', look.pill)}
-          style={[{ boxShadow: look.shadow }, pill.style]}
+          className={cx('absolute', look.pill)}
+          style={[look.shadow && { boxShadow: look.shadow }, pill.style]}
         />
       )}
       {options.map(option => {
@@ -130,7 +162,7 @@ export function Segmented<T extends string>({
               className={cx(
                 'font-sans',
                 look.text,
-                selected ? 'text-ink' : look.muted,
+                selected ? look.selected : look.muted,
               )}
             >
               {option.label}

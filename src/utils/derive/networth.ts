@@ -5,7 +5,7 @@
  */
 
 import type { AccountRow, AssetClassRow } from '@/types/domain';
-import { formatMonthShort } from '@/utils/format/date';
+import { formatMonthLong } from '@/utils/format/date';
 
 export type NetWorthAccount = Pick<
   AccountRow,
@@ -68,16 +68,10 @@ export function assetClassSplit(
   accounts: readonly NetWorthAccount[],
   classes: readonly AssetClass[],
 ): ClassSlice[] {
-  const other = classes.find(c => c.label === OTHER) ?? {
-    id: -1,
-    label: OTHER,
-    color: null,
-  };
+  const other = otherClass(classes);
   const byClass = new Map<number, number>();
   for (const a of accounts.filter(isAsset)) {
-    const id = classes.some(c => c.id === a.asset_class_id)
-      ? a.asset_class_id!
-      : other.id;
+    const id = classIdOf(a, classes);
     byClass.set(id, (byClass.get(id) ?? 0) + balance(a));
   }
   const total = sum([...byClass.values()]);
@@ -86,6 +80,26 @@ export function assetClassSplit(
     .filter(c => c.cents > 0)
     .sort((a, b) => b.cents - a.cents)
     .map(c => ({ ...c, fraction: c.cents / total }));
+}
+
+/**
+ * The asset class an account's balance counts towards: its own, or `Other`
+ * when it has none. The sphere and the Share of assets card both place
+ * accounts with this, so hovering one highlights the same class in the other.
+ */
+export function classIdOf(
+  account: Pick<NetWorthAccount, 'asset_class_id'>,
+  classes: readonly AssetClass[],
+): number {
+  return classes.some(c => c.id === account.asset_class_id)
+    ? account.asset_class_id!
+    : otherClass(classes).id;
+}
+
+function otherClass(classes: readonly AssetClass[]): AssetClass {
+  return (
+    classes.find(c => c.label === OTHER) ?? { id: -1, label: OTHER, color: null }
+  );
 }
 
 /** Active asset accounts by balance, largest first. Credit cards are excluded, as the card's subtitle says. */
@@ -97,6 +111,7 @@ export function shareOfAssets(accounts: readonly NetWorthAccount[]) {
       id: a.id,
       name: a.name,
       type: a.type,
+      asset_class_id: a.asset_class_id,
       cents: balance(a),
       fraction: total > 0 ? balance(a) / total : 0,
     }))
@@ -139,7 +154,7 @@ export function historySeries(snapshots: readonly Snapshot[]): HistoryPoint[] {
   });
 }
 
-/** The change between the last two snapshots, naming the earlier month. Null with fewer than two. */
+/** The change between the last two snapshots, naming the earlier month (`August`). Null with fewer than two. */
 export function monthDelta(snapshots: readonly Snapshot[]) {
   const [previous, latest] = chronological(snapshots).slice(-2);
   if (!previous || !latest) {
@@ -152,8 +167,22 @@ export function monthDelta(snapshots: readonly Snapshot[]) {
       previous.total_cents === 0
         ? null
         : (deltaCents / Math.abs(previous.total_cents)) * 100,
-    previousMonth: formatMonthShort(previous.date),
+    previousMonth: formatMonthLong(previous.date),
   };
+}
+
+/**
+ * Net worth's change from the first snapshot to the last, and the first's
+ * date: the history card's headline. Null with fewer than two.
+ */
+export function rangeChange(snapshots: readonly Snapshot[]) {
+  const sorted = chronological(snapshots);
+  const first = sorted[0];
+  const last = sorted[sorted.length - 1];
+  if (!first || !last || sorted.length < 2) {
+    return null;
+  }
+  return { deltaCents: last.total_cents - first.total_cents, since: first.date };
 }
 
 function chronological(snapshots: readonly Snapshot[]): Snapshot[] {

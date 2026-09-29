@@ -66,6 +66,25 @@ describe('Segmented', () => {
     );
   });
 
+  it('type: the transaction switch, a field a step larger on desktop', async () => {
+    await render(
+      <Segmented
+        testID="tray"
+        size="type"
+        options={types}
+        value="expense"
+        onChange={jest.fn()}
+      />,
+    );
+    expect(classes(screen.getByTestId('tray'))).toEqual(
+      expect.arrayContaining(['self-stretch', 'rounded-8', 'bg-segment-tray']),
+    );
+    expect(classes(segment('Deposit'))).toEqual(
+      expect.arrayContaining(['flex-1', 'py-[8px]', 'ios:py-[11px]']),
+    );
+    expect(classes(screen.getByText('Deposit'))).toContain('text-[13px]');
+  });
+
   it('compact: the in-card switch, sized to its labels on a fainter tray', async () => {
     await render(
       <Segmented
@@ -121,6 +140,32 @@ describe('Segmented', () => {
     expect(pill).toHaveStyle({
       boxShadow: tokens.controls.segmented.navShadow,
     });
+  });
+
+  it('onGradient: white labels on a clear tray, a white wash for the pill and no shadow', async () => {
+    await render(
+      <Segmented
+        testID="tray"
+        size="onGradient"
+        options={types}
+        value="expense"
+        onChange={jest.fn()}
+      />,
+    );
+    await layOut();
+    expect(classes(screen.getByTestId('tray'))).toContain('p-[3px]');
+    expect(classes(screen.getByTestId('tray-deposit'))).toEqual(
+      expect.arrayContaining(['rounded-4', 'px-[9px]', 'py-[4px]']),
+    );
+    for (const label of ['Expense', 'Deposit']) {
+      expect(classes(screen.getByText(label))).toEqual(
+        expect.arrayContaining(['text-[11px]', 'text-white']),
+      );
+    }
+    const pill = screen.getByTestId('segment-pill');
+    expect(classes(pill)).toContain('bg-white/[.34]');
+    expect(classes(pill)).not.toContain('bg-white');
+    expect(pill).not.toHaveStyle({ boxShadow: expect.anything() });
   });
 
   it('rounds the pill like the segments', async () => {

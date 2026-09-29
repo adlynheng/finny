@@ -31,8 +31,7 @@ import { HoverSurface } from '@/components/ui/HoverSurface';
 import type { HoverPoint } from '@/components/ui/hoverTypes';
 import { motion } from '@/theme/motion';
 import { tokens } from '@/theme/tokens';
-import { formatMonthShort, type MonthKey } from '@/utils/format/date';
-import { formatKMoney } from '@/utils/format/money';
+import type { MonthKey } from '@/utils/format/date';
 import {
   SPHERE,
   classAt,
@@ -56,8 +55,8 @@ const R = SPHERE.radius;
 type Props = {
   /** Asset classes in the order they run round the ring from the top. */
   classes: readonly SphereClass[];
-  /** The oldest snapshot: the dashed circle and its label. */
-  oldest: { month: MonthKey; cents: number };
+  /** The oldest snapshot, sizing the dashed circle. None before the first snapshot. */
+  oldest: { month: MonthKey; cents: number } | null;
   newestCents: number;
   /** The highlighted class's key: hovered here, or picked elsewhere. */
   selected: string | null;
@@ -227,7 +226,7 @@ export function Sphere({
     [classes, labels],
   );
   const { half } = geo;
-  const r0 = referenceRadius(oldest.cents, newestCents);
+  const r0 = oldest && referenceRadius(oldest.cents, newestCents);
 
   const clock = useSharedValue(0);
   useEffect(() => {
@@ -266,31 +265,16 @@ export function Sphere({
   return (
     <View testID={testID} className="aspect-square w-full">
       <Layer half={half} testID="sphere-body">
-        {r0 !== null && (
-          <>
-            <Circle
-              testID="sphere-reference"
-              r={r0}
-              fill="none"
-              stroke={ink}
-              strokeOpacity={look.reference.opacity}
-              strokeDasharray={look.reference.dash}
-              strokeWidth={look.reference.width}
-            />
-            <SvgText
-              testID="sphere-reference-label"
-              x={0}
-              y={r0 - 10}
-              textAnchor="middle"
-              fontSize={look.reference.labelSize}
-              fontFamily={FONT}
-              fill={muted}
-            >
-              {`${formatMonthShort(oldest.month, {
-                year: true,
-              })} · ${formatKMoney(oldest.cents)}`}
-            </SvgText>
-          </>
+        {oldest && r0 !== null && (
+          <Circle
+            testID="sphere-reference"
+            r={r0}
+            fill="none"
+            stroke={ink}
+            strokeOpacity={look.reference.opacity}
+            strokeDasharray={look.reference.dash}
+            strokeWidth={look.reference.width}
+          />
         )}
         {Array.from({ length: SPHERE.meridians }, (_, i) => (
           <Meridian

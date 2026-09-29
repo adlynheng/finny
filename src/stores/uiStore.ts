@@ -44,6 +44,9 @@ type UiFields = {
 
   settingsPanel: SettingsPanel;
   selectedCardId: number | null;
+
+  /** The new-transaction form: the FAB and the This month card's button both open it. */
+  newTransactionOpen: boolean;
 };
 
 type UiActions = {
@@ -74,6 +77,7 @@ export function initialUiState(): UiFields {
     calendarMonth: month,
     settingsPanel: 'accounts',
     selectedCardId: null,
+    newTransactionOpen: false,
   };
 }
 

@@ -1,8 +1,8 @@
 import { Pressable, Text, View } from 'react-native';
 import Animated from 'react-native-reanimated';
-import Svg, { Path } from 'react-native-svg';
 
 import { Icon } from '@/components/icons/Icon';
+import { PlusIcon } from '@/components/icons/PlusIcon';
 import { tabIcons, type TabIconKey } from '@/components/icons/registry';
 import { Glass } from '@/components/ui/Glass';
 import { useSlidingPill } from '@/components/ui/useSlidingPill';
@@ -106,15 +106,7 @@ export function BottomBar({ current, onSelect, onNew }: Props) {
             className="size-fab items-center justify-center rounded-full bg-ink"
             style={{ boxShadow: tokens.frame.mobile.bottomBar.fabShadow }}
           >
-            <Svg width={18} height={18} viewBox="0 0 12 12">
-              <Path
-                d="M6 1.5v9M1.5 6h9"
-                fill="none"
-                stroke={lime}
-                strokeWidth={1.3}
-                strokeLinecap="round"
-              />
-            </Svg>
+            <PlusIcon size={18} color={lime} strokeWidth={1.3} />
           </Pressable>
         </View>
         {MOBILE_TABS.slice(3).map(tab)}

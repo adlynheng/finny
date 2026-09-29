@@ -85,6 +85,10 @@ module.exports = {
         'frame-x': px(desktop.contentPadding.x),
         'frame-bottom': px(desktop.contentPadding.bottom),
         'frame-gap': px(desktop.gap),
+        // The Overview grid: h-overview-row, left-hero-inset, left-hero-sphere.
+        'overview-row': px(desktop.overview.bottomRowHeight),
+        'hero-inset': px(desktop.overview.heroInset),
+        'hero-sphere': px(desktop.overview.sphereLeft),
         // Mobile frame: h-mobile-header, px-mobile-x, pt-mobile-top, pb-mobile-bottom;
         // the bar's inset-x-bar-x, bottom-bar-bottom, h-bar-tab, size-fab.
         'mobile-header': px(mobile.headerHeight),

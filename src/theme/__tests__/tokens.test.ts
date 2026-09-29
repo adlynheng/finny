@@ -46,6 +46,7 @@ describe('frame geometry', () => {
       contentPadding: { top: 12, x: 32, bottom: 32 },
       gap: 14,
       markShadow: '0 1px 2px rgba(0,0,0,.05)',
+      overview: { bottomRowHeight: 272, heroInset: 6, sphereLeft: 240 },
     });
   });
 
@@ -115,7 +116,7 @@ describe('radii', () => {
 });
 
 describe('glass recipes', () => {
-  it('has exactly the eleven recipes', () => {
+  it('has exactly the twelve recipes', () => {
     expect(Object.keys(tokens.glass).sort()).toEqual(
       [
         'bottomBar',
@@ -125,6 +126,7 @@ describe('glass recipes', () => {
         'modalScrim',
         'navPill',
         'onGradient',
+        'onGradientTray',
         'popover',
         'sheet',
         'sheetScrim',
@@ -163,10 +165,13 @@ describe('glass recipes', () => {
       border: { width: 1, color: 'rgba(255,255,255,.18)' },
       blur: 12,
       shadow: null,
-      variants: {
-        background: ['rgba(255,255,255,.12)', 'rgba(255,255,255,.14)'],
-        borderColor: ['rgba(255,255,255,.2)'],
-      },
+      variants: { background: ['rgba(255,255,255,.12)'] },
+    });
+    expect(tokens.glass.onGradientTray).toEqual({
+      background: 'rgba(255,255,255,.14)',
+      border: { width: 1, color: 'rgba(255,255,255,.2)' },
+      blur: 12,
+      shadow: null,
     });
     expect(tokens.glass.modal).toEqual({
       background: 'rgba(255,255,255,.88)',

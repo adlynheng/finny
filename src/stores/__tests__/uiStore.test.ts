@@ -30,6 +30,7 @@ it('opens on the design’s defaults, with this month selected', () => {
     calendarMonth: '2026-09',
     settingsPanel: 'accounts',
     selectedCardId: null,
+    newTransactionOpen: false,
   });
 });
 

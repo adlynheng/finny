@@ -113,6 +113,19 @@ export function etaMonths(goal: Goal, contribution: number): number | null {
   return Math.ceil(remainingCents / (contribution + TOLERANCE_CENTS));
 }
 
+/**
+ * The date the goal is reached at `contribution` a month, `eta` months from
+ * `from`: `from` itself once reached, null with no contribution.
+ */
+export function reachDate(
+  goal: Goal,
+  contribution: number,
+  from: string = today(),
+): string | null {
+  const eta = etaMonths(goal, contribution);
+  return eta === null ? null : toIsoDate(addMonths(parseDate(from), eta));
+}
+
 /** `Reached`, `On track · Nov 2026`, or `S$180/mo short`. */
 export function goalStatus(
   goal: Goal,
@@ -127,12 +140,11 @@ export function goalStatus(
     return { kind: 'no-deadline', label: 'No target date' };
   }
   const contribution = contributionCents(goal, pot, from);
-  const eta = etaMonths(goal, contribution);
-  if (contribution + TOLERANCE_CENTS >= required && eta !== null) {
-    const reachMonth = toIsoDate(addMonths(parseDate(from), eta));
+  const reach = reachDate(goal, contribution, from);
+  if (contribution + TOLERANCE_CENTS >= required && reach !== null) {
     return {
       kind: 'on-track',
-      label: `On track · ${formatMonthShort(reachMonth, { year: true })}`,
+      label: `On track · ${formatMonthShort(reach, { year: true })}`,
     };
   }
   return {

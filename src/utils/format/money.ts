@@ -21,7 +21,15 @@ export function formatMoney(
   cents: number,
   { currency = 'SGD', decimals = 0 }: MoneyOptions = {},
 ): string {
-  return PREFIX[currency] + fixed(Math.abs(cents) / 100, decimals);
+  return PREFIX[currency] + formatAmount(cents, decimals);
+}
+
+/** `1,235` with no currency, for a figure whose `S$` is set apart, as the hero's is. Unsigned. */
+export function formatAmount(
+  cents: number,
+  decimals: MoneyOptions['decimals'] = 0,
+): string {
+  return fixed(Math.abs(cents) / 100, decimals);
 }
 
 /** `+S$45.50` / `−S$45.50`; zero, including an amount that rounds to it, has no sign. */

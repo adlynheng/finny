@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react-native';
 import { Glass } from '@/components/ui/Glass';
 import type { GlassName } from '@/theme/tokens';
 import { blurred, describeGlass } from '../../../../test/glassCases';
+import { classes } from '../../../../test/classes';
 
 // Jest resolves Glass.tsx, the iOS implementation (the preset's default
 // platform); Glass.macos.test.tsx covers the macOS one. expo-blur's BlurView is
@@ -39,5 +40,12 @@ describe('Glass on iOS', () => {
     expect(new Set(order).size).toBe(order.length);
     expect(Math.max(...order)).toBeLessThanOrEqual(100);
     expect(Math.min(...order)).toBeGreaterThan(0);
+  });
+
+  it('takes a fill in place of the recipe’s tint', async () => {
+    await render(<Glass recipe="onGradient" fill="bg-white/[.26]" />);
+    const fill = classes(screen.getByTestId('glass-fill'));
+    expect(fill).toContain('bg-white/[.26]');
+    expect(fill).not.toContain('bg-glass-on-gradient');
   });
 });

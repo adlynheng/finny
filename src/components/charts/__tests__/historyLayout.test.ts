@@ -12,9 +12,9 @@ const geo = historyGeometry(designHistory);
 const maxNet = Math.max(...designHistory.map(p => p.net)) * 1.08;
 
 describe('historyGeometry', () => {
-  it('draws thirteen strands: nine echoes, three bands, then the net line', () => {
+  it('draws sixteen strands: twelve echoes, three bands, then the net line', () => {
     expect(geo.strands.map(s => s.kind)).toEqual([
-      ...Array(9).fill('echo'),
+      ...Array(12).fill('echo'),
       'band',
       'band',
       'band',
@@ -31,7 +31,7 @@ describe('historyGeometry', () => {
   });
 
   it('plots the net line across 1000 × 400, 8% below the top at its peak', () => {
-    const net = geo.strands[12]!.d;
+    const net = geo.strands[15]!.d;
     expect(net).toBe(
       smoothPath(
         designHistory.map((p, i) => [
@@ -44,7 +44,7 @@ describe('historyGeometry', () => {
   });
 
   it('puts the bands at cash, + investments, + CPF', () => {
-    const [cash, inv, cpf] = geo.strands.slice(9, 12);
+    const [cash, inv, cpf] = geo.strands.slice(12, 15);
     const plot = (key: keyof HistoryPoint) =>
       smoothPath(
         designHistory.map((p, i) => [
@@ -57,12 +57,13 @@ describe('historyGeometry', () => {
     expect(cpf!.d).toBe(plot('cpf'));
   });
 
-  it('nests three echoes at 25/50/75% between each pair of bands', () => {
+  it('nests three echoes at 25/50/75% under cash and between each pair of bands', () => {
     const first = designHistory[0]!;
     // Each strand starts at month 0: its y is the lerp of the two bands there.
     const startY = (d: string) => Number(d.split(',')[1]!.split(' ')[0]);
     const y = (v: number) => 400 - (v / maxNet) * 400;
     const pairs: [number, number][] = [
+      [0, first.cash],
       [first.cash, first.investments],
       [first.investments, first.cpf],
       [first.cpf, first.net],
@@ -77,10 +78,9 @@ describe('historyGeometry', () => {
     );
   });
 
-  it('labels each band where it ends, Net at full strength', () => {
+  it('labels each band where it ends; the net line has only its end dot', () => {
     const last = designHistory[23]!;
     expect(geo.labels).toEqual([
-      { text: 'Net', top: 1 - last.net / maxNet, opacity: 1 },
       { text: '+ CPF', top: 1 - last.cpf / maxNet, opacity: 0.85 },
       {
         text: '+ Invest.',
@@ -89,7 +89,7 @@ describe('historyGeometry', () => {
       },
       { text: 'Cash', top: 1 - last.cash / maxNet, opacity: 0.85 },
     ]);
-    expect(geo.endTop).toBe(geo.labels[0]!.top);
+    expect(geo.endTop).toBe(1 - last.net / maxNet);
   });
 
   it('draws a single month or an empty history without dividing by zero', () => {

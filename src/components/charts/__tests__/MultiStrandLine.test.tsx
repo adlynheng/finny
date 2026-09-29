@@ -30,15 +30,15 @@ const geo = historyGeometry(designHistory);
 
 describe('MultiStrandLine', () => {
   describe('strands', () => {
-    it('draws thirteen nested strands, the net line last and heaviest', async () => {
+    it('draws sixteen nested strands, the net line last and heaviest', async () => {
       await draw();
-      const strands = Array.from({ length: 13 }, (_, i) =>
+      const strands = Array.from({ length: 16 }, (_, i) =>
         byId(`history-strand-${i}`),
       );
       expect(strands.map(s => s.props.d)).toEqual(geo.strands.map(s => s.d));
-      expect(strands[12]!.props.strokeWidth).toBe(1.6);
-      expect(strands[12]!.props.strokeOpacity).toBe(1);
-      expect(queryId('history-strand-13')).toBeNull();
+      expect(strands[15]!.props.strokeWidth).toBe(1.6);
+      expect(strands[15]!.props.strokeOpacity).toBe(1);
+      expect(queryId('history-strand-16')).toBeNull();
     });
 
     it('stretches the viewBox without thickening the strokes', async () => {
