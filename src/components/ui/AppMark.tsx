@@ -4,12 +4,12 @@ import { tokens } from '@/theme/tokens';
 
 const { ink, limeDark } = tokens.colors;
 
-/** The app mark: the sphere hero's wireframe glyph with a lime centre, on a bevelled tile. */
+/** The app mark: the sphere hero’s wireframe glyph with a lime centre, on a bevelled tile (6px corners, 8 on mobile). */
 export function AppMark() {
   return (
     <View
       testID="app-mark"
-      className="size-9 items-center justify-center rounded-6 border border-white/80 bg-white/60"
+      className="size-9 items-center justify-center rounded-6 border ios:rounded-8 border-white/80 bg-white/60"
       style={{ boxShadow: tokens.frame.desktop.markShadow }}
     >
       <Svg width={20} height={20} viewBox="0 0 20 20">

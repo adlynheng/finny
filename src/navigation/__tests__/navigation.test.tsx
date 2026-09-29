@@ -1,4 +1,5 @@
 import { Platform, Pressable } from 'react-native';
+import { PortalHost } from '@rn-primitives/portal';
 import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import {
   fireEvent,
@@ -21,6 +22,7 @@ const draw = (extra?: React.ReactNode) =>
     <NavigationContainer>
       <RootNavigator />
       {extra}
+      <PortalHost />
     </NavigationContainer>,
   );
 const header = () => within(screen.getByTestId('app-frame-header'));
@@ -49,13 +51,25 @@ it('puts the tabs in the header on desktop', async () => {
   expect(screen.queryByTestId('tab-AskFinny')).toBeNull();
 });
 
-it('puts the tabs under the screens on mobile, with Ask Finny disabled', async () => {
+it('puts the tabs in the floating bar on mobile, with Ask Finny disabled', async () => {
   await draw();
-  expect(header().queryByTestId('tab-row')).toBeNull();
+  expect(screen.getByTestId('mobile-frame')).toBeTruthy();
+  expect(screen.getByTestId('bottom-bar')).toBeTruthy();
   const finny = screen.getByTestId('tab-AskFinny');
   expect(finny.props.accessibilityState.disabled).toBe(true);
   await fireEvent.press(finny);
   expect(screen.getByTestId('screen-Overview')).toBeTruthy();
+});
+
+it('opens the new transaction sheet from every tab', async () => {
+  await draw();
+  for (const { name } of SCREENS) {
+    await fireEvent.press(screen.getByTestId(`tab-${name}`));
+    await fireEvent.press(screen.getByTestId('new-transaction'));
+    expect(screen.getByText('New transaction')).toBeTruthy();
+    await fireEvent.press(screen.getByLabelText('Close'));
+    expect(screen.queryByText('New transaction')).toBeNull();
+  }
 });
 
 it('draws no navigation chrome of its own', async () => {

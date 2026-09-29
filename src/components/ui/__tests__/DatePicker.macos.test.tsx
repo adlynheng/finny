@@ -1,8 +1,5 @@
 import { fireEvent, screen } from '@testing-library/react-native';
-import {
-  DatePicker,
-  popoverPlacement,
-} from '@/components/ui/DatePicker.macos';
+import { DatePicker, popoverPlacement } from '@/components/ui/DatePicker.macos';
 import { tokens } from '@/theme/tokens';
 import { classes } from '../../../../test/classes';
 import {

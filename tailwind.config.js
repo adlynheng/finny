@@ -1,7 +1,7 @@
 // Tailwind loads this config (and the TypeScript it requires) through jiti.
 const { tokens } = require('./src/theme/tokens');
 
-const { desktop } = tokens.frame;
+const { desktop, mobile } = tokens.frame;
 const { calendar, controls, dialog, table } = tokens;
 const px = n => `${n}px`;
 
@@ -85,6 +85,16 @@ module.exports = {
         'frame-x': px(desktop.contentPadding.x),
         'frame-bottom': px(desktop.contentPadding.bottom),
         'frame-gap': px(desktop.gap),
+        // Mobile frame: h-mobile-header, px-mobile-x, pt-mobile-top, pb-mobile-bottom;
+        // the bar's inset-x-bar-x, bottom-bar-bottom, h-bar-tab, size-fab.
+        'mobile-header': px(mobile.headerHeight),
+        'mobile-x': px(mobile.contentPadding.x),
+        'mobile-top': px(mobile.contentPadding.top),
+        'mobile-bottom': px(mobile.contentPadding.bottom),
+        'bar-x': px(mobile.bottomBar.insetX),
+        'bar-bottom': px(mobile.bottomBar.bottom),
+        'bar-tab': px(mobile.bottomBar.tabHeight),
+        fab: px(mobile.bottomBar.fabSize),
         // p-card: gradient and glass cards.
         card: px(tokens.card.padding),
         // w-toggle-w h-toggle-h, size-toggle-knob.

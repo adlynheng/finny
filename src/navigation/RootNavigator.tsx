@@ -3,11 +3,10 @@
  * Navigation's ready-made navigators need react-native-screens, which has no macOS support, so
  * this is a small navigator on its tab router that draws no chrome of its own.
  *
- * The mobile tab row and the screens are stand-ins: the mobile bar comes in Task 47, the pages
- * from Phase I on.
+ * The screens are stand-ins until the pages arrive, from Phase I on.
  */
 
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Platform, Pressable, Text, View } from 'react-native';
 import {
   createNavigatorFactory,
@@ -16,10 +15,12 @@ import {
 } from '@react-navigation/native';
 
 import { AppFrame } from '@/components/ui/AppFrame';
-import { Brand } from '@/components/ui/AppMark';
+import { MobileFrame } from '@/components/ui/MobileFrame';
+import { Sheet } from '@/components/ui/Sheet';
 import { supabase } from '@/lib/supabase';
+import { BottomBar } from './BottomBar';
 import { DesktopHeader } from './DesktopHeader';
-import { MOBILE_TABS, SCREENS, type ScreenName } from './routes';
+import { SCREENS, type ScreenName } from './routes';
 
 type NavigatorProps = { initialRouteName: ScreenName; children: ReactNode };
 
@@ -30,24 +31,44 @@ function FinnyNavigator({ initialRouteName, children }: NavigatorProps) {
   );
   const route = state.routes[state.index]!;
   const select = (name: ScreenName) => navigation.navigate(name);
-  // Desktop switches screens from its header, mobile from a row under them.
-  const desktop = Platform.OS === 'macos';
+  const [newOpen, setNewOpen] = useState(false);
+  const screen = (
+    <View testID={`screen-${route.name}`} className="flex-1">
+      {descriptors[route.key]!.render()}
+    </View>
+  );
 
+  if (Platform.OS === 'macos') {
+    return render(
+      <AppFrame
+        header={<DesktopHeader current={route.name} onSelect={select} />}
+      >
+        {screen}
+      </AppFrame>,
+    );
+  }
   return render(
-    <AppFrame
-      header={
-        desktop ? (
-          <DesktopHeader current={route.name} onSelect={select} />
-        ) : (
-          <Brand />
-        )
+    <MobileFrame
+      bar={
+        <BottomBar
+          current={route.name}
+          onSelect={select}
+          onNew={() => setNewOpen(true)}
+        />
       }
     >
-      <View testID={`screen-${route.name}`} className="flex-1">
-        {descriptors[route.key]!.render()}
-      </View>
-      {!desktop && <TabRow current={route.name} onSelect={select} />}
-    </AppFrame>,
+      {screen}
+      {/* The form itself comes with Task 54. */}
+      <Sheet
+        open={newOpen}
+        onClose={() => setNewOpen(false)}
+        title="New transaction"
+      >
+        <Text className="font-sans text-[13px] text-muted">
+          The form comes next.
+        </Text>
+      </Sheet>
+    </MobileFrame>,
   );
 }
 
@@ -65,7 +86,7 @@ export function RootNavigator() {
 
 function Placeholder({ route }: { route: { name: ScreenName } }) {
   return (
-    <View className="flex-1 gap-y-2">
+    <View className="flex-1 gap-y-2 ios:px-mobile-x ios:pt-mobile-top">
       <Text className="font-sans text-[24px] font-light text-ink">
         {SCREENS.find(s => s.name === route.name)!.label}
       </Text>
@@ -80,39 +101,6 @@ function Placeholder({ route }: { route: { name: ScreenName } }) {
           </Text>
         </Pressable>
       )}
-    </View>
-  );
-}
-
-type TabRowProps = {
-  current: string;
-  onSelect: (name: ScreenName) => void;
-};
-
-function TabRow({ current, onSelect }: TabRowProps) {
-  return (
-    <View testID="tab-row" className="flex-row gap-x-4">
-      {MOBILE_TABS.map(({ name, label }) => {
-        const live = name !== 'AskFinny';
-        return (
-          <Pressable
-            key={name}
-            testID={`tab-${name}`}
-            accessibilityRole="tab"
-            accessibilityState={{ selected: name === current, disabled: !live }}
-            disabled={!live}
-            onPress={() => live && onSelect(name)}
-          >
-            <Text
-              className={`font-sans text-[13px] ${
-                name === current ? 'text-ink' : 'text-muted'
-              } ${live ? '' : 'opacity-40'}`}
-            >
-              {label}
-            </Text>
-          </Pressable>
-        );
-      })}
     </View>
   );
 }

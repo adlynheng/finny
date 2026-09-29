@@ -1,12 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
-import { Pressable, Text, View, type LayoutRectangle } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
+import { Pressable, Text, View } from 'react-native';
+import Animated from 'react-native-reanimated';
 import { tokens } from '@/theme/tokens';
 import { cx } from './cardChrome';
+import { useSlidingPill } from './useSlidingPill';
 
 export type SegmentOption<T extends string> = { value: T; label: string };
 
@@ -20,7 +16,7 @@ export type SegmentOption<T extends string> = { value: T; label: string };
  */
 export type SegmentedSize = 'field' | 'compact' | 'nav';
 
-const { selectedShadow, navShadow, slideMs } = tokens.controls.segmented;
+const { selectedShadow, navShadow } = tokens.controls.segmented;
 
 /**
  * The tray (with its padding), each segment, the pill (rounded like a segment,
@@ -93,31 +89,7 @@ export function Segmented<T extends string>({
   testID,
 }: Props<T>) {
   const look = sized[size];
-  const [layouts, setLayouts] = useState<Partial<Record<T, LayoutRectangle>>>(
-    {},
-  );
-  const target = layouts[value];
-
-  const left = useSharedValue(0);
-  const width = useSharedValue(0);
-  const placed = useRef(false);
-  useEffect(() => {
-    if (!target) {
-      return;
-    }
-    if (placed.current) {
-      left.value = withTiming(target.x, { duration: slideMs });
-      width.value = withTiming(target.width, { duration: slideMs });
-    } else {
-      left.value = target.x;
-      width.value = target.width;
-      placed.current = true;
-    }
-  }, [left, width, target]);
-  const pillStyle = useAnimatedStyle(() => ({
-    left: left.value,
-    width: width.value,
-  }));
+  const pill = useSlidingPill(value);
 
   return (
     <View
@@ -129,12 +101,12 @@ export function Segmented<T extends string>({
         className,
       )}
     >
-      {target && (
+      {pill.ready && (
         <Animated.View
           testID="segment-pill"
           pointerEvents="none"
           className={cx('absolute bg-white', look.pill)}
-          style={[{ boxShadow: look.shadow }, pillStyle]}
+          style={[{ boxShadow: look.shadow }, pill.style]}
         />
       )}
       {options.map(option => {
@@ -151,12 +123,7 @@ export function Segmented<T extends string>({
                 onChange(option.value);
               }
             }}
-            onLayout={({ nativeEvent }) =>
-              setLayouts(prev => ({
-                ...prev,
-                [option.value]: nativeEvent.layout,
-              }))
-            }
+            onLayout={pill.measure(option.value)}
             className={cx('items-center', look.segment)}
           >
             <Text

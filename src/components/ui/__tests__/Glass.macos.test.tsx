@@ -49,6 +49,7 @@ describe('Glass on macOS', () => {
   it('covers every blurred recipe', () => {
     expect([...blurred].sort()).toEqual(
       [
+        'bottomBar',
         'card',
         'chip',
         'modalScrim',

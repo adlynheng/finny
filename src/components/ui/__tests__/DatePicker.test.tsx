@@ -17,7 +17,11 @@ describe('DatePicker on iOS: inline in the sheet', () => {
     expect(screen.queryByTestId('date-popover')).toBeNull();
     expect(calendar.props.style).toBeUndefined();
     expect(classes(calendar)).toEqual(
-      expect.arrayContaining(['rounded-12', 'border-popover-border', 'p-[14px]']),
+      expect.arrayContaining([
+        'rounded-12',
+        'border-popover-border',
+        'p-[14px]',
+      ]),
     );
   });
 

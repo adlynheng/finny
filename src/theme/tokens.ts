@@ -117,6 +117,13 @@ const glass = {
     blur: 14,
     shadow: null,
   },
+  /** The mobile floating tab bar. */
+  bottomBar: {
+    background: 'rgba(255,255,255,.72)',
+    border: { width: 1, color: 'rgba(255,255,255,.9)' },
+    blur: 20,
+    shadow: '0 1px 2px rgba(0,0,0,.05), 0 14px 36px rgba(0,0,0,.12)',
+  },
 } satisfies Record<string, GlassRecipe>;
 
 /**
@@ -481,7 +488,13 @@ export const tokens = {
       headerHeight: 56,
       contentPadding: { top: 4, x: 16, bottom: 112 },
       gap: 12,
-      bottomBar: { insetX: 12, bottom: 28, tabHeight: 54, fabSize: 52 },
+      bottomBar: {
+        insetX: 12,
+        bottom: 28,
+        tabHeight: 54,
+        fabSize: 52,
+        fabShadow: '0 6px 16px rgba(28,28,26,.28)',
+      },
     },
   },
   type: {

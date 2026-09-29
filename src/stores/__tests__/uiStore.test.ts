@@ -58,13 +58,11 @@ it('expands and collapses position rows by symbol', () => {
 
 it('keeps the transactions filter, search and month when the view changes', () => {
   const store = loadStore();
-  store
-    .getState()
-    .set({
-      transactionsFilter: 'out',
-      transactionsSearch: 'kopi',
-      transactionsMonth: '2026-08',
-    });
+  store.getState().set({
+    transactionsFilter: 'out',
+    transactionsSearch: 'kopi',
+    transactionsMonth: '2026-08',
+  });
 
   store.getState().set({ transactionsView: 'categories' });
   store.getState().set({ transactionsView: 'list' });

@@ -14,6 +14,10 @@ type Host = { props: Record<string, any>; children: unknown[] };
 
 // The class names each recipe draws with: the fill, then the border.
 export const expected: Record<GlassName, { fill: string; border: string[] }> = {
+  bottomBar: {
+    fill: 'bg-glass-bottom-bar',
+    border: ['border', 'border-glass-bottom-bar-border'],
+  },
   chip: {
     fill: 'bg-glass-chip',
     border: ['border', 'border-glass-chip-border'],

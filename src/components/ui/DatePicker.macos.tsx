@@ -21,7 +21,8 @@ export function popoverPlacement(
   overlay: Frame,
 ): { bottom: number; right: number } {
   return {
-    bottom: overlay.y + overlay.height - field.y + tokens.calendar.popover.offset,
+    bottom:
+      overlay.y + overlay.height - field.y + tokens.calendar.popover.offset,
     right: overlay.x + overlay.width - (field.x + field.width),
   };
 }

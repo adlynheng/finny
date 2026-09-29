@@ -135,4 +135,16 @@ describe('tailwind theme', () => {
     );
     expect(theme.spacing['frame-gap']).toBe(`${desktop.gap}px`);
   });
+
+  it('names the mobile frame and bar geometry', () => {
+    const { mobile } = tokens.frame;
+    expect(theme.spacing['mobile-header']).toBe('56px');
+    expect(theme.spacing['mobile-x']).toBe('16px');
+    expect(theme.spacing['mobile-top']).toBe('4px');
+    expect(theme.spacing['mobile-bottom']).toBe('112px');
+    expect(theme.spacing['bar-x']).toBe(`${mobile.bottomBar.insetX}px`);
+    expect(theme.spacing['bar-bottom']).toBe('28px');
+    expect(theme.spacing['bar-tab']).toBe('54px');
+    expect(theme.spacing.fab).toBe('52px');
+  });
 });

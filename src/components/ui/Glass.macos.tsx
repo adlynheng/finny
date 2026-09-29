@@ -16,6 +16,8 @@ const blurFor: Partial<Record<GlassName, 'light' | 'dark' | 'none'>> = {
   navPill: 'light',
   card: 'light',
   modalScrim: 'light',
+  // Mobile-only; light like the other glass trays should it ever show here.
+  bottomBar: 'light',
   // An ink scrim: the light material's white wash would cancel the ink.
   sheetScrim: 'dark',
   // A 10% white over a dark gradient: any material greys the gradient out and

@@ -66,15 +66,22 @@ export type NetWorthSnapshotInsert = TablesInsert<'net_worth_snapshot'>;
 export type NetWorthSnapshotUpdate = TablesUpdate<'net_worth_snapshot'>;
 
 export type NetWorthSnapshotClassRow = Tables<'net_worth_snapshot_class'>;
-export type NetWorthSnapshotClassInsert = TablesInsert<'net_worth_snapshot_class'>;
-export type NetWorthSnapshotClassUpdate = TablesUpdate<'net_worth_snapshot_class'>;
+export type NetWorthSnapshotClassInsert =
+  TablesInsert<'net_worth_snapshot_class'>;
+export type NetWorthSnapshotClassUpdate =
+  TablesUpdate<'net_worth_snapshot_class'>;
 
 export type WatchlistItemRow = Tables<'watchlist_item'>;
 export type WatchlistItemInsert = TablesInsert<'watchlist_item'>;
 export type WatchlistItemUpdate = TablesUpdate<'watchlist_item'>;
 
 /** `account.type`, in the order the Settings panel groups accounts. */
-export const ACCOUNT_TYPES = ['Savings', 'CPF', 'Broker', 'Credit card'] as const;
+export const ACCOUNT_TYPES = [
+  'Savings',
+  'CPF',
+  'Broker',
+  'Credit card',
+] as const;
 export type AccountType = (typeof ACCOUNT_TYPES)[number];
 
 /** `account.cpf_type`: which CPF account a CPF-type account is. */
@@ -98,7 +105,13 @@ export const GOAL_SOURCES = ['savings', 'investment'] as const;
 export type GoalSource = (typeof GOAL_SOURCES)[number];
 
 /** `recurring_charge.frequency` and `income_source.frequency` */
-export const FREQUENCIES = ['weekly', 'monthly', 'quarterly', 'yearly', 'custom'] as const;
+export const FREQUENCIES = [
+  'weekly',
+  'monthly',
+  'quarterly',
+  'yearly',
+  'custom',
+] as const;
 export type Frequency = (typeof FREQUENCIES)[number];
 
 /** `custom_unit` on both recurring tables, used when the frequency is 'custom'. */
@@ -121,6 +134,11 @@ export type CardTheme = CardThemeName;
  * Narrows a column read from the database to its union. Use it wherever a row's enumerated
  * column is branched on, and treat `false` as unknown data rather than casting.
  */
-export function isOneOf<T extends string>(values: readonly T[], value: unknown): value is T {
-  return typeof value === 'string' && (values as readonly string[]).includes(value);
+export function isOneOf<T extends string>(
+  values: readonly T[],
+  value: unknown,
+): value is T {
+  return (
+    typeof value === 'string' && (values as readonly string[]).includes(value)
+  );
 }

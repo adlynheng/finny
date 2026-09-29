@@ -24,7 +24,9 @@ const sql = readdirSync(migrationsDir)
 
 /** The allowed values of the check constraint with this name, in the order written. */
 function checkValues(constraint: string): string[] {
-  const match = new RegExp(`constraint ${constraint}\\s+check \\(\\w+ in \\(([^)]*)\\)\\)`).exec(sql);
+  const match = new RegExp(
+    `constraint ${constraint}\\s+check \\(\\w+ in \\(([^)]*)\\)\\)`,
+  ).exec(sql);
   if (!match?.[1]) {
     throw new Error(`No check constraint named ${constraint}`);
   }
@@ -54,7 +56,14 @@ describe('domain constants', () => {
   });
 
   it('offers every card face theme', () => {
-    expect(CARD_THEMES).toEqual(['Green', 'Bronze', 'Slate', 'Mist', 'Lagoon', 'Dusk']);
+    expect(CARD_THEMES).toEqual([
+      'Green',
+      'Bronze',
+      'Slate',
+      'Mist',
+      'Lagoon',
+      'Dusk',
+    ]);
   });
 });
 
