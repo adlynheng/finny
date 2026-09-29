@@ -18,7 +18,7 @@ type Props = {
 /**
  * The providers every screen sits inside, outermost first: gesture root, safe area, query client,
  * then the portal host that sheets and popovers draw into.
- * The navigation container (Task 45) goes inside these.
+ * The navigation container goes inside these (App.tsx).
  */
 export function AppProviders({ children, client }: Props) {
   const [queryClient] = useState(() => client ?? createQueryClient());

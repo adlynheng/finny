@@ -87,6 +87,42 @@ describe('Segmented', () => {
     expect(classes(segment('Deposit'))).not.toContain('flex-1');
   });
 
+  it('nav: the header’s tab pill, on a clear tray, labels darkening on hover', async () => {
+    await render(
+      <Segmented
+        testID="tray"
+        size="nav"
+        options={types}
+        value="expense"
+        onChange={jest.fn()}
+      />,
+    );
+    await layOut();
+    expect(classes(screen.getByTestId('tray'))).toEqual(
+      expect.arrayContaining(['flex-row', 'p-[4px]']),
+    );
+    expect(classes(screen.getByTestId('tray'))).not.toContain(
+      'bg-segment-tray',
+    );
+    expect(classes(screen.getByTestId('tray-deposit'))).toEqual(
+      expect.arrayContaining(['group', 'px-[16px]', 'py-[7px]']),
+    );
+    expect(classes(screen.getByText('Deposit'))).toEqual(
+      expect.arrayContaining([
+        'text-[13px]',
+        'text-muted',
+        'group-hover:text-ink',
+      ]),
+    );
+    const pill = screen.getByTestId('segment-pill');
+    expect(classes(pill)).toEqual(
+      expect.arrayContaining(['top-[4px]', 'bottom-[4px]']),
+    );
+    expect(pill).toHaveStyle({
+      boxShadow: tokens.controls.segmented.navShadow,
+    });
+  });
+
   it('rounds the pill like the segments', async () => {
     await render(
       <Segmented

@@ -15,25 +15,51 @@ export type SegmentOption<T extends string> = { value: T; label: string };
  *   It takes its parent's width, so it belongs in a column, not a row.
  * compact: the in-card switches sized to their labels (List/Categories, the
  * transaction filter, Growth/Position, Positions/Watchlist/Portfolio).
+ * nav: the desktop header's tab pill. Its tray is clear, since the header sets
+ *   it in navPill glass; muted labels darken on hover.
  */
-export type SegmentedSize = 'field' | 'compact';
+export type SegmentedSize = 'field' | 'compact' | 'nav';
 
-/** The tray, each segment, the pill (rounded like a segment) and the label. */
+const { selectedShadow, navShadow, slideMs } = tokens.controls.segmented;
+
+/**
+ * The tray (with its padding), each segment, the pill (rounded like a segment,
+ * inset like the tray's padding), its shadow, and the label at rest.
+ */
 const sized: Record<
   SegmentedSize,
-  { tray: string; segment: string; pill: string; text: string }
+  {
+    tray: string;
+    segment: string;
+    pill: string;
+    shadow: string;
+    text: string;
+    muted: string;
+  }
 > = {
   field: {
-    tray: 'self-stretch rounded-8 bg-segment-tray ios:rounded-10',
+    tray: 'self-stretch rounded-8 bg-segment-tray p-[3px] ios:rounded-10',
     segment: 'flex-1 rounded-6 py-[7px] ios:rounded-8 ios:py-[11px]',
-    pill: 'rounded-6 ios:rounded-8',
+    pill: 'bottom-[3px] top-[3px] rounded-6 ios:rounded-8',
+    shadow: selectedShadow,
     text: 'text-[12px] ios:text-[13px]',
+    muted: 'text-muted',
   },
   compact: {
-    tray: 'self-start rounded-6 bg-segment-tray-soft',
+    tray: 'self-start rounded-6 bg-segment-tray-soft p-[3px]',
     segment: 'rounded-4 px-[10px] py-[4px]',
-    pill: 'rounded-4',
+    pill: 'bottom-[3px] top-[3px] rounded-4',
+    shadow: selectedShadow,
     text: 'text-[12px]',
+    muted: 'text-muted',
+  },
+  nav: {
+    tray: 'p-[4px]',
+    segment: 'group rounded-6 px-[16px] py-[7px]',
+    pill: 'bottom-[4px] top-[4px] rounded-6',
+    shadow: navShadow,
+    text: 'text-[13px]',
+    muted: 'text-muted group-hover:text-ink',
   },
 };
 
@@ -46,8 +72,6 @@ type Props<T extends string> = {
   className?: string;
   testID?: string;
 };
-
-const { selectedShadow, slideMs } = tokens.controls.segmented;
 
 /**
  * The pill-in-a-tray switch: the transaction type picker, List/Categories,
@@ -99,7 +123,7 @@ export function Segmented<T extends string>({
     <View
       testID={testID}
       className={cx(
-        'flex-row gap-[2px] p-[3px]',
+        'flex-row gap-[2px]',
         look.tray,
         disabled && 'opacity-disabled',
         className,
@@ -109,8 +133,8 @@ export function Segmented<T extends string>({
         <Animated.View
           testID="segment-pill"
           pointerEvents="none"
-          className={cx('absolute bottom-[3px] top-[3px] bg-white', look.pill)}
-          style={[{ boxShadow: selectedShadow }, pillStyle]}
+          className={cx('absolute bg-white', look.pill)}
+          style={[{ boxShadow: look.shadow }, pillStyle]}
         />
       )}
       {options.map(option => {
@@ -118,6 +142,7 @@ export function Segmented<T extends string>({
         return (
           <Pressable
             key={option.value}
+            testID={testID && `${testID}-${option.value}`}
             accessibilityRole="button"
             accessibilityState={{ selected, disabled }}
             disabled={disabled}
@@ -138,7 +163,7 @@ export function Segmented<T extends string>({
               className={cx(
                 'font-sans',
                 look.text,
-                selected ? 'text-ink' : 'text-muted',
+                selected ? 'text-ink' : look.muted,
               )}
             >
               {option.label}

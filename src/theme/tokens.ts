@@ -130,6 +130,8 @@ const controls = {
     /** The in-card switches: List/Categories, the transaction filter, Positions tabs. */
     traySoft: 'rgba(28,28,26,.04)',
     selectedShadow: '0 1px 2px rgba(0,0,0,.08)',
+    /** The desktop header's tab pill lifts its selection a little more. */
+    navShadow: '0 1px 3px rgba(0,0,0,.08)',
     /** The selected pill's slide to a newly chosen segment (not in the design). */
     slideMs: 200,
   },
@@ -469,6 +471,8 @@ export const tokens = {
       headerGap: 22,
       contentPadding: { top: 12, x: 32, bottom: 32 },
       gap: 14,
+      /** The app mark's tile. */
+      markShadow: '0 1px 2px rgba(0,0,0,.05)',
     },
     mobile: {
       width: 390,

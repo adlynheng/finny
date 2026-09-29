@@ -45,6 +45,7 @@ describe('frame geometry', () => {
       headerGap: 22,
       contentPadding: { top: 12, x: 32, bottom: 32 },
       gap: 14,
+      markShadow: '0 1px 2px rgba(0,0,0,.05)',
     });
   });
 
@@ -241,6 +242,7 @@ describe('controls', () => {
       tray: 'rgba(28,28,26,.05)',
       traySoft: 'rgba(28,28,26,.04)',
       selectedShadow: '0 1px 2px rgba(0,0,0,.08)',
+      navShadow: '0 1px 3px rgba(0,0,0,.08)',
       slideMs: 200,
     });
   });

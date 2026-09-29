@@ -8,7 +8,7 @@ module.exports = {
   },
   // The preset's pattern, plus the packages that ship ES modules.
   transformIgnorePatterns: [
-    'node_modules/(?!((jest-)?react-native|@react-native(-community)?|react-native-reanimated|react-native-worklets|@rn-primitives)/)',
+    'node_modules/(?!((jest-)?react-native|@react-native(-community)?|@react-navigation|react-native-css-interop|react-native-reanimated|react-native-worklets|@rn-primitives)/)',
   ],
   // Worklets' own resolver skips its .native files, whose native half Jest lacks.
   resolver: 'react-native-worklets/jest/resolver',

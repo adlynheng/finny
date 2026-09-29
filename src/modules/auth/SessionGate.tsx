@@ -15,6 +15,8 @@ import { supabase } from '@/lib/supabase';
 type Props = {
   /** The signed-in app, or a function of the current session that returns it. */
   children: ReactNode | ((session: Session) => ReactNode);
+  /** Wraps the loading and sign-in states, which the signed-in app frames itself. */
+  frame?: (content: ReactNode) => ReactNode;
 };
 
 /**
@@ -22,7 +24,7 @@ type Props = {
  * created by signing in. The design has no sign-in screen, so this form is deliberately plain;
  * sign-ups are disabled, so it only ever signs Adlyn in.
  */
-export function SessionGate({ children }: Props) {
+export function SessionGate({ children, frame = content => content }: Props) {
   // undefined while the stored session is still being read.
   const [session, setSession] = useState<Session | null | undefined>(undefined);
   const queryClient = useQueryClient();
@@ -48,14 +50,14 @@ export function SessionGate({ children }: Props) {
   }, [queryClient]);
 
   if (session === undefined) {
-    return (
+    return frame(
       <View className="flex-1 items-center justify-center">
         <ActivityIndicator />
-      </View>
+      </View>,
     );
   }
   if (!session) {
-    return <SignInForm />;
+    return frame(<SignInForm />);
   }
   return <>{typeof children === 'function' ? children(session) : children}</>;
 }
