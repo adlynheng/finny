@@ -5,6 +5,7 @@ import {
   formatFullDate,
   formatMonthLong,
   formatMonthShort,
+  formatTime,
   formatWeekdayShort,
   lastOfMonth,
   mondayOffset,
@@ -37,6 +38,11 @@ describe('labels', () => {
 
   it('formats the date-picker button form', () => {
     expect(formatFullDate('2026-09-24')).toBe('Thu, 24 Sep 2026');
+  });
+
+  it('formats a fetch time', () => {
+    expect(formatTime(new Date(2026, 8, 24, 8, 30))).toBe('8:30 AM');
+    expect(formatTime(new Date(2026, 8, 24, 21, 5))).toBe('9:05 PM');
   });
 
   it.each(['2026-9-24', '2026-02-30', '2026-13', 'Sep 2026'])(

@@ -6,6 +6,7 @@ import {
   formatMoney,
   formatMoneyExact,
   formatPercent,
+  formatSignedCompactMoney,
   formatSignedMoney,
   formatSignedPercent,
   inputToCents,
@@ -120,6 +121,35 @@ describe('formatDualMoney', () => {
       primary: 'US$1,000',
       secondary: null,
     });
+    expect(formatDualMoney(4_412, null, { currency: 'SGD' })).toEqual({
+      primary: 'S$44',
+      secondary: null,
+    });
+  });
+
+  it('keeps an SGX amount exact in S$ and converts it to US$', () => {
+    expect(
+      formatDualMoney(4_412, 1.3512, { currency: 'SGD', decimals: 2 }),
+    ).toEqual({ primary: 'US$32.65', secondary: '(S$44.12)' });
+  });
+
+  it('signs both lines when asked, and leaves zero unsigned', () => {
+    expect(formatDualMoney(-12_345, 1.3512, { signed: true })).toEqual({
+      primary: `${MINUS}US$123`,
+      secondary: `(${MINUS}S$167)`,
+    });
+    expect(
+      formatDualMoney(100_000, 1.3512, { currency: 'SGD', signed: true }),
+    ).toEqual({ primary: '+US$740', secondary: '(+S$1,000)' });
+    expect(formatDualMoney(0, 1.3512, { signed: true }).primary).toBe('US$0');
+  });
+});
+
+describe('formatSignedCompactMoney', () => {
+  it('signs the compact form', () => {
+    expect(formatSignedCompactMoney(45_000)).toBe('+S$450');
+    expect(formatSignedCompactMoney(-1_240_000)).toBe(`${MINUS}S$12.4k`);
+    expect(formatSignedCompactMoney(0)).toBe('S$0');
   });
 });
 

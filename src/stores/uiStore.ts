@@ -66,7 +66,7 @@ export function initialUiState(): UiFields {
     hoveredAccountId: null,
     tradingMode: 'growth',
     tradingSymbol: null,
-    tradingRange: '1M',
+    tradingRange: '6M',
     tradingTab: 'positions',
     expandedSymbols: [],
     transactionsMonth: month,

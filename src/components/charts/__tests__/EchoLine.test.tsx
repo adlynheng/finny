@@ -7,6 +7,7 @@ import {
   echoPaths,
   sampleIndices,
   sparkPath,
+  stepPath,
 } from '@/components/charts/lineLayout';
 import { tokens } from '@/theme/tokens';
 
@@ -19,7 +20,7 @@ const hidden = { includeHiddenElements: true };
 const byId = (id: string) => screen.getByTestId(id, hidden);
 const queryId = (id: string) => screen.queryByTestId(id, hidden);
 const classes = (id: string) => String(byId(id).props.className);
-const { ink, danger } = tokens.colors;
+const { ink, danger, limeDark } = tokens.colors;
 // react-native-svg hands the native view a processed colour.
 const stroke = (id: string) =>
   (byId(id).props.stroke as { payload: unknown }).payload;
@@ -119,6 +120,29 @@ describe('EchoLine', () => {
       />,
     );
     expect(queryId('echo-zero')).toBeNull();
+  });
+
+  it('draws the capital invested as a lime step line, and only when given', async () => {
+    const view = await draw();
+    expect(queryId('echo-capital')).toBeNull();
+    const capital = {
+      values: [100, 100, 100, 250, 250, 250, 400, 400],
+      y: (v: number) => 60 - v / 10,
+    };
+    await view.rerender(
+      <EchoLine
+        values={crossing.slice(0, 8)}
+        y={yCrossing}
+        hover={null}
+        onHover={() => {}}
+        capital={capital}
+        animate={false}
+      />,
+    );
+    const line = byId('echo-capital');
+    expect(line.props.d).toBe(stepPath(capital.values, capital.y));
+    expect(stroke('echo-capital')).toBe(processColor(limeDark));
+    expect(line.props.strokeWidth).toBe(1.2);
   });
 
   it('places the eight sample dots on the line', async () => {
@@ -263,6 +287,14 @@ describe('EchoLine', () => {
       await act(() => jest.advanceTimersByTime(1100));
       expect(clipX() + 0).toBe(0); // −0 is 0
     });
+  });
+});
+
+describe('stepPath', () => {
+  it('runs flat to each next day, then up or down to its value', () => {
+    expect(stepPath([10, 10, 30], v => v)).toBe(
+      'M0.00,10.00H50.00V10.00H100.00V30.00',
+    );
   });
 });
 

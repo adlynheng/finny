@@ -47,6 +47,7 @@ function Positions({ open = true }: { open?: boolean }) {
           'Holding',
           'Qty',
           'Avg cost',
+          'Total cost',
           'Price',
           'Market value',
           'Unrealised P&L',
@@ -61,22 +62,22 @@ function Positions({ open = true }: { open?: boolean }) {
         onToggle={jest.fn()}
         subRows={
           <SubRow testID="sub" columns={cols}>
-            {cells(7, 'lot')}
+            {cells(8, 'lot')}
           </SubRow>
         }
       >
-        {cells(7)}
+        {cells(8)}
       </ExpandableRow>
       <TotalsRow testID="totals" columns={cols}>
-        {cells(8, 't')}
+        {cells(9, 't')}
       </TotalsRow>
     </>
   );
 }
 
 describe('column templates', () => {
-  it('Positions has eight columns, Watchlist five', () => {
-    expect(positionsColumns).toHaveLength(8);
+  it('Positions has nine columns, Watchlist five', () => {
+    expect(positionsColumns).toHaveLength(9);
     expect(watchlistColumns).toHaveLength(5);
   });
 
@@ -96,7 +97,7 @@ describe('one template for every row', () => {
   it('header, body, expanded sub-rows and totals share the column classes', async () => {
     await render(<Positions />);
     const header = columnsOf('header');
-    expect(header).toHaveLength(8);
+    expect(header).toHaveLength(9);
     expect(columnsOf('row')).toEqual(header);
     // The sub-row's first column also stretches to hold the connector line.
     const [connector, ...rest] = columnsOf('sub');
@@ -120,7 +121,7 @@ describe('one template for every row', () => {
       const cols = columnsOf(id);
       expect(cols[1]).not.toContain('items-end');
       expect(cols[2]).toContain('items-end');
-      expect(cols[7]).toContain('items-end');
+      expect(cols[8]).toContain('items-end');
     }
   });
 
@@ -216,7 +217,7 @@ describe('ExpandableRow', () => {
         onToggle={onToggle}
         subRows={null}
       >
-        {cells(7)}
+        {cells(8)}
       </ExpandableRow>,
     );
     await fireEvent.press(screen.getByRole('button', { name: 'VWRA' }));

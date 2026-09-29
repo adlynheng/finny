@@ -1,6 +1,6 @@
 import { Portal } from '@rn-primitives/portal';
 import { useId } from 'react';
-import { KeyboardAvoidingView, Text, View } from 'react-native';
+import { KeyboardAvoidingView, View } from 'react-native';
 import Animated, {
   FadeIn,
   FadeOut,
@@ -10,7 +10,7 @@ import Animated, {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from './Button';
 import { Glass } from './Glass';
-import { SheetBody, SheetHeader, SheetScrim } from './SheetParts';
+import { SheetBody, SheetHeader, SheetNote, SheetScrim } from './SheetParts';
 import type { SheetProps } from './sheetTypes';
 
 export type { SheetProps } from './sheetTypes';
@@ -27,6 +27,7 @@ export function Sheet({
   open,
   onClose,
   title,
+  subtitle,
   actions,
   note,
   children,
@@ -65,17 +66,10 @@ export function Sheet({
               testID="sheet-handle"
               className="h-[4px] w-[36px] self-center rounded-full bg-sheet-handle"
             />
-            <SheetHeader title={title} onClose={onClose} />
+            <SheetHeader title={title} subtitle={subtitle} onClose={onClose} />
             <SheetBody gapClassName="gap-sheet-gap">
               {children}
-              {note !== undefined && (
-                <Text
-                  testID="sheet-note"
-                  className="font-sans text-[12px] text-muted"
-                >
-                  {note}
-                </Text>
-              )}
+              {note !== undefined && <SheetNote note={note} />}
             </SheetBody>
             {actions && (
               <View

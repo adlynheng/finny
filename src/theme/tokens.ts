@@ -322,6 +322,8 @@ const echo = {
   line: { opacity: 0.9, width: 1.5 },
   echoes: { count: 6, step: 2.3, opacity: 0.2, fade: 0.025, width: 0.7 },
   zeroLine: { opacity: 0.3, width: 0.8, dash: '2 4' },
+  /** The capital-invested step line, in lime on its own scale. */
+  capital: { width: 1.2 },
   /** Evenly spaced sample dots along the line, in points. */
   samples: { count: 8, size: 7, hotSize: 9 },
   /** The hover halo and its dot, in points. */

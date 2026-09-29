@@ -12,15 +12,28 @@ export type SegmentOption<T extends string> = { value: T; label: string };
  * type: the transaction form's Expense / Deposit / Transfer switch, a field
  *   a step larger on desktop (13px labels, 8px padding).
  * compact: the in-card switches sized to their labels (List/Categories, the
- * transaction filter, Growth/Position, Positions/Watchlist/Portfolio). Mobile's
- * are larger touch targets on a darker tray.
+ * transaction filter). Mobile's are larger touch targets on a darker tray.
+ * mode: Trading's Growth / Position switch, compact on the darker tray. It
+ *   takes the row's alignment, so it centres beside the heading and picker.
+ * range: Trading's 1M–1Y toggle, a step smaller, centred in its row too; on
+ *   mobile it spans the page.
+ * tabs: Trading's Positions / Watchlist / Portfolio, a step larger; on mobile
+ *   it spans the panel.
  * nav: the desktop header's tab pill. Its tray is clear, since the header sets
  *   it in navPill glass; muted labels darken on hover.
  * onGradient: white on a gradient card (the history card's range toggle). Its
  *   tray is clear too, set in onGradientTray glass; the pill is a white wash.
  *   Mobile's segments are larger touch targets.
  */
-export type SegmentedSize = 'field' | 'type' | 'compact' | 'nav' | 'onGradient';
+export type SegmentedSize =
+  | 'field'
+  | 'type'
+  | 'compact'
+  | 'mode'
+  | 'range'
+  | 'tabs'
+  | 'nav'
+  | 'onGradient';
 
 const { selectedShadow, navShadow } = tokens.controls.segmented;
 
@@ -66,6 +79,36 @@ const sized: Record<
     pill: 'bottom-[3px] top-[3px] rounded-4 bg-white ios:rounded-6',
     shadow: selectedShadow,
     text: 'text-[12px]',
+    selected: 'text-ink',
+    muted: 'text-muted',
+  },
+  mode: {
+    tray: 'rounded-6 bg-segment-tray p-[3px] ios:rounded-8',
+    segment:
+      'rounded-4 px-[10px] py-[4px] ios:rounded-6 ios:px-[11px] ios:py-[8px]',
+    pill: 'bottom-[3px] top-[3px] rounded-4 bg-white ios:rounded-6',
+    shadow: selectedShadow,
+    text: 'text-[12px]',
+    selected: 'text-ink',
+    muted: 'text-muted',
+  },
+  range: {
+    tray: 'rounded-6 bg-segment-tray p-[3px] ios:self-stretch ios:rounded-8',
+    segment:
+      'rounded-4 px-[9px] py-[4px] ios:flex-1 ios:rounded-6 ios:px-[11px] ios:py-[8px]',
+    pill: 'bottom-[3px] top-[3px] rounded-4 bg-white ios:rounded-6',
+    shadow: selectedShadow,
+    text: 'text-[11px] ios:text-[12px]',
+    selected: 'text-ink',
+    muted: 'text-muted',
+  },
+  tabs: {
+    tray: 'self-start rounded-6 bg-segment-tray-soft p-[3px] ios:self-stretch ios:rounded-8 ios:bg-segment-tray',
+    segment:
+      'rounded-4 px-[12px] py-[5px] ios:flex-1 ios:rounded-6 ios:px-[11px] ios:py-[8px]',
+    pill: 'bottom-[3px] top-[3px] rounded-4 bg-white ios:rounded-6',
+    shadow: selectedShadow,
+    text: 'text-[13px] ios:text-[12px]',
     selected: 'text-ink',
     muted: 'text-muted',
   },

@@ -294,3 +294,71 @@ join amounts a using (date)
 join asset_class c on c.label in ('Cash', 'Investments', 'CPF');
 
 drop table seed_months, seed_transfers;
+
+-- Trading: the design's holdings, sized to Interactive Brokers' balance. At the stub market
+-- data's prices (src/lib/marketData.ts) they are worth about S$59,500 against the account's
+-- S$62,450, leaving about S$2,900 of cash uninvested: the monthly S$1,500 transfers in, less
+-- the lots bought this past year. Lot dates keep the design's distance from today. ES3 is the
+-- SPDR STI ETF whose half-yearly dividends are in the ledger above.
+insert into instrument (symbol, name, exchange, currency, kind, sector)
+values
+  ('VWRA', 'Vanguard FTSE All-World', 'LSE', 'USD', 'ETF', 'Broad market'),
+  ('D05', 'DBS Group', 'SGX', 'SGD', 'Stock', 'Financials'),
+  ('NVDA', 'NVIDIA', 'NASDAQ', 'USD', 'Stock', 'Tech'),
+  ('ES3', 'SPDR STI ETF', 'SGX', 'SGD', 'ETF', 'Broad market'),
+  ('C38U', 'CapitaLand Integrated Commercial Trust', 'SGX', 'SGD', 'REIT', 'Real estate'),
+  ('AAPL', 'Apple', 'NASDAQ', 'USD', 'Stock', 'Tech'),
+  ('MSFT', 'Microsoft', 'NASDAQ', 'USD', 'Stock', 'Tech'),
+  ('TSLA', 'Tesla', 'NASDAQ', 'USD', 'Stock', 'Consumer'),
+  ('QQQ', 'Invesco QQQ', 'NASDAQ', 'USD', 'ETF', 'Tech'),
+  ('AMZN', 'Amazon', 'NASDAQ', 'USD', 'Stock', 'Consumer'),
+  ('O39', 'OCBC Bank', 'SGX', 'SGD', 'Stock', 'Financials'),
+  ('C6L', 'Singapore Airlines', 'SGX', 'SGD', 'Stock', 'Industrials');
+
+insert into position (instrument_id, account_id)
+select i.id, (select id from account where name = 'Interactive Brokers')
+from instrument i
+where i.symbol in ('VWRA', 'D05', 'NVDA', 'ES3', 'C38U', 'AAPL', 'MSFT', 'TSLA');
+
+-- Prices in the instrument's own currency. NVDA's first lot was 20 before the sale below.
+insert into lot (position_id, quantity, cost_per_unit_cents, purchased_at)
+select p.id, l.quantity, l.cents, current_date - l.days_ago
+from (
+  values
+    ('VWRA', 50, 10420, 926),
+    ('VWRA', 40, 12150, 721),
+    ('VWRA', 15, 13815, 98),
+    ('D05', 150, 3450, 961),
+    ('D05', 50, 4140, 314),
+    ('NVDA', 15, 8260, 778),
+    ('NVDA', 10, 11890, 520),
+    ('ES3', 800, 328, 983),
+    ('ES3', 700, 356, 449),
+    ('C38U', 1200, 192, 563),
+    ('C38U', 800, 206, 219),
+    ('AAPL', 12, 16530, 857),
+    ('AAPL', 8, 18690, 623),
+    ('MSFT', 8, 40200, 386),
+    ('TSLA', 6, 24800, 590),
+    ('TSLA', 4, 29000, 297)
+) as l (symbol, quantity, cents, days_ago)
+join instrument i on i.symbol = l.symbol
+join position p on p.instrument_id = i.id;
+
+-- Five NVDA sold from the oldest lot, as the Sell form records it: cost basis 5 × US$82.60.
+insert into sale (
+  instrument_id, account_id, quantity, price_per_unit_cents, proceeds_cents, cost_basis_cents,
+  realized_pnl_cents, sold_at
+)
+select id, (select id from account where name = 'Interactive Brokers'), 5, 16520, 82600, 41300,
+  41300, current_date - 72
+from instrument
+where symbol = 'NVDA';
+
+-- Watched: four symbols not held, and two that are.
+insert into watchlist_item (instrument_id, added_at)
+select i.id, now() - make_interval(days => w.days_ago)
+from (
+  values ('NVDA', 60), ('VWRA', 50), ('QQQ', 40), ('AMZN', 30), ('O39', 20), ('C6L', 10)
+) as w (symbol, days_ago)
+join instrument i on i.symbol = w.symbol;

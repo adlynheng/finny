@@ -28,6 +28,8 @@ export type RadialGradientSpec =
       cx: number;
       cy: number;
       stops: GradientStop[];
+      /** Gaussian blur applied to the whole glow, in points. */
+      blur?: number;
     }
   | {
       kind: 'radial';
@@ -138,6 +140,39 @@ export const gradients = {
     cy: 0.4,
     stops: heroGlowStops,
     blur: 34,
+  },
+  /**
+   * Glow behind Trading's P&L chart: CSS's `ellipse at 50% 50%`, whose default
+   * farthest-corner size gives radii of √2 × half the box.
+   */
+  pnlGlow: {
+    kind: 'radial',
+    shape: 'ellipse',
+    cx: 0.5,
+    cy: 0.5,
+    rx: Math.SQRT1_2,
+    ry: Math.SQRT1_2,
+    stops: [
+      { color: 'rgba(216,242,58,.4)', offset: 0 },
+      { color: 'rgba(233,168,86,.26)', offset: 0.4 },
+      { color: 'rgba(239,239,236,0)', offset: 0.7 },
+    ],
+    blur: 34,
+  },
+  /** Mobile blurs it a little less. */
+  pnlGlowMobile: {
+    kind: 'radial',
+    shape: 'ellipse',
+    cx: 0.5,
+    cy: 0.5,
+    rx: Math.SQRT1_2,
+    ry: Math.SQRT1_2,
+    stops: [
+      { color: 'rgba(216,242,58,.4)', offset: 0 },
+      { color: 'rgba(233,168,86,.26)', offset: 0.4 },
+      { color: 'rgba(239,239,236,0)', offset: 0.7 },
+    ],
+    blur: 30,
   },
   /** Glow behind the dial heroes. */
   heroGlowDial: {

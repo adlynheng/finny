@@ -1,6 +1,7 @@
 import { act, render, screen } from '@testing-library/react-native';
 import { getAnimatedStyle } from 'react-native-reanimated';
-import { Rings, overallScore } from '@/components/charts/Rings';
+import { Rings } from '@/components/charts/Rings';
+import { overallScore } from '@/utils/derive/ideas';
 import { arcPath, polar } from '@/components/charts/geometry';
 
 const hidden = { includeHiddenElements: true };

@@ -146,9 +146,7 @@ function GradientDef({
 
 /** The CSS `filter: blur()` radius, which is also the Gaussian's deviation. */
 function blurOf(spec: LinearGradientSpec | RadialGradientSpec) {
-  return spec.kind === 'radial' && spec.shape === 'circle'
-    ? spec.blur
-    : undefined;
+  return spec.kind === 'radial' ? spec.blur : undefined;
 }
 
 /**

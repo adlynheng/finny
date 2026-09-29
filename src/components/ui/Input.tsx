@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Text, TextInput, View, type TextInputProps } from 'react-native';
 import { tokens } from '@/theme/tokens';
 import { cx } from './cardChrome';
@@ -9,6 +10,8 @@ type Props = Omit<TextInputProps, 'style' | 'editable'> & {
   prefix?: string;
   /** Muted text after the value, e.g. `%`. */
   suffix?: string;
+  /** A control at the field's end, e.g. the Sell form's All; the box's end padding tightens. */
+  trailing?: ReactNode;
   disabled?: boolean;
   className?: string;
 };
@@ -25,6 +28,7 @@ export function Input({
   label,
   prefix,
   suffix,
+  trailing,
   disabled = false,
   className,
   ...rest
@@ -37,6 +41,7 @@ export function Input({
         className={cx(
           'h-input flex-row items-center gap-[6px] rounded-8 border border-input-border bg-white px-[12px] ios:h-input-touch ios:rounded-10',
           disabled && 'opacity-disabled',
+          trailing !== undefined && 'pr-[6px]',
         )}
       >
         {prefix && (
@@ -53,6 +58,7 @@ export function Input({
         {suffix && (
           <Text className="font-sans text-[13px] text-muted">{suffix}</Text>
         )}
+        {trailing}
       </View>
     </View>
   );

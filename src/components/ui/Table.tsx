@@ -171,7 +171,8 @@ export function ExpandableRow({
   );
 }
 
-function Chevron({ open }: { open: boolean }) {
+/** The expand chevron in its small tray, turning 90° as its row opens. Mobile's is 22px. */
+export function Chevron({ open }: { open: boolean }) {
   const angle = useSharedValue(open ? 90 : 0);
   useEffect(() => {
     angle.value = withTiming(open ? 90 : 0, {
@@ -184,7 +185,7 @@ function Chevron({ open }: { open: boolean }) {
   return (
     <View
       testID="row-chevron-box"
-      className="size-chevron items-center justify-center rounded-5 bg-chevron-tray"
+      className="size-chevron items-center justify-center rounded-5 bg-chevron-tray ios:size-[22px] ios:rounded-6"
     >
       <Animated.View testID="row-chevron" style={turn}>
         <Svg width={9} height={9} viewBox="0 0 10 10">

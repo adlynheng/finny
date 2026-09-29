@@ -15,12 +15,13 @@ export type Column = {
 
 export type ColumnTemplate = readonly Column[];
 
-/** Chevron, holding, qty, avg cost, price, market value, P&L, action. */
+/** Chevron, holding, qty, avg cost, total cost, price, market value, P&L, action. */
 export const positionsColumns: ColumnTemplate = [
   { className: 'w-[22px] shrink-0' },
   { className: 'flex-[1.4]' },
   { className: 'flex-[0.55]', align: 'right' },
   { className: 'flex-1', align: 'right' },
+  { className: 'flex-[1.1]', align: 'right' },
   { className: 'flex-1', align: 'right' },
   { className: 'flex-[1.1]', align: 'right' },
   { className: 'flex-[1.3]', align: 'right' },

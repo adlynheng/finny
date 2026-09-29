@@ -70,22 +70,45 @@ export function formatKMoney(
   return `${PREFIX[currency]}${fixed(Math.abs(cents) / 100_000, 1)}k`;
 }
 
+/** `+S$450` / `−S$12.4k`: the compact form, signed; zero has no sign. */
+export function formatSignedCompactMoney(
+  cents: number,
+  options: Pick<MoneyOptions, 'currency'> = {},
+): string {
+  const text = formatCompactMoney(cents, options);
+  return signFor(cents, isZero(text)) + text;
+}
+
 /**
- * A US-listed amount: US$ first, then the S$ equivalent at the live rate in
- * brackets. `secondary` is null until the rate has loaded.
+ * A trading amount in both currencies: US$ first, then S$ in brackets, as
+ * every Trading figure shows. A US-listed amount (`currency: 'USD'`, the
+ * default) converts to S$ at the live rate; an SGX one (`'SGD'`) to US$, so
+ * each keeps its own figure exact. `signed` signs both lines.
+ *
+ * Until the rate loads there is nothing to convert: the amount shows in its
+ * own currency alone, and `secondary` is null.
  */
 export function formatDualMoney(
-  usdCents: number,
+  cents: number,
   usdSgdRate: number | null,
-  { decimals = 0 }: Pick<MoneyOptions, 'decimals'> = {},
+  {
+    decimals = 0,
+    currency = 'USD',
+    signed = false,
+  }: MoneyOptions & { signed?: boolean } = {},
 ): { primary: string; secondary: string | null } {
-  return {
-    primary: formatMoney(usdCents, { currency: 'USD', decimals }),
-    secondary:
-      usdSgdRate === null
-        ? null
-        : `(${formatMoney(Math.round(usdCents * usdSgdRate), { decimals })})`,
+  const format = (amount: number, c: Currency) => {
+    const text = formatMoney(amount, { currency: c, decimals });
+    return signed ? signFor(amount, isZero(text)) + text : text;
   };
+  if (usdSgdRate === null) {
+    return { primary: format(cents, currency), secondary: null };
+  }
+  const [usd, sgd] =
+    currency === 'USD'
+      ? [cents, Math.round(cents * usdSgdRate)]
+      : [Math.round(cents / usdSgdRate), cents];
+  return { primary: format(usd, 'USD'), secondary: `(${format(sgd, 'SGD')})` };
 }
 
 /** `12.3%` from 12.345 (percentage points, not a fraction). Unsigned. */

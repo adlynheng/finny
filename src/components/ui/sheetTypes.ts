@@ -17,6 +17,8 @@ export type SheetProps = {
   /** Called by the scrim, the close button and Cancel. */
   onClose: () => void;
   title: string;
+  /** A muted line under the title, e.g. the Sell form's `NVIDIA · you hold 25 shares`. */
+  subtitle?: string;
   /**
    * The desktop modal's width: standard (520, the transaction and goal forms),
    * narrow (500, recurring-charge and sell) or wide (540, new position). The
@@ -34,7 +36,7 @@ export type SheetProps = {
    * at the footer's left on desktop, where Delete then joins Cancel and the
    * primary on the right; under the form on mobile.
    */
-  note?: string;
+  note?: ReactNode;
   /** The form. It scrolls when taller than the window; header and footer stay. */
   children: ReactNode;
 };

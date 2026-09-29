@@ -8,6 +8,7 @@
  * Every `from(table)` records the chain called on it (`select`, `eq`, `order`, …) as tuples like
  * `['eq', 'kind', 'expense']`, and resolves to the next result queued for that table with
  * `respond`. The last queued result repeats; with none queued, a query resolves to no data.
+ * `rpc(fn, args)` is recorded the same way, under the table name `rpc:<fn>`, as `['rpc', args]`.
  */
 
 export type StubResult = { data: unknown; error: unknown };
@@ -51,8 +52,15 @@ export function createSupabaseStub() {
     return builder;
   });
 
+  const rpc = jest.fn((fn: string, args: unknown) => {
+    const table = `rpc:${fn}`;
+    calls.push({ table, chain: [['rpc', args]] });
+    return Promise.resolve(nextResult(table));
+  });
+
   return {
     from,
+    rpc,
     calls,
     /** Queue results for the next queries on `table`, in order. */
     respond(table: string, ...results: StubResult[]) {
@@ -66,6 +74,7 @@ export function createSupabaseStub() {
       calls.length = 0;
       responses.clear();
       from.mockClear();
+      rpc.mockClear();
     },
   };
 }

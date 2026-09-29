@@ -51,6 +51,20 @@ export function echoPaths(values: readonly number[], y: YMapper): EchoPaths {
   };
 }
 
+/**
+ * A step line in the P&L chart's viewBox: flat to each next day, then straight
+ * up or down to its value, as capital steps up on each purchase.
+ */
+export function stepPath(values: readonly number[], y: YMapper): string {
+  const n = values.length;
+  const x = (i: number) => (xAt(i, n) * ECHO_BOX).toFixed(2);
+  return values
+    .map((v, i) =>
+      i ? `H${x(i)}V${y(v).toFixed(2)}` : `M${x(i)},${y(v).toFixed(2)}`,
+    )
+    .join('');
+}
+
 /** The sample dots' indices: eight, evenly spaced, the first and last included. */
 export function sampleIndices(n: number): number[] {
   const { count } = look.samples;

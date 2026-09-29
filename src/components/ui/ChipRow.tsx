@@ -10,6 +10,8 @@ export type ChipOption<T extends string> = {
   icon?: (color: string, size: number) => ReactNode;
   /** Shown but not choosable, e.g. the transfer source among the destinations. */
   dimmed?: boolean;
+  /** A small note after the label, e.g. an account's kind among the Sell form's destinations. */
+  sub?: string;
 };
 
 type Props<T extends string> = {
@@ -74,6 +76,16 @@ export function ChipRow<T extends string>({
             >
               {option.label}
             </Text>
+            {option.sub !== undefined && (
+              <Text
+                className={cx(
+                  'font-sans text-[10px]',
+                  selected ? 'text-white/60' : 'text-muted-2',
+                )}
+              >
+                {option.sub}
+              </Text>
+            )}
           </Pressable>
         );
       })}

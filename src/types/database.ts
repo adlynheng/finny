@@ -662,7 +662,17 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      record_sale: {
+        Args: {
+          p_account_id: number;
+          p_instrument_id: number;
+          p_lots: Json;
+          p_price_per_unit_cents: number;
+          p_quantity: number;
+          p_sold_at: string;
+        };
+        Returns: number;
+      };
     };
     Enums: {
       [_ in never]: never;

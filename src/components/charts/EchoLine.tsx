@@ -12,6 +12,9 @@
  * also point at a day (a hovered strip sample), shown while the pointer is
  * off the chart.
  *
+ * A second series can run beside it on its own scale: the capital invested,
+ * a lime step line drawn with the rest and revealed with it.
+ *
  * On macOS the pointer is a crosshair over the chart, as in the design.
  */
 
@@ -27,6 +30,7 @@ import {
   echoPaths,
   indexAt,
   sampleIndices,
+  stepPath,
   type EchoPaths,
   type YMapper,
 } from './lineLayout';
@@ -35,7 +39,7 @@ import { Reveal } from './Reveal';
 import { crosshairCursor, usePointerIndex } from './usePointerIndex';
 
 const look = tokens.echo;
-const { ink } = tokens.colors;
+const { ink, limeDark } = tokens.colors;
 const VIEWBOX = `0 0 ${ECHO_BOX} ${ECHO_BOX}`;
 const pct = (fraction: number) => `${fraction * 100}%` as const;
 type Props = {
@@ -50,6 +54,8 @@ type Props = {
   hover?: number | null;
   /** The day under the pointer as it changes, null when it leaves. */
   onHover: (index: number | null) => void;
+  /** A lime step line on its own scale, one value per day: the capital invested. */
+  capital?: { values: readonly number[]; y: YMapper };
   /** A new key replays the reveal: the design's range, mode and symbol. */
   revealKey?: string;
   /** False draws the chart revealed: for tests and screenshots. */
@@ -62,12 +68,17 @@ export function EchoLine({
   y,
   hover = null,
   onHover,
+  capital,
   revealKey,
   animate = true,
   testID = 'echo',
 }: Props) {
   const n = values.length;
   const paths = useMemo(() => echoPaths(values, y), [values, y]);
+  const capitalPath = useMemo(
+    () => (capital ? stepPath(capital.values, capital.y) : null),
+    [capital],
+  );
   const [width, setWidth] = useState(0);
   const seriesKey = revealKey ?? String(n);
   // A new series starts without a pointer day, as the design's range switch.
@@ -98,7 +109,7 @@ export function EchoLine({
         animate={animate}
         testID={`${testID}-reveal`}
       >
-        <Lines paths={paths} testID={testID} />
+        <Lines paths={paths} capital={capitalPath} testID={testID} />
       </Reveal>
       {sampleIndices(n).map(i => (
         <View
@@ -144,9 +155,11 @@ export function EchoLine({
 /** The line, its echoes and the zero line in one SVG: hover never repaints them. */
 const Lines = memo(function Lines({
   paths,
+  capital,
   testID,
 }: {
   paths: EchoPaths;
+  capital: string | null;
   testID: string;
 }) {
   return (
@@ -192,6 +205,17 @@ const Lines = memo(function Lines({
         strokeLinejoin="round"
         vectorEffect="non-scaling-stroke"
       />
+      {capital !== null && (
+        <Path
+          testID={`${testID}-capital`}
+          d={capital}
+          fill="none"
+          stroke={limeDark}
+          strokeWidth={look.capital.width}
+          strokeLinejoin="round"
+          vectorEffect="non-scaling-stroke"
+        />
+      )}
     </Svg>
   );
 });

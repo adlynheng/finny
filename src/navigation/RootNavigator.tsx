@@ -19,6 +19,7 @@ import { MobileFrame } from '@/components/ui/MobileFrame';
 import { supabase } from '@/lib/supabase';
 import { FinanceScreen } from '@/modules/finance/FinanceScreen';
 import { OverviewScreen } from '@/modules/net-worth/OverviewScreen';
+import { TradingScreen } from '@/modules/trading/TradingScreen';
 import { NewTransactionSheet } from '@/modules/transactions/NewTransactionSheet';
 import { useUiStore } from '@/stores/uiStore';
 import { BottomBar } from './BottomBar';
@@ -77,6 +78,7 @@ const Finny = createNavigatorFactory(FinnyNavigator)();
 const SCREEN_COMPONENTS: Partial<Record<ScreenName, () => ReactNode>> = {
   Overview: OverviewScreen,
   Finance: FinanceScreen,
+  Trading: TradingScreen,
 };
 
 export function RootNavigator() {

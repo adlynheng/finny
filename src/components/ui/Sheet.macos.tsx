@@ -1,11 +1,11 @@
 import { Portal } from '@rn-primitives/portal';
 import { useId } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 import type { DialogWidth } from '@/theme/tokens';
 import { Button } from './Button';
 import { cx } from './cardChrome';
 import { Glass } from './Glass';
-import { SheetBody, SheetHeader, SheetScrim } from './SheetParts';
+import { SheetBody, SheetHeader, SheetNote, SheetScrim } from './SheetParts';
 import type { SheetProps } from './sheetTypes';
 
 export type { SheetProps } from './sheetTypes';
@@ -24,6 +24,7 @@ export function Sheet({
   open,
   onClose,
   title,
+  subtitle,
   width = 'standard',
   actions,
   note,
@@ -58,21 +59,14 @@ export function Sheet({
             widthClass[width],
           )}
         >
-          <SheetHeader title={title} onClose={onClose} />
+          <SheetHeader title={title} subtitle={subtitle} onClose={onClose} />
           <SheetBody gapClassName="gap-dialog-gap">{children}</SheetBody>
           {actions && (
             <View
               testID="sheet-footer"
               className="mt-[4px] flex-row items-center gap-[8px]"
             >
-              {note !== undefined && (
-                <Text
-                  testID="sheet-note"
-                  className="font-sans text-[12px] text-muted"
-                >
-                  {note}
-                </Text>
-              )}
+              {note !== undefined && <SheetNote note={note} />}
               {note === undefined && danger}
               <View testID="sheet-footer-spacer" className="flex-1" />
               {note !== undefined && danger}

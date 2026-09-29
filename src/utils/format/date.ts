@@ -68,6 +68,11 @@ export function formatWeekdayShort(date: string): string {
   return format(parseDate(date), 'EEE');
 }
 
+/** `8:30 AM`: when a price or rate was fetched. */
+export function formatTime(date: Date): string {
+  return format(date, 'h:mm a');
+}
+
 /** `Thu, 24 Sep 2026`, the date-picker button's label. */
 export function formatFullDate(date: string): string {
   return format(parseDate(date), 'EEE, d MMM yyyy');

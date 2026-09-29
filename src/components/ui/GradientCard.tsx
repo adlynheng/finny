@@ -6,7 +6,7 @@ import { GradientFill } from './GradientFill';
 /** The card gradients; the hero glows are backgrounds, not cards. */
 export type CardGradientName = Exclude<
   keyof typeof gradients,
-  'heroGlow' | 'heroGlowDial'
+  'heroGlow' | 'heroGlowDial' | 'pnlGlow' | 'pnlGlowMobile'
 >;
 
 type Props = Omit<ViewProps, 'style'> & {

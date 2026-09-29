@@ -19,7 +19,7 @@ it('opens on the design’s defaults, with this month selected', () => {
     hoveredAccountId: null,
     tradingMode: 'growth',
     tradingSymbol: null,
-    tradingRange: '1M',
+    tradingRange: '6M',
     tradingTab: 'positions',
     expandedSymbols: [],
     transactionsMonth: '2026-09',

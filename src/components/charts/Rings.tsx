@@ -12,6 +12,7 @@ import { View } from 'react-native';
 import { Circle, Path, Text as SvgText } from 'react-native-svg';
 import { motion } from '@/theme/motion';
 import { tokens } from '@/theme/tokens';
+import { overallScore } from '@/utils/derive/ideas';
 import { arcPath, polar } from './geometry';
 import { Layer, SpinRing } from './ringParts';
 
@@ -31,15 +32,6 @@ type Props = {
   testID?: string;
 };
 
-const clampScore = (s: number) => Math.max(0, Math.min(100, s));
-
-/** The overall score: the metrics' average, rounded. */
-export function overallScore(scores: readonly number[]): number {
-  if (scores.length === 0) return 0;
-  const sum = scores.reduce((n, s) => n + clampScore(s), 0);
-  return Math.round(sum / scores.length);
-}
-
 export function Rings({ scores, animate = true, testID = 'rings' }: Props) {
   const c = look.centre;
   return (
@@ -56,7 +48,8 @@ export function Rings({ scores, animate = true, testID = 'rings' }: Props) {
       <Layer half={HALF} testID={`${testID}-body`}>
         {scores.map((score, i) => {
           const r = look.radius - i * look.step;
-          const end = -90 + (clampScore(score) / 100) * FULL_SWEEP;
+          const end =
+            -90 + (Math.max(0, Math.min(100, score)) / 100) * FULL_SWEEP;
           const [ex, ey] = polar(r, end);
           return (
             <Ring key={i} i={i} r={r} end={end} cap={[ex, ey]} id={testID} />

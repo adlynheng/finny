@@ -7,6 +7,7 @@ import type { ReactNode } from 'react';
 import { Platform, Pressable, ScrollView, Text, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { tokens, type GlassName } from '@/theme/tokens';
+import { cx } from './cardChrome';
 import { Glass } from './Glass';
 
 /** The full-window scrim behind the container; pressing it closes. */
@@ -43,19 +44,40 @@ const closeIconSize = Platform.OS === 'ios' ? 11 : 10;
  */
 export function SheetHeader({
   title,
+  subtitle,
   onClose,
 }: {
   title: string;
+  subtitle?: string;
   onClose: () => void;
 }) {
   return (
-    <View testID="sheet-header" className="flex-row items-center gap-[12px]">
-      <Text
-        accessibilityRole="header"
-        className="flex-1 font-sans text-[24px] font-normal tracking-[-0.01em] text-ink ios:text-[22px]"
-      >
-        {title}
-      </Text>
+    <View
+      testID="sheet-header"
+      className={cx(
+        'flex-row gap-[12px]',
+        // A subtitle hangs the close button from the top on desktop, as the Sell form's.
+        subtitle === undefined
+          ? 'items-center'
+          : 'items-start ios:items-center',
+      )}
+    >
+      <View className="min-w-0 flex-1 gap-y-[4px] ios:gap-y-[2px]">
+        <Text
+          accessibilityRole="header"
+          className="font-sans text-[24px] font-normal tracking-[-0.01em] text-ink ios:text-[22px]"
+        >
+          {title}
+        </Text>
+        {subtitle !== undefined && (
+          <Text
+            testID="sheet-subtitle"
+            className="font-sans text-[12px] text-muted"
+          >
+            {subtitle}
+          </Text>
+        )}
+      </View>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Close"
@@ -71,6 +93,19 @@ export function SheetHeader({
           />
         </Svg>
       </Pressable>
+    </View>
+  );
+}
+
+/** A footer note: text in the muted note style, anything else as given. */
+export function SheetNote({ note }: { note: ReactNode }) {
+  return typeof note === 'string' ? (
+    <Text testID="sheet-note" className="font-sans text-[12px] text-muted">
+      {note}
+    </Text>
+  ) : (
+    <View testID="sheet-note" className="min-w-0 shrink">
+      {note}
     </View>
   );
 }
