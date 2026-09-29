@@ -2,6 +2,7 @@ import { Platform, ScrollView, View } from 'react-native';
 
 import { GradientFill } from '@/components/ui/GradientFill';
 import { gradients } from '@/theme/gradients';
+import { AssetClassChips } from './AssetClassChips';
 import { GoalsCard } from './GoalsCard';
 import { HistoryCard } from './HistoryCard';
 import { NetWorthHero } from './NetWorthHero';
@@ -17,13 +18,34 @@ import { ThisMonthCard } from './ThisMonthCard';
  * column's share: on the card itself, its padding would count towards its basis and skew the
  * columns.
  *
- * iOS shows the hero alone until the mobile column arrives (Task 55).
+ * On iOS the same cards stack in one scrolling column (FinnyMobile.dc.html): the hero, the
+ * sphere as a full-width square without its labels, the asset-class chips that stand in for
+ * them, then This month, Net worth history, Share of assets and Savings goals. The column's
+ * bottom padding clears the floating tab bar.
  */
 export function OverviewScreen() {
   if (Platform.OS !== 'macos') {
     return (
-      <ScrollView contentContainerClassName="px-mobile-x pb-mobile-bottom pt-mobile-top">
+      <ScrollView
+        testID="overview-column"
+        contentContainerClassName="gap-y-[12px] px-mobile-x pb-mobile-bottom pt-mobile-top"
+        showsVerticalScrollIndicator={false}
+      >
         <NetWorthHero />
+        <View
+          testID="overview-sphere"
+          className="aspect-square w-full items-center justify-center"
+        >
+          <View className="absolute aspect-square w-[70%]">
+            <GradientFill gradient={gradients.heroGlow} />
+          </View>
+          <OverviewSphere labels={false} />
+        </View>
+        <AssetClassChips />
+        <ThisMonthCard />
+        <HistoryCard />
+        <ShareOfAssetsCard />
+        <GoalsCard />
       </ScrollView>
     );
   }

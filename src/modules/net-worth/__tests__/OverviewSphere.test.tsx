@@ -14,7 +14,9 @@ jest.mock('@/lib/supabase', () => ({
 }));
 
 // The chart itself is Sphere.test's; here, only what it is given.
-jest.mock('@/components/charts/Sphere', () => ({ Sphere: jest.fn(() => null) }));
+jest.mock('@/components/charts/Sphere', () => ({
+  Sphere: jest.fn(() => null),
+}));
 
 const stub = supabase as unknown as SupabaseStub;
 
@@ -78,4 +80,12 @@ it('highlights the class a Share of assets row sets', async () => {
   );
 
   expect(drawn().selected).toBe('1');
+});
+
+it('labels the classes unless told not to (mobile, where chips carry them)', async () => {
+  expect((await sphere()).props.labels).toBe(true);
+
+  jest.mocked(Sphere).mockClear();
+  await renderWithClient(<OverviewSphere labels={false} />);
+  await waitFor(() => expect(drawn().labels).toBe(false));
 });

@@ -11,6 +11,16 @@ jest.mock('@/lib/supabase', () => ({
 
 afterEach(() => jest.restoreAllMocks());
 
+type Node = { props: { testID?: string }; children: (Node | string)[] };
+
+/** Every testID under `node`, in document order. */
+function testIDsIn(node: Node): string[] {
+  return [
+    ...(node.props.testID ? [node.props.testID] : []),
+    ...node.children.flatMap(c => (typeof c === 'string' ? [] : testIDsIn(c))),
+  ];
+}
+
 const flex = (testID: string) =>
   classes(screen.getByTestId(testID)).filter(c => /^(grow|basis)/.test(c));
 
@@ -34,10 +44,37 @@ describe('on macOS', () => {
 describe('on iOS', () => {
   beforeEach(() => jest.replaceProperty(Platform, 'OS', 'ios'));
 
-  it('shows the hero without the desktop grid', async () => {
+  it('stacks every card in one scrolling column, without the desktop grid', async () => {
     await renderWithClient(<OverviewScreen />);
 
-    expect(screen.getByTestId('net-worth-hero')).toBeTruthy();
+    const column = screen.getByTestId('overview-column');
+    const order = [
+      'net-worth-hero',
+      'overview-sphere',
+      'asset-chips',
+      'month-card',
+      'history-card',
+      'share-card',
+      'goals-card',
+    ];
+    expect(testIDsIn(column).filter(id => order.includes(id))).toEqual(order);
     expect(screen.queryByTestId('overview-grid')).toBeNull();
+  });
+
+  it('clears the tab bar and squares the sphere across the column', async () => {
+    await renderWithClient(<OverviewScreen />);
+
+    const container =
+      screen.getByTestId('overview-column').props.contentContainerClassName;
+    expect(container.split(' ')).toEqual(
+      expect.arrayContaining([
+        'gap-y-[12px]',
+        'px-mobile-x',
+        'pb-mobile-bottom',
+      ]),
+    );
+    expect(classes(screen.getByTestId('overview-sphere'))).toEqual(
+      expect.arrayContaining(['aspect-square', 'w-full']),
+    );
   });
 });

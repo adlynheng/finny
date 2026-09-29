@@ -17,13 +17,9 @@ export type SegmentOption<T extends string> = { value: T; label: string };
  *   it in navPill glass; muted labels darken on hover.
  * onGradient: white on a gradient card (the history card's range toggle). Its
  *   tray is clear too, set in onGradientTray glass; the pill is a white wash.
+ *   Mobile's segments are larger touch targets.
  */
-export type SegmentedSize =
-  | 'field'
-  | 'type'
-  | 'compact'
-  | 'nav'
-  | 'onGradient';
+export type SegmentedSize = 'field' | 'type' | 'compact' | 'nav' | 'onGradient';
 
 const { selectedShadow, navShadow } = tokens.controls.segmented;
 
@@ -82,10 +78,11 @@ const sized: Record<
   },
   onGradient: {
     tray: 'p-[3px]',
-    segment: 'rounded-4 px-[9px] py-[4px]',
-    pill: 'bottom-[3px] top-[3px] rounded-4 bg-white/[.34]',
+    segment:
+      'rounded-4 px-[9px] py-[4px] ios:rounded-6 ios:px-[11px] ios:py-[7px]',
+    pill: 'bottom-[3px] top-[3px] rounded-4 bg-white/[.34] ios:rounded-6',
     shadow: null,
-    text: 'text-[11px]',
+    text: 'text-[11px] ios:text-[12px]',
     selected: 'text-white',
     muted: 'text-white',
   },

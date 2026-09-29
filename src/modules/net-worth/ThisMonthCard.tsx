@@ -1,4 +1,4 @@
-import { Text, View } from 'react-native';
+import { Platform, Text, View } from 'react-native';
 
 import { PlusIcon } from '@/components/icons/PlusIcon';
 import { Button } from '@/components/ui/Button';
@@ -13,7 +13,7 @@ import { formatMoney, formatSignedMoney } from '@/utils/format/money';
 /**
  * The brown-olive card: this month's money in and out, transfers left out by
  * the month totals, with a bar of out against in. With no income yet the
- * ratio means nothing, so the bar reads full.
+ * ratio means nothing, so the bar reads full. Mobile's button just says Add.
  */
 export function ThisMonthCard() {
   const month = monthKey(today());
@@ -39,7 +39,7 @@ export function ThisMonthCard() {
           testID="month-add"
           variant="primary"
           size="sm"
-          label="Add transaction"
+          label={Platform.OS === 'ios' ? 'Add' : 'Add transaction'}
           icon={plus}
           onPress={() => setUi({ newTransactionOpen: true })}
         />
@@ -104,7 +104,7 @@ function Figure({
       <Text
         testID={testID}
         numberOfLines={1}
-        className="font-sans text-[32px] font-light leading-[32px] tracking-[-0.02em] text-white"
+        className="font-sans text-[32px] font-light leading-[32px] tracking-[-0.02em] text-white ios:text-[30px] ios:leading-[30px]"
       >
         {formatMoney(cents)}
       </Text>

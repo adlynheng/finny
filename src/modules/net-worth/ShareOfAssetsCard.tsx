@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Platform, Pressable, ScrollView, Text, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
 import { cx } from '@/components/ui/cardChrome';
@@ -31,6 +31,10 @@ const typeFill = (type: string) => TYPE_FILL[type] ?? TYPE_FILL.Broker;
  * class's `hoveredAssetClassId`, so the sphere highlights that class; the
  * sphere's own hover lights every account in the class here. The hovered
  * account's balance and share replace the total in the headline.
+ *
+ * Mobile has no hover, so a tap does the same and tapping the lit account
+ * again clears it. There the card grows with its rows rather than scrolling
+ * them, and the headline's label sits under the figure.
  */
 export function ShareOfAssetsCard() {
   const accounts = useAccounts().data;
@@ -49,12 +53,14 @@ export function ShareOfAssetsCard() {
   const anyLit = rows.some(lit);
   const shown = rows.find(r => r.id === hoveredAccount);
 
-  const hover = (r: Row) => ({
-    onHoverIn: () =>
-      setUi({ hoveredAccountId: r.id, hoveredAssetClassId: classOf(r) }),
-    onHoverOut: () =>
-      setUi({ hoveredAccountId: null, hoveredAssetClassId: null }),
-  });
+  const light = (r: Row) =>
+    setUi({ hoveredAccountId: r.id, hoveredAssetClassId: classOf(r) });
+  const clear = () =>
+    setUi({ hoveredAccountId: null, hoveredAssetClassId: null });
+  const hover = (r: Row) =>
+    Platform.OS === 'ios'
+      ? { onPress: () => (r.id === hoveredAccount ? clear() : light(r)) }
+      : { onHoverIn: () => light(r), onHoverOut: clear };
 
   return (
     <GradientCard
@@ -70,10 +76,10 @@ export function ShareOfAssetsCard() {
           By account · credit cards excluded
         </Text>
       </View>
-      <View className="mt-[10px] flex-row items-baseline justify-between gap-x-[8px]">
+      <View className="mt-[10px] flex-row items-baseline justify-between gap-x-[8px] ios:flex-col ios:items-start ios:justify-start ios:gap-y-[4px]">
         <Text
           testID="share-value"
-          className="font-sans text-[36px] font-light leading-[36px] tracking-[-0.02em] text-white"
+          className="font-sans text-[36px] font-light leading-[36px] tracking-[-0.02em] text-white ios:text-[34px] ios:leading-[34px]"
         >
           {formatMoney(shown?.cents ?? totalCents)}
         </Text>
@@ -105,16 +111,18 @@ export function ShareOfAssetsCard() {
         ))}
       </View>
       <ScrollView
-        className="mt-[14px] min-h-0 flex-1"
-        contentContainerClassName="grow gap-y-[4px]"
+        className="mt-[14px] min-h-0 flex-1 ios:flex-none"
+        contentContainerClassName="grow gap-y-[4px] ios:gap-y-[3px]"
         showsVerticalScrollIndicator={false}
+        // Mobile lists every row in the page's own scroll.
+        scrollEnabled={Platform.OS !== 'ios'}
       >
         {rows.map(r => (
           <Pressable
             key={r.id}
             testID={`share-row-${r.id}`}
             {...hover(r)}
-            className="min-h-[34px] grow basis-0"
+            className="min-h-[34px] grow basis-0 ios:min-h-[40px]"
           >
             <Glass
               recipe="onGradient"
@@ -130,7 +138,7 @@ export function ShareOfAssetsCard() {
               />
               <Text
                 numberOfLines={1}
-                className="min-w-0 flex-1 font-sans text-[12px] text-white"
+                className="min-w-0 flex-1 font-sans text-[12px] text-white ios:text-[13px]"
               >
                 {r.name}
               </Text>

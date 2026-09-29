@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import { act, fireEvent, screen, within } from '@testing-library/react-native';
 
 import { supabase } from '@/lib/supabase';
@@ -21,8 +22,12 @@ beforeEach(() => {
   stub.respond('asset_class', { data: assetClasses, error: null });
 });
 
+afterEach(() => jest.restoreAllMocks());
+
 const fill = (id: number) =>
-  classes(within(screen.getByTestId(`share-row-${id}`)).getByTestId('glass-fill'));
+  classes(
+    within(screen.getByTestId(`share-row-${id}`)).getByTestId('glass-fill'),
+  );
 
 it('totals the asset accounts and lists them largest first, credit cards left out', async () => {
   await renderWithClient(<ShareOfAssetsCard />);
@@ -52,6 +57,7 @@ it('sizes each segment by its balance', async () => {
 it.each(['share-row-4', 'share-segment-4'])(
   'hovering %s shows that account, lights it and sets its class for the sphere',
   async testID => {
+    jest.replaceProperty(Platform, 'OS', 'macos');
     await renderWithClient(<ShareOfAssetsCard />);
     await fireEvent(await screen.findByTestId(testID), 'hoverIn');
 
@@ -77,6 +83,37 @@ it.each(['share-row-4', 'share-segment-4'])(
     expect(screen.getByTestId('share-value')).toHaveTextContent('S$142,950');
   },
 );
+
+it.each(['share-row-4', 'share-segment-4'])(
+  'on iOS, tapping %s lights that account, and tapping it again clears it',
+  async testID => {
+    await renderWithClient(<ShareOfAssetsCard />);
+    await fireEvent.press(await screen.findByTestId(testID));
+
+    expect(useUiStore.getState()).toMatchObject({
+      hoveredAccountId: 4,
+      hoveredAssetClassId: 3,
+    });
+    expect(screen.getByTestId('share-value')).toHaveTextContent('S$62,450');
+
+    await fireEvent.press(screen.getByTestId(testID));
+    expect(useUiStore.getState()).toMatchObject({
+      hoveredAccountId: null,
+      hoveredAssetClassId: null,
+    });
+  },
+);
+
+it('on iOS, tapping another account moves the light to it', async () => {
+  await renderWithClient(<ShareOfAssetsCard />);
+  await fireEvent.press(await screen.findByTestId('share-row-4'));
+  await fireEvent.press(screen.getByTestId('share-row-1'));
+
+  expect(useUiStore.getState()).toMatchObject({
+    hoveredAccountId: 1,
+    hoveredAssetClassId: 1,
+  });
+});
 
 it('lights every account in a class hovered on the sphere, keeping the total', async () => {
   await renderWithClient(<ShareOfAssetsCard />);

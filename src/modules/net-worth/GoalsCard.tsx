@@ -35,7 +35,7 @@ export function GoalsCard() {
     <GradientCard
       testID="goals-card"
       gradient="goals"
-      className="flex-1 justify-between gap-y-[12px] py-[16px]"
+      className="flex-1 justify-between gap-y-[12px] py-[16px] ios:gap-y-[16px] ios:py-[18px]"
     >
       <View className="flex-row items-baseline justify-between gap-x-[8px]">
         <Text className="font-sans text-[13px] text-white">Savings goals</Text>
@@ -61,9 +61,7 @@ export function GoalsCard() {
           <GoalRow
             key={g.id}
             goal={g}
-            pot={
-              isOneOf(GOAL_SOURCES, g.src) ? potCents(g.src, plan) : 0
-            }
+            pot={isOneOf(GOAL_SOURCES, g.src) ? potCents(g.src, plan) : 0}
           />
         ))}
     </GradientCard>
@@ -86,9 +84,12 @@ function GoalRow({ goal, pot }: { goal: GoalRow; pot: number }) {
         )}/mo`;
 
   return (
-    <View testID={`goal-${goal.id}`} className="gap-y-[5px]">
+    <View testID={`goal-${goal.id}`} className="gap-y-[5px] ios:gap-y-[6px]">
       <View className="flex-row items-baseline justify-between gap-x-[8px]">
-        <Text numberOfLines={1} className="shrink font-sans text-[13px] text-white">
+        <Text
+          numberOfLines={1}
+          className="shrink font-sans text-[13px] text-white ios:text-[14px]"
+        >
           {goal.name}
         </Text>
         <Text className="font-sans text-[12px] text-white">

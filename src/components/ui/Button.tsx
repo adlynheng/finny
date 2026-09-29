@@ -7,8 +7,9 @@ export type ButtonVariant = 'primary' | 'ghost' | 'danger' | 'outline' | 'soft';
 
 /**
  * md: a modal's actions (Save, Cancel, Delete). sm: a card's actions (Add
- * transaction, New goal) and Trading's row actions. touch: the mobile sheet's
- * 48px footer.
+ * transaction, New goal) and Trading's row actions; on mobile a card's action
+ * is a 38px touch target with a 13px label. touch: the mobile sheet's 48px
+ * footer.
  */
 export type ButtonSize = 'md' | 'sm' | 'touch';
 
@@ -78,7 +79,10 @@ const look: Record<
 /** Each size's corners and label size. */
 const sized: Record<ButtonSize, { box: string; text: string }> = {
   md: { box: 'rounded-8', text: 'text-[13px]' },
-  sm: { box: 'rounded-6', text: 'text-[12px]' },
+  sm: {
+    box: 'rounded-6 ios:h-[38px] ios:rounded-9',
+    text: 'text-[12px] ios:text-[13px]',
+  },
   touch: { box: 'h-action rounded-12 px-[16px]', text: 'text-[14px]' },
 };
 
@@ -92,7 +96,7 @@ const padding: Record<ButtonSize, Partial<Record<ButtonVariant, string>>> = {
     soft: 'px-[16px] py-[10px]',
   },
   sm: {
-    primary: 'px-[12px] py-[8px]',
+    primary: 'px-[12px] py-[8px] ios:px-[13px] ios:py-0',
     ghost: 'px-[12px] py-[8px]',
     danger: 'px-[12px] py-[8px]',
     outline: 'h-[28px] px-[14px]',

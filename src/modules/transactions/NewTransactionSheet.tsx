@@ -27,8 +27,16 @@ const WORDING: Record<
   TxnKind,
   { account: string; note: string; placeholder: string }
 > = {
-  expense: { account: 'Paid from', note: 'Description', placeholder: 'e.g. Kopitiam' },
-  deposit: { account: 'Deposited to', note: 'Source', placeholder: 'e.g. Tax refund' },
+  expense: {
+    account: 'Paid from',
+    note: 'Description',
+    placeholder: 'e.g. Kopitiam',
+  },
+  deposit: {
+    account: 'Deposited to',
+    note: 'Source',
+    placeholder: 'e.g. Tax refund',
+  },
   transfer: { account: 'From account', note: 'Note', placeholder: 'Optional' },
 };
 
@@ -39,9 +47,8 @@ function defaultAccount(kind: TxnKind, accounts: AccountRow[]) {
 }
 
 /** A category chip's icon, at the chip's text colour and size. */
-const chipIcon = (path: string) => (color: string, size: number) => (
-  <Icon path={path} color={color} size={size} strokeWidth={1.2} />
-);
+const chipIcon = (path: string) => (color: string, size: number) =>
+  <Icon path={path} color={color} size={size} strokeWidth={1.2} />;
 
 const chip = (a: AccountRow): ChipOption<string> => ({
   value: String(a.id),
@@ -209,13 +216,7 @@ export function NewTransactionSheet({ onClose }: { onClose: () => void }) {
 }
 
 /** A chip row's small muted label above it. */
-function Field({
-  label,
-  children,
-}: {
-  label: string;
-  children: ReactNode;
-}) {
+function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <View className="gap-[8px]">
       <Text className="font-sans text-[12px] text-muted">{label}</Text>
