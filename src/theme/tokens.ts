@@ -324,6 +324,32 @@ const spark = {
 } as const;
 
 /**
+ * Personal Finance's savings illustration, from the design's `strands()`:
+ * white strands in a 100-unit viewBox stretched to the box, saved strands
+ * brighter. Widths in points.
+ */
+const strands = {
+  count: 22,
+  width: 0.8,
+  saved: { opacity: 0.75, endY: 18 },
+  spent: { opacity: 0.38, endY: 82 },
+  /** Strand spacing where they leave the origin, and where they arrive. */
+  spread: { out: 0.9, in: 0.8 },
+} as const;
+
+/**
+ * Personal Finance's cash-flow view, from the design's `cashflow()`: white
+ * strokes on the green card in a 1000 × 200 viewBox, widths in points.
+ */
+const cashflow = {
+  income: { width: 1.4 },
+  expense: { opacity: 0.8, width: 1.2, dash: '3 3' },
+  band: { opacity: 0.12 },
+  /** The month drop lines: brighter under the hovered month. */
+  drop: { opacity: 0.22, hotOpacity: 0.7 },
+} as const;
+
+/**
  * The Overview's net-worth history, from the design's `hist()`: white strokes
  * on the green card, at these opacities and widths in points (the strokes do
  * not scale with the stretched chart).
@@ -490,6 +516,8 @@ export const tokens = {
   mix,
   echo,
   spark,
+  strands,
+  cashflow,
   history,
   dialog,
   gradients,

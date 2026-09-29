@@ -15,16 +15,8 @@
  * On macOS the pointer is a crosshair over the chart, as in the design.
  */
 
-import {
-  memo,
-  startTransition,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
-import { Platform, View, type ViewStyle } from 'react-native';
+import { memo, useCallback, useMemo, useState } from 'react';
+import { View } from 'react-native';
 import Svg, { Line, Path } from 'react-native-svg';
 import { ScrubSurface } from '@/components/ui/ScrubSurface';
 import { cx } from '@/components/ui/cardChrome';
@@ -40,16 +32,12 @@ import {
 } from './lineLayout';
 import { xAt } from './historyLayout';
 import { Reveal } from './Reveal';
+import { crosshairCursor, usePointerIndex } from './usePointerIndex';
 
 const look = tokens.echo;
 const { ink } = tokens.colors;
 const VIEWBOX = `0 0 ${ECHO_BOX} ${ECHO_BOX}`;
 const pct = (fraction: number) => `${fraction * 100}%` as const;
-// NativeWind has no cursor classes; react-native-macos adds a cursor rect for
-// this style (its Fabric view knows 'crosshair', though React Native's types
-// only list 'auto' and 'pointer'). iOS has no pointer to style.
-const CROSSHAIR = { cursor: 'crosshair' } as unknown as ViewStyle;
-
 type Props = {
   /** Oldest first: the days to plot. */
   values: readonly number[];
@@ -81,25 +69,13 @@ export function EchoLine({
   const n = values.length;
   const paths = useMemo(() => echoPaths(values, y), [values, y]);
   const [width, setWidth] = useState(0);
-  const [pointer, setPointer] = useState<number | null>(null);
-  const reported = useRef<number | null>(null);
   const seriesKey = revealKey ?? String(n);
-
   // A new series starts without a pointer day, as the design's range switch.
-  useEffect(() => {
-    setPointer(null);
-    reported.current = null;
-  }, [seriesKey]);
-
-  const onPoint = useCallback(
-    (p: HoverPoint | null) => {
-      const i = p ? indexAt(p.x, p.width, n) : null;
-      setPointer(i);
-      if (i === reported.current) return;
-      reported.current = i;
-      startTransition(() => onHover(i));
-    },
-    [n, onHover],
+  const toDay = useCallback((p: HoverPoint) => indexAt(p.x, p.width, n), [n]);
+  const { index: pointer, onHover: onPoint } = usePointerIndex(
+    toDay,
+    onHover,
+    seriesKey,
   );
   const day = pointer ?? hover;
   const hot = day !== null && day < n ? day : null;
@@ -112,7 +88,7 @@ export function EchoLine({
     <View
       testID={testID}
       className="relative flex-1"
-      style={Platform.OS === 'macos' ? CROSSHAIR : undefined}
+      style={crosshairCursor()}
       onLayout={e => setWidth(e.nativeEvent.layout.width)}
     >
       <Reveal

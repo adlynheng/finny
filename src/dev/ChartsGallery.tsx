@@ -6,6 +6,7 @@
 
 import { useMemo, useState } from 'react';
 import { Platform, Text, View } from 'react-native';
+import { CashflowArea } from '@/components/charts/CashflowArea';
 import { EchoLine } from '@/components/charts/EchoLine';
 import { MixRing } from '@/components/charts/MixRing';
 import type { MixPart } from '@/components/charts/mixLayout';
@@ -15,6 +16,7 @@ import { Rings } from '@/components/charts/Rings';
 import { allocationDial, budgetDial } from '@/components/charts/dialConfigs';
 import { Sparkline } from '@/components/charts/Sparkline';
 import { Sphere } from '@/components/charts/Sphere';
+import { StrandsFlow } from '@/components/charts/StrandsFlow';
 import type { SphereClass } from '@/components/charts/sphereLayout';
 import { ChipRow } from '@/components/ui/ChipRow';
 import { GradientCard } from '@/components/ui/GradientCard';
@@ -82,6 +84,102 @@ const sparks = [
   ),
 }));
 
+// The Finance design's last twelve months of income and expenses (S$), capped
+// at S$14,500, and its savings rate with two extremes to check by eye.
+const flowIncome = [
+  6800, 6800, 13600, 6800, 6800, 8900, 6800, 6800, 6800, 6800, 7120, 7862,
+];
+const flowExpense = [
+  4100, 4520, 5900, 3980, 4750, 4200, 4380, 4050, 5200, 4300, 4460, 4660,
+];
+const flowMonths = [
+  'Oct',
+  'Nov',
+  'Dec',
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+];
+const rates: Record<string, number> = {
+  '40.7%': (7862 - 4660) / 7862,
+  '10%': 0.1,
+  '85%': 0.85,
+};
+
+/** The Finance flow card's two views, with their own state (see EchoDemo). */
+function FlowDemo() {
+  const [rate, setRate] = useState('40.7%');
+  const [months, setMonths] = useState('12');
+  const [month, setMonth] = useState<number | null>(null);
+  const n = Number(months);
+  const income = useMemo(() => flowIncome.slice(12 - n), [n]);
+  const expense = useMemo(() => flowExpense.slice(12 - n), [n]);
+  const labels = useMemo(() => flowMonths.slice(12 - n), [n]);
+  const sel = month ?? n - 1;
+  return (
+    <>
+      <Text className="font-sans text-[11px] text-muted">
+        Savings strands: pick a rate
+      </Text>
+      <ChipRow
+        options={Object.keys(rates).map(r => ({ value: r, label: r }))}
+        value={rate}
+        onChange={r => setRate(r ?? '40.7%')}
+      />
+      <GradientCard
+        gradient="netWorthHistory"
+        className={desktop ? 'h-[200px] w-[560px]' : 'w-full'}
+      >
+        <View
+          className={
+            desktop ? 'my-[6px] flex-1' : 'mx-1 mb-[6px] mt-[18px] h-[120px]'
+          }
+        >
+          <StrandsFlow rate={rates[rate]!} compact={!desktop} />
+        </View>
+      </GradientCard>
+      <Text className="font-sans text-[11px] text-muted">
+        {`Cash flow: ${desktop ? 'hover' : 'tap or drag'} a month · `}
+        {`${flowMonths[12 - n + sel]}: in S$${income[sel]} · out S$${
+          expense[sel]
+        }`}
+      </Text>
+      <ChipRow
+        options={[
+          { value: '6', label: '6M' },
+          { value: '12', label: '12M' },
+        ]}
+        value={months}
+        onChange={m => {
+          setMonths(m ?? '12');
+          setMonth(null);
+        }}
+      />
+      <GradientCard
+        gradient="netWorthHistory"
+        className={desktop ? 'h-[240px] w-[560px]' : 'w-full'}
+      >
+        <View className={desktop ? 'mt-3 flex-1' : 'mt-[14px] h-[150px]'}>
+          <CashflowArea
+            income={income}
+            expense={expense}
+            labels={labels}
+            max={14500}
+            onHover={setMonth}
+            compact={!desktop}
+          />
+        </View>
+      </GradientCard>
+    </>
+  );
+}
+
 /**
  * The P&L chart with its own hover state, so hovering it re-renders only this
  * demo, not every chart in the gallery (the Trading screen must do the same).
@@ -138,6 +236,7 @@ export function ChartsGallery() {
   const over = dialState === 'over';
   return (
     <View className="gap-y-2">
+      <FlowDemo />
       <EchoDemo />
       <Text className="font-sans text-[11px] text-muted">
         Watchlist sparklines: danger on a down day
