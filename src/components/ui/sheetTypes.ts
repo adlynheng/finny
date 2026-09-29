@@ -29,6 +29,12 @@ export type SheetProps = {
     /** A Delete, when editing. */
     danger?: SheetAction;
   };
+  /**
+   * A live line about the form, e.g. the recurring charge's `≈ S$X per month`:
+   * at the footer's left on desktop, where Delete then joins Cancel and the
+   * primary on the right; under the form on mobile.
+   */
+  note?: string;
   /** The form. It scrolls when taller than the window; header and footer stay. */
   children: ReactNode;
 };

@@ -493,6 +493,8 @@ export const tokens = {
         heroInset: 6,
         sphereLeft: 240,
       },
+      /** The Personal Finance grid's first row, 300px. */
+      finance: { topRowHeight: 300 },
     },
     mobile: {
       width: 390,

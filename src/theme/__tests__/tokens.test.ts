@@ -47,6 +47,7 @@ describe('frame geometry', () => {
       gap: 14,
       markShadow: '0 1px 2px rgba(0,0,0,.05)',
       overview: { bottomRowHeight: 272, heroInset: 6, sphereLeft: 240 },
+      finance: { topRowHeight: 300 },
     });
   });
 

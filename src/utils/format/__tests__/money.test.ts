@@ -4,6 +4,7 @@ import {
   formatDualMoney,
   formatKMoney,
   formatMoney,
+  formatMoneyExact,
   formatPercent,
   formatSignedMoney,
   formatSignedPercent,
@@ -12,6 +13,18 @@ import {
 } from '../money';
 
 const MINUS = '−';
+
+describe('formatMoneyExact', () => {
+  it.each([
+    [114_000, 'S$1,140'],
+    [398, 'S$3.98'],
+    [12_455, 'S$124.55'],
+    [-1_998, 'S$19.98'],
+    [0, 'S$0'],
+  ])('%i cents reads %s', (cents, text) => {
+    expect(formatMoneyExact(cents)).toBe(text);
+  });
+});
 
 describe('formatMoney', () => {
   it.each([

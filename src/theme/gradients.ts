@@ -75,7 +75,7 @@ const heroGlowStops: GradientStop[] = [
 ];
 
 export const gradients = {
-  /** Overview "Net worth history" card. */
+  /** Overview "Net worth history" and Finance "Income vs expenses" cards. */
   netWorthHistory: {
     kind: 'linear',
     angle: 180,

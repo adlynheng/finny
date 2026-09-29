@@ -79,4 +79,11 @@ it('inserts, updates and deletes, refreshing after each', async () => {
     [['update', { is_active: false }], ['eq', 'id', 1], ['select'], ['single']],
     [['delete'], ['eq', 'id', 1]],
   ]);
+  // Its payments are unlinked first, so the delete is not blocked.
+  expect(stub.chainsFor('txn')).toEqual([
+    [
+      ['update', { recurring_id: null }],
+      ['eq', 'recurring_id', 1],
+    ],
+  ]);
 });

@@ -52,12 +52,27 @@ export function useUpsertRecurringCharge() {
   });
 }
 
+/**
+ * Deletes a charge. Its past payments stay in the ledger: they are unlinked
+ * from it first, since `txn.recurring_id` would otherwise block the delete.
+ */
 export function useDeleteRecurringCharge() {
+  const queryClient = useQueryClient();
   const onSettled = useInvalidateRecurringCharges();
   return useMutation({
     mutationFn: async (id: number) => {
+      unwrap(
+        await supabase
+          .from('txn')
+          .update({ recurring_id: null })
+          .eq('recurring_id', id),
+      );
       unwrap(await supabase.from('recurring_charge').delete().eq('id', id));
     },
-    onSettled,
+    onSettled: () =>
+      Promise.all([
+        onSettled(),
+        queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all }),
+      ]),
   });
 }

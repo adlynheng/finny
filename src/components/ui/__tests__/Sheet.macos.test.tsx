@@ -111,4 +111,25 @@ describe('Sheet on macOS: a centred modal', () => {
       classes(within(footer).getByRole('button', { name: 'Save' })),
     ).toContain('bg-ink');
   });
+
+  it('with a note, sets it on the left and moves Delete to the right beside Cancel', async () => {
+    await renderSheet(Sheet, {
+      actions: { ...save, danger: { label: 'Delete', onPress: jest.fn() } },
+      note: '≈ S$20.00 per month',
+    });
+    const footer = screen.getByTestId('sheet-footer');
+    const order = testIDsInOrder(footer);
+    expect(order.indexOf('sheet-note')).toBeLessThan(
+      order.indexOf('sheet-footer-spacer'),
+    );
+    const buttons = within(footer).getAllByRole('button');
+    expect(buttons.map(b => b.props.accessibilityLabel)).toEqual([
+      'Delete',
+      'Cancel',
+      'Save',
+    ]);
+    expect(order.indexOf('sheet-danger')).toBeGreaterThan(
+      order.indexOf('sheet-footer-spacer'),
+    );
+  });
 });

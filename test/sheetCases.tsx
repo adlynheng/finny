@@ -120,6 +120,16 @@ export function describeSheet(Sheet: ComponentType<SheetProps>) {
     expect(onPress).not.toHaveBeenCalled();
   });
 
+  it('shows a note about the form, and none without one', async () => {
+    await renderSheet(Sheet, {
+      actions: actions(),
+      note: '≈ S$20.00 per month',
+    });
+    expect(screen.getByTestId('sheet-note')).toHaveTextContent(
+      '≈ S$20.00 per month',
+    );
+  });
+
   it('has no footer without actions', async () => {
     await renderSheet(Sheet);
     expect(screen.queryByTestId('sheet-footer')).toBeNull();

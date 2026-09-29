@@ -1,10 +1,11 @@
-import { useState, type ReactNode } from 'react';
+import { useState } from 'react';
 import { Text, TextInput, View } from 'react-native';
 
 import { Icon } from '@/components/icons/Icon';
 import { categoryIcon } from '@/components/icons/registry';
 import { ChipRow, type ChipOption } from '@/components/ui/ChipRow';
 import { DatePicker } from '@/components/ui/DatePicker';
+import { FormField } from '@/components/ui/FormField';
 import { Input, noFocusRing } from '@/components/ui/Input';
 import { Segmented } from '@/components/ui/Segmented';
 import { Sheet } from '@/components/ui/Sheet';
@@ -156,29 +157,29 @@ export function NewTransactionSheet({ onClose }: { onClose: () => void }) {
           placeholderTextColor={tokens.colors.muted2}
           keyboardType="decimal-pad"
           {...noFocusRing}
-          className="min-w-0 flex-1 p-0 font-sans text-[52px] font-light tracking-[-0.03em] text-ink ios:text-[48px]"
+          className="min-w-0 flex-1 p-0 font-sans text-[52px] font-light tracking-[-0.03em] text-ink ios:h-[58px] ios:text-[48px]"
         />
       </View>
-      <Field label={words.account}>
+      <FormField label={words.account}>
         <ChipRow
           testID="tx-from"
           options={accounts.map(chip)}
           value={from === null ? null : String(from)}
           onChange={v => setPicked(p => ({ ...p, from: Number(v) }))}
         />
-      </Field>
+      </FormField>
       {transfer && (
-        <Field label="To account">
+        <FormField label="To account">
           <ChipRow
             testID="tx-to"
             options={accounts.map(a => ({ ...chip(a), dimmed: a.id === from }))}
             value={to === null ? null : String(to)}
             onChange={v => setPicked(p => ({ ...p, to: Number(v) }))}
           />
-        </Field>
+        </FormField>
       )}
       {!transfer && (
-        <Field label="Category">
+        <FormField label="Category">
           <ChipRow
             testID="tx-category"
             options={kindCategories.map(c => ({
@@ -189,7 +190,7 @@ export function NewTransactionSheet({ onClose }: { onClose: () => void }) {
             value={category ? String(category.id) : null}
             onChange={v => setPicked(p => ({ ...p, category: Number(v) }))}
           />
-        </Field>
+        </FormField>
       )}
       <View className="flex-row gap-[10px] ios:flex-col ios:gap-sheet-gap">
         <Input
@@ -212,15 +213,5 @@ export function NewTransactionSheet({ onClose }: { onClose: () => void }) {
         </Text>
       )}
     </Sheet>
-  );
-}
-
-/** A chip row's small muted label above it. */
-function Field({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <View className="gap-[8px]">
-      <Text className="font-sans text-[12px] text-muted">{label}</Text>
-      {children}
-    </View>
   );
 }

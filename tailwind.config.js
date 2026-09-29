@@ -89,6 +89,8 @@ module.exports = {
         'overview-row': px(desktop.overview.bottomRowHeight),
         'hero-inset': px(desktop.overview.heroInset),
         'hero-sphere': px(desktop.overview.sphereLeft),
+        // The Personal Finance grid: h-finance-row.
+        'finance-row': px(desktop.finance.topRowHeight),
         // Mobile frame: h-mobile-header, px-mobile-x, pt-mobile-top, pb-mobile-bottom;
         // the bar's inset-x-bar-x, bottom-bar-bottom, h-bar-tab, size-fab.
         'mobile-header': px(mobile.headerHeight),

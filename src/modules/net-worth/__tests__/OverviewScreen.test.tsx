@@ -4,22 +4,13 @@ import { screen } from '@testing-library/react-native';
 import { OverviewScreen } from '../OverviewScreen';
 import { classes } from '../../../../test/classes';
 import { renderWithClient } from '../../../../test/queryTestUtils';
+import { testIDsInOrder } from '../../../../test/sheetCases';
 
 jest.mock('@/lib/supabase', () => ({
   supabase: require('../../../../test/supabaseStub').createSupabaseStub(),
 }));
 
 afterEach(() => jest.restoreAllMocks());
-
-type Node = { props: { testID?: string }; children: (Node | string)[] };
-
-/** Every testID under `node`, in document order. */
-function testIDsIn(node: Node): string[] {
-  return [
-    ...(node.props.testID ? [node.props.testID] : []),
-    ...node.children.flatMap(c => (typeof c === 'string' ? [] : testIDsIn(c))),
-  ];
-}
 
 const flex = (testID: string) =>
   classes(screen.getByTestId(testID)).filter(c => /^(grow|basis)/.test(c));
@@ -57,7 +48,9 @@ describe('on iOS', () => {
       'share-card',
       'goals-card',
     ];
-    expect(testIDsIn(column).filter(id => order.includes(id))).toEqual(order);
+    expect(testIDsInOrder(column).filter(id => order.includes(id))).toEqual(
+      order,
+    );
     expect(screen.queryByTestId('overview-grid')).toBeNull();
   });
 

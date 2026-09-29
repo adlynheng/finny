@@ -1,6 +1,6 @@
 import { Portal } from '@rn-primitives/portal';
 import { useId } from 'react';
-import { KeyboardAvoidingView, View } from 'react-native';
+import { KeyboardAvoidingView, Text, View } from 'react-native';
 import Animated, {
   FadeIn,
   FadeOut,
@@ -23,7 +23,14 @@ export type { SheetProps } from './sheetTypes';
  *
  * `width` is the desktop modal's; the sheet is always full width.
  */
-export function Sheet({ open, onClose, title, actions, children }: SheetProps) {
+export function Sheet({
+  open,
+  onClose,
+  title,
+  actions,
+  note,
+  children,
+}: SheetProps) {
   const name = useId();
   if (!open) {
     return null;
@@ -59,7 +66,17 @@ export function Sheet({ open, onClose, title, actions, children }: SheetProps) {
               className="h-[4px] w-[36px] self-center rounded-full bg-sheet-handle"
             />
             <SheetHeader title={title} onClose={onClose} />
-            <SheetBody gapClassName="gap-sheet-gap">{children}</SheetBody>
+            <SheetBody gapClassName="gap-sheet-gap">
+              {children}
+              {note !== undefined && (
+                <Text
+                  testID="sheet-note"
+                  className="font-sans text-[12px] text-muted"
+                >
+                  {note}
+                </Text>
+              )}
+            </SheetBody>
             {actions && (
               <View
                 testID="sheet-footer"

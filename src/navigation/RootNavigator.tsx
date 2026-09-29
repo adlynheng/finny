@@ -17,6 +17,7 @@ import {
 import { AppFrame } from '@/components/ui/AppFrame';
 import { MobileFrame } from '@/components/ui/MobileFrame';
 import { supabase } from '@/lib/supabase';
+import { FinanceScreen } from '@/modules/finance/FinanceScreen';
 import { OverviewScreen } from '@/modules/net-worth/OverviewScreen';
 import { NewTransactionSheet } from '@/modules/transactions/NewTransactionSheet';
 import { useUiStore } from '@/stores/uiStore';
@@ -72,6 +73,12 @@ function FinnyNavigator({ initialRouteName, children }: NavigatorProps) {
 
 const Finny = createNavigatorFactory(FinnyNavigator)();
 
+/** The screens built so far; the rest are stand-ins. */
+const SCREEN_COMPONENTS: Partial<Record<ScreenName, () => ReactNode>> = {
+  Overview: OverviewScreen,
+  Finance: FinanceScreen,
+};
+
 export function RootNavigator() {
   return (
     <Finny.Navigator initialRouteName="Overview">
@@ -79,7 +86,7 @@ export function RootNavigator() {
         <Finny.Screen
           key={name}
           name={name}
-          component={name === 'Overview' ? OverviewScreen : Placeholder}
+          component={SCREEN_COMPONENTS[name] ?? Placeholder}
         />
       ))}
     </Finny.Navigator>

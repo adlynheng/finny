@@ -1,6 +1,6 @@
 import { Portal } from '@rn-primitives/portal';
 import { useId } from 'react';
-import { View } from 'react-native';
+import { Text, View } from 'react-native';
 import type { DialogWidth } from '@/theme/tokens';
 import { Button } from './Button';
 import { cx } from './cardChrome';
@@ -26,9 +26,19 @@ export function Sheet({
   title,
   width = 'standard',
   actions,
+  note,
   children,
 }: SheetProps) {
   const name = useId();
+  const danger = actions?.danger && (
+    <Button
+      testID="sheet-danger"
+      variant="danger"
+      label={actions.danger.label}
+      onPress={actions.danger.onPress}
+      disabled={actions.danger.disabled}
+    />
+  );
   if (!open) {
     return null;
   }
@@ -55,15 +65,17 @@ export function Sheet({
               testID="sheet-footer"
               className="mt-[4px] flex-row items-center gap-[8px]"
             >
-              {actions.danger && (
-                <Button
-                  variant="danger"
-                  label={actions.danger.label}
-                  onPress={actions.danger.onPress}
-                  disabled={actions.danger.disabled}
-                />
+              {note !== undefined && (
+                <Text
+                  testID="sheet-note"
+                  className="font-sans text-[12px] text-muted"
+                >
+                  {note}
+                </Text>
               )}
+              {note === undefined && danger}
               <View testID="sheet-footer-spacer" className="flex-1" />
+              {note !== undefined && danger}
               <Button variant="ghost" label="Cancel" onPress={onClose} />
               <Button
                 variant="primary"

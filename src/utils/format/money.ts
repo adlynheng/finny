@@ -32,6 +32,17 @@ export function formatAmount(
   return fixed(Math.abs(cents) / 100, decimals);
 }
 
+/** `S$1,140`, or `S$3.98` when there are cents: a charge's own amount. Unsigned. */
+export function formatMoneyExact(
+  cents: number,
+  { currency = 'SGD' }: Pick<MoneyOptions, 'currency'> = {},
+): string {
+  return formatMoney(cents, {
+    currency,
+    decimals: Math.round(cents) % 100 === 0 ? 0 : 2,
+  });
+}
+
 /** `+S$45.50` / `−S$45.50`; zero, including an amount that rounds to it, has no sign. */
 export function formatSignedMoney(
   cents: number,
