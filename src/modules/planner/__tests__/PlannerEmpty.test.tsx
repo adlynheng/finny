@@ -77,7 +77,7 @@ it('Start plan waits for an income, then saves it as a monthly salary', async ()
     name: 'Salary',
     base_income_cents: 950_000,
     frequency: 'monthly',
-    payday: 'Last day of month',
+    payday: 31,
     start_date: '2026-09-24',
   });
 });

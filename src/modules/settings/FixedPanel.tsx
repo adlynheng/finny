@@ -9,6 +9,7 @@ import { CpfSheet } from './CpfSheet';
 import { IncomeSheet } from './IncomeSheet';
 import {
   DEFAULT_PAYDAY,
+  dayOfMonthLabel,
   INCOME_LABELS,
   perMonthCents,
   ratePercent,
@@ -20,9 +21,9 @@ import type { PanelHead, SettingsData } from './useSettingsData';
 function subtitle(source: IncomeSourceRow, employeeRate: number) {
   if (source.type === 'salary') {
     const takeHome = source.base_income_cents * (1 - employeeRate);
-    return `Paid ${source.payday || DEFAULT_PAYDAY} · take-home ≈ ${formatMoney(
-      takeHome,
-    )}`;
+    return `Paid on the ${dayOfMonthLabel(
+      source.payday ?? DEFAULT_PAYDAY,
+    )} · take-home ≈ ${formatMoney(takeHome)}`;
   }
   const schedule = scheduleOf(source);
   if (!schedule) {

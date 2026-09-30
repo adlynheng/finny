@@ -7,7 +7,11 @@ import { cx } from '@/components/ui/cardChrome';
 import { Glass } from '@/components/ui/Glass';
 import { GradientCard } from '@/components/ui/GradientCard';
 import { MonthStepper } from '@/components/ui/MonthStepper';
+import { useCards } from '@/hooks/useCards';
+import { useIncomeSources } from '@/hooks/useIncomeSources';
 import { useRecurringCharges } from '@/hooks/useRecurringCharges';
+import { useSettings } from '@/hooks/useSettings';
+import { useTransactions } from '@/hooks/useTransactions';
 import { today as currentDay } from '@/lib/today';
 import { useUiStore } from '@/stores/uiStore';
 import { tokens } from '@/theme/tokens';
@@ -21,12 +25,14 @@ import {
 } from '@/utils/format/date';
 import { formatMoneyExact } from '@/utils/format/money';
 import {
-  chargesByDay,
+  calendarItems,
   dateOf,
   defaultDay,
+  isOutgoing,
   isPastDay,
   tileAmount,
   upcomingDays,
+  type DayItem,
 } from './payments';
 
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -47,12 +53,18 @@ function tileBorder(selected: boolean, isToday: boolean) {
   return selected ? 'border-white/45' : 'border-white/10';
 }
 
+/** What leaves on a day: its charges and card bills. */
+const outgoingCents = (items: readonly DayItem[]) =>
+  items.filter(isOutgoing).reduce((s, i) => s + i.cents, 0);
+
 /**
- * The brown card: the recurring charges on a month's calendar. A day whose
- * charges have been paid shows a lime check; one still to come shows the
- * amount (a lime dot on mobile); today is outlined, the selected day brighter,
- * and past days with nothing dimmed. Only charge days press. The strip below
- * names the selected day's charges and their total; it opens on the next one.
+ * The brown card: the recurring charges and credit card bills on a month's
+ * calendar, and each salary's payday as a lime star. A day whose payments have
+ * been made shows a lime check; one still to come shows the amount (a lime dot
+ * on mobile); today is outlined, the selected day brighter, and past days with
+ * nothing dimmed. Only days with something on them press. The strip below
+ * names the selected day's items and what leaves that day (or, on a payday
+ * alone, the take-home coming in); it opens on the next one.
  * The month (the UI store's `calendarMonth`) steps from this month to three
  * ahead.
  *
@@ -64,9 +76,16 @@ export function PaymentsCalendarCard() {
   const storedMonth = useUiStore(s => s.calendarMonth);
   const setUi = useUiStore(s => s.set);
   const charges = useRecurringCharges().data ?? [];
+  const cards = useCards().data ?? [];
+  const incomes = useIncomeSources().data ?? [];
+  const txns = useTransactions().data ?? [];
+  const employeeRate = useSettings().data?.cpf_employee_rate ?? 0;
   const today = currentDay();
   const thisMonth = monthKey(today);
-  const none = !charges.some(c => c.is_active);
+  const none =
+    !charges.some(c => c.is_active) &&
+    !cards.some(c => c.bill_due_day !== null && c.statement_day !== null) &&
+    !incomes.some(i => i.is_active && i.type === 'salary');
   // Nothing to step through: the empty card stays on this month.
   const month = none ? thisMonth : storedMonth;
   // The pressed day, for the month it was pressed in.
@@ -74,19 +93,23 @@ export function PaymentsCalendarCard() {
     null,
   );
 
-  const byDay = chargesByDay(charges, month);
+  const byDay = calendarItems(
+    { charges, cards, incomes, txns, employeeRate },
+    month,
+  );
   const sel =
     picked?.month === month && byDay.has(picked.day)
       ? picked.day
       : defaultDay(byDay, month, today);
-  const selCharges = sel === null ? [] : byDay.get(sel) ?? [];
-  const sum = (days: number[]) =>
-    days.reduce(
-      (total, d) =>
-        total + byDay.get(d)!.reduce((s, c) => s + c.amount_cents, 0),
-      0,
-    );
-  const due = sum(upcomingDays(byDay, month, today));
+  const selItems = sel === null ? [] : byDay.get(sel) ?? [];
+  const selOut = outgoingCents(selItems);
+  const selIn = selItems
+    .filter(i => !isOutgoing(i))
+    .reduce((s, i) => s + i.cents, 0);
+  const due = upcomingDays(byDay, month, today).reduce(
+    (total, d) => total + outgoingCents(byDay.get(d)!),
+    0,
+  );
   const weeks = calendarWeeks(calendarTiles(month, { selected: null, today }));
 
   return (
@@ -167,6 +190,8 @@ export function PaymentsCalendarCard() {
               // border would add to its share, widening it past the blank
               // cells and the weekday labels.
               const items = byDay.get(t.day);
+              const out = items?.filter(isOutgoing) ?? [];
+              const payday = !!items?.some(item => !isOutgoing(item));
               const past = isPastDay(month, t.day, today);
               const isToday = t.date === today;
               const selected = t.day === sel;
@@ -183,21 +208,26 @@ export function PaymentsCalendarCard() {
                     onPress={() => setPicked({ month, day: t.day })}
                     className={cx(
                       'min-h-0 flex-1 justify-between overflow-hidden rounded-10 border px-[6px] py-[5px] ios:rounded-9 ios:p-[5px]',
-                      tileFill(selected, !!items, isToday),
+                      tileFill(selected, out.length > 0, isToday),
                       tileBorder(selected, isToday),
                       past && !items && !isToday && 'opacity-60',
                     )}
                   >
-                    <Text className="font-sans text-[12px] leading-[12px] text-white">
-                      {t.day}
-                    </Text>
-                    {items &&
+                    <View className="flex-row items-start justify-between">
+                      <Text className="font-sans text-[12px] leading-[12px] text-white">
+                        {t.day}
+                      </Text>
+                      {payday && (
+                        <PaydayStar testID={`payments-payday-${t.day}`} />
+                      )}
+                    </View>
+                    {out.length > 0 &&
                       (past ? (
                         <PaidDisc testID={`payments-paid-${t.day}`} />
                       ) : (
                         <Due
                           testID={`payments-due-${t.day}`}
-                          cents={items.reduce((s, c) => s + c.amount_cents, 0)}
+                          cents={outgoingCents(out)}
                         />
                       ))}
                   </Pressable>
@@ -245,23 +275,37 @@ export function PaymentsCalendarCard() {
                 numberOfLines={1}
                 className="min-w-0 flex-1 font-sans text-[12px] text-white opacity-90 ios:flex-none ios:text-[11px]"
               >
-                {selCharges.map(c => c.name).join(', ')}
+                {selItems.map(i => i.name).join(', ')}
               </Text>
             </View>
-            {selCharges.length > 0 && (
+            {selItems.length > 0 && (
               <Text
                 testID="payments-strip-total"
                 className="font-sans text-[13px] text-white ios:text-[14px]"
               >
-                {formatMoneyExact(
-                  selCharges.reduce((s, c) => s + c.amount_cents, 0),
-                )}
+                {selOut > 0 || selIn === 0
+                  ? formatMoneyExact(selOut)
+                  : `+${formatMoneyExact(selIn)}`}
               </Text>
             )}
           </>
         )}
       </Glass>
     </GradientCard>
+  );
+}
+
+/** A payday: a lime star by the day's number. */
+function PaydayStar({ testID }: { testID: string }) {
+  return (
+    <View testID={testID} className="size-[11px] ios:size-[10px]">
+      <Svg width="100%" height="100%" viewBox="0 0 12 12">
+        <Path
+          d="M6 .6l1.6 3.5 3.8.4-2.9 2.6.8 3.8L6 9 2.7 10.9l.8-3.8L.6 4.5l3.8-.4z"
+          fill={tokens.colors.lime}
+        />
+      </Svg>
+    </View>
   );
 }
 

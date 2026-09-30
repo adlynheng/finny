@@ -87,6 +87,7 @@ export type Database = {
         Row: {
           account_id: number;
           bank: string;
+          bill_due_day: number | null;
           card_type: string;
           color_theme: string | null;
           credit_limit_cents: number | null;
@@ -98,10 +99,12 @@ export type Database = {
           rewards_earned_display: string | null;
           rewards_program: string | null;
           statement_date: string | null;
+          statement_day: number | null;
         };
         Insert: {
           account_id: number;
           bank: string;
+          bill_due_day?: number | null;
           card_type: string;
           color_theme?: string | null;
           credit_limit_cents?: number | null;
@@ -113,10 +116,12 @@ export type Database = {
           rewards_earned_display?: string | null;
           rewards_program?: string | null;
           statement_date?: string | null;
+          statement_day?: number | null;
         };
         Update: {
           account_id?: number;
           bank?: string;
+          bill_due_day?: number | null;
           card_type?: string;
           color_theme?: string | null;
           credit_limit_cents?: number | null;
@@ -128,6 +133,7 @@ export type Database = {
           rewards_earned_display?: string | null;
           rewards_program?: string | null;
           statement_date?: string | null;
+          statement_day?: number | null;
         };
         Relationships: [
           {
@@ -202,7 +208,7 @@ export type Database = {
           is_active: boolean;
           last_posted_date: string | null;
           name: string;
-          payday: string | null;
+          payday: number | null;
           start_date: string;
           type: string;
         };
@@ -217,7 +223,7 @@ export type Database = {
           is_active?: boolean;
           last_posted_date?: string | null;
           name: string;
-          payday?: string | null;
+          payday?: number | null;
           start_date: string;
           type: string;
         };
@@ -232,7 +238,7 @@ export type Database = {
           is_active?: boolean;
           last_posted_date?: string | null;
           name?: string;
-          payday?: string | null;
+          payday?: number | null;
           start_date?: string;
           type?: string;
         };

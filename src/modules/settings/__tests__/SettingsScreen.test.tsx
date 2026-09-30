@@ -252,6 +252,36 @@ describe('Add card', () => {
     expect(addButton().props.accessibilityState.disabled).toBe(false);
   });
 
+  it('a credit card’s billing cycle: both days or neither, each 1–31', async () => {
+    await open();
+    await fireEvent.changeText(screen.getByLabelText('Card name'), 'Citi');
+    await fireEvent.changeText(screen.getByLabelText('Last 4 digits'), '1234');
+    await fireEvent.changeText(screen.getByLabelText('Statement day'), '18');
+    expect(addButton().props.accessibilityState.disabled).toBe(true);
+    await fireEvent.changeText(screen.getByLabelText('Bill due day'), '32');
+    expect(addButton().props.accessibilityState.disabled).toBe(true);
+    await fireEvent.changeText(screen.getByLabelText('Bill due day'), '8');
+    expect(addButton().props.accessibilityState.disabled).toBe(false);
+
+    stub.respond('account', { data: { id: 9 }, error: null });
+    await fireEvent.press(addButton());
+    expect(
+      stub.chainsFor('card').find(chain => chain[0]?.[0] === 'insert')?.[0],
+    ).toEqual([
+      'insert',
+      expect.objectContaining({ statement_day: 18, bill_due_day: 8 }),
+    ]);
+  });
+
+  it('a debit card has no billing cycle', async () => {
+    await open();
+    await fireEvent.press(
+      within(screen.getByTestId('card-kind')).getByText('Debit'),
+    );
+    expect(screen.queryByLabelText('Statement day')).toBeNull();
+    expect(screen.queryByLabelText('Bill due day')).toBeNull();
+  });
+
   it('shows the six themes as swatches, ringing the chosen one', async () => {
     await open();
     const swatches = within(screen.getByTestId('card-colours')).getAllByRole(
@@ -311,6 +341,8 @@ describe('Add card', () => {
         network: 'VISA',
         color_theme: 'Mist',
         include_in_budget: true,
+        statement_day: null,
+        bill_due_day: null,
       }),
     ]);
     expect(useUiStore.getState().selectedCardId).toBe(7);

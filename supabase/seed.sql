@@ -146,7 +146,7 @@ where o.date between (select min(month) from seed_months) and current_date;
 insert into income_source (name, employer, type, base_income_cents, frequency, start_date, payday, account_id)
 values (
   'Salary', 'Acme Pte Ltd', 'salary', 1200000, 'monthly',
-  date_trunc('month', current_date)::date + 24, '25th',
+  date_trunc('month', current_date)::date + 24, 25,
   (select id from account where name = 'DBS Multiplier')
 );
 

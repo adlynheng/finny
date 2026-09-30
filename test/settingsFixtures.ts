@@ -23,6 +23,8 @@ function card(
     card_type: 'credit',
     credit_limit_cents: null,
     statement_date: null,
+    statement_day: null,
+    bill_due_day: null,
     rewards_program: null,
     rewards_earned_display: null,
     include_in_budget: true,

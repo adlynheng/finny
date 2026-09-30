@@ -24,7 +24,7 @@ import {
   inputToCents,
   sanitizeAmountInput,
 } from '@/utils/format/money';
-import { DEFAULT_PAYDAY, INCOME_LABELS } from './income';
+import { DEFAULT_PAYDAY, INCOME_LABELS, parseDayOfMonth } from './income';
 
 const TYPES = INCOME_TYPES.map(t => ({ value: t, label: INCOME_LABELS[t] }));
 const FREQS = [
@@ -101,7 +101,9 @@ export function IncomeSheet({
   const [amount, setAmount] = useState(
     source ? centsToInput(source.base_income_cents) : '',
   );
-  const [payday, setPayday] = useState(source?.payday ?? DEFAULT_PAYDAY);
+  const [payday, setPayday] = useState(
+    String(source?.payday ?? DEFAULT_PAYDAY),
+  );
   const [freq, setFreq] = useState<Freq>(initial.freq);
   const [every, setEvery] = useState(initial.every);
   const [unit, setUnit] = useState<Unit>(initial.unit);
@@ -115,9 +117,11 @@ export function IncomeSheet({
   const custom = !salary && freq === 'custom';
   const cents = inputToCents(amount) ?? 0;
   const everyN = Number(every);
+  const day = parseDayOfMonth(payday);
   const valid =
     name.trim() !== '' &&
     cents > 0 &&
+    (!salary || day !== null) &&
     (!custom || (Number.isInteger(everyN) && everyN > 0));
 
   const save = () => {
@@ -132,7 +136,7 @@ export function IncomeSheet({
       frequency: salary ? 'monthly' : freq,
       custom_every: custom ? everyN : null,
       custom_unit: custom ? unit : null,
-      payday: salary ? payday.trim() || DEFAULT_PAYDAY : null,
+      payday: salary ? day : null,
       start_date: source?.start_date ?? today(),
       account_id: account,
     };
@@ -191,9 +195,11 @@ export function IncomeSheet({
         <Input
           testID="income-payday"
           label="Pay day"
-          placeholder="e.g. 25th of month"
+          placeholder="e.g. 25"
+          keyboardType="number-pad"
+          maxLength={2}
           value={payday}
-          onChangeText={setPayday}
+          onChangeText={t => setPayday(t.replace(/[^0-9]/g, ''))}
         />
       ) : (
         <FormField label="Frequency">
@@ -235,7 +241,7 @@ export function IncomeSheet({
       </FormField>
       <Text testID="income-hint" className="font-sans text-[12px] text-muted">
         {salary
-          ? 'Salary is subject to CPF contributions.'
+          ? 'Day of the month, 1–31; 31 pays on the last day. Salary is subject to CPF contributions.'
           : 'Not subject to CPF. Converted to a monthly equivalent for planning.'}
       </Text>
       {(upsert.isError || remove.isError) && (

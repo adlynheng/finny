@@ -14,6 +14,7 @@ import {
   getISODay,
   isValid,
   parse,
+  setDate,
   startOfMonth,
 } from 'date-fns';
 
@@ -103,6 +104,13 @@ export function shiftMonth(month: MonthKey, by: number): MonthKey {
 
 export function daysInMonth(month: MonthKey): number {
   return getDaysInMonth(parseMonth(month));
+}
+
+/** Day `day` of `month`, or its last day when the month is shorter: 31 in February is the 28th. */
+export function dayInMonth(month: MonthKey, day: number): string {
+  return toIsoDate(
+    setDate(parseMonth(month), Math.min(day, daysInMonth(month))),
+  );
 }
 
 /**

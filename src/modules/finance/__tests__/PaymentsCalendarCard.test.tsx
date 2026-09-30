@@ -129,3 +129,79 @@ it('with no charges at all, is the empty card: nothing scheduled, this month onl
   expect(screen.queryByTestId('payments-month-next')).toBeNull();
   expect(screen.queryByTestId('payments-strip-total')).toBeNull();
 });
+
+it('stars each payday, and a payday alone shows the take-home coming in', async () => {
+  stub.respond('income_source', {
+    data: [
+      {
+        id: 7,
+        name: 'Acme',
+        type: 'salary',
+        base_income_cents: 1_000_000,
+        frequency: 'monthly',
+        payday: 25,
+        is_active: true,
+        start_date: '2026-01-10',
+      },
+    ],
+    error: null,
+  });
+  stub.respond('settings', { data: { cpf_employee_rate: 0.2 }, error: null });
+  await open();
+
+  const star = await screen.findByTestId('payments-payday-25');
+  expect(within(day(25)).getByTestId('payments-payday-25')).toBe(star);
+  // A payday is not a payment: no amount, no check, and it is not in the total.
+  expect(screen.queryByTestId('payments-due-25')).toBeNull();
+  expect(screen.getByTestId('payments-due')).toHaveTextContent(
+    'S$60 due for the rest of September',
+  );
+
+  await fireEvent.press(day(25));
+  expect(screen.getByTestId('payments-strip-names')).toHaveTextContent(
+    'Payday · Acme',
+  );
+  expect(screen.getByTestId('payments-strip-total')).toHaveTextContent(
+    '+S$8,000',
+  );
+});
+
+it('shows a credit card’s bill on its due day, for what its cycle spent', async () => {
+  stub.respond('card', {
+    data: [
+      {
+        id: 4,
+        bank: 'DBS Altitude',
+        card_type: 'credit',
+        account_id: 9,
+        statement_day: 18,
+        bill_due_day: 28,
+      },
+    ],
+    error: null,
+  });
+  stub.respond('txn', {
+    data: [
+      {
+        account_id: 9,
+        date: '2026-09-10',
+        kind: 'expense',
+        amount_cents: -45_000,
+      },
+    ],
+    error: null,
+  });
+  await open();
+
+  expect(
+    await within(day(28)).findByTestId('payments-due-28'),
+  ).toHaveTextContent('S$450');
+  expect(screen.getByTestId('payments-due')).toHaveTextContent(
+    'S$510 due for the rest of September',
+  );
+  await fireEvent.press(day(28));
+  expect(screen.getByTestId('payments-strip-names')).toHaveTextContent(
+    'DBS Altitude bill',
+  );
+  expect(screen.getByTestId('payments-strip-total')).toHaveTextContent('S$450');
+});

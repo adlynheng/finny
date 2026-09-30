@@ -1,4 +1,7 @@
+import type { CardRow, IncomeSourceRow } from '@/types/domain';
 import {
+  billOf,
+  calendarItems,
   chargesByDay,
   dateOf,
   defaultDay,
@@ -89,4 +92,133 @@ it('writes a tile amount in dollars, or thousands to two places', () => {
 
 it('dates a day of a month', () => {
   expect(dateOf('2026-09', 5)).toBe('2026-09-05');
+});
+
+describe('card bills', () => {
+  // Statement on the 18th, due on the 8th: the bill on 8 Oct is for 19 Aug – 18 Sep.
+  const card = {
+    card_type: 'credit',
+    account_id: 9,
+    statement_day: 18,
+    bill_due_day: 8,
+  };
+  const txns = [
+    { account_id: 9, date: '2026-08-18', kind: 'expense', amount_cents: -500 },
+    {
+      account_id: 9,
+      date: '2026-08-19',
+      kind: 'expense',
+      amount_cents: -12_000,
+    },
+    {
+      account_id: 9,
+      date: '2026-09-18',
+      kind: 'expense',
+      amount_cents: -3_000,
+    },
+    { account_id: 9, date: '2026-09-02', kind: 'deposit', amount_cents: 1_000 },
+    {
+      account_id: 9,
+      date: '2026-09-05',
+      kind: 'transfer',
+      amount_cents: 40_000,
+    },
+    {
+      account_id: 1,
+      date: '2026-09-05',
+      kind: 'expense',
+      amount_cents: -9_999,
+    },
+    { account_id: 9, date: '2026-09-19', kind: 'expense', amount_cents: -700 },
+  ];
+
+  it('falls due on its bill day, for what the cycle before it spent, less refunds', () => {
+    expect(billOf(card, txns, '2026-10')).toEqual({ day: 8, cents: 14_000 });
+  });
+
+  it('a cycle still open shows what it has spent so far', () => {
+    expect(billOf(card, txns, '2026-11')).toEqual({ day: 8, cents: 700 });
+  });
+
+  it('a bill due after its statement closes that month is for that cycle', () => {
+    const late = { ...card, statement_day: 3, bill_due_day: 25 };
+    // 4 Aug – 3 Sep.
+    expect(billOf(late, txns, '2026-09')).toEqual({ day: 25, cents: 11_500 });
+  });
+
+  it('a day past the month end falls on its last day', () => {
+    expect(billOf({ ...card, bill_due_day: 31 }, txns, '2026-02')?.day).toBe(
+      28,
+    );
+  });
+
+  it('none for a debit card or a card without both days', () => {
+    expect(billOf({ ...card, card_type: 'debit' }, txns, '2026-10')).toBeNull();
+    expect(
+      billOf({ ...card, statement_day: null }, txns, '2026-10'),
+    ).toBeNull();
+    expect(billOf({ ...card, bill_due_day: null }, txns, '2026-10')).toBeNull();
+  });
+});
+
+describe('calendarItems', () => {
+  const salary = {
+    id: 7,
+    name: 'Acme',
+    type: 'salary',
+    base_income_cents: 1_000_000,
+    payday: 25,
+    is_active: true,
+    start_date: '2026-01-10',
+  } as IncomeSourceRow;
+  const altitude = {
+    id: 4,
+    bank: 'DBS Altitude',
+    card_type: 'credit',
+    account_id: 9,
+    statement_day: 18,
+    bill_due_day: 8,
+  } as CardRow;
+
+  it('puts charges, card bills and each salary’s payday on their days', () => {
+    const byDay = calendarItems(
+      {
+        charges,
+        cards: [altitude],
+        incomes: [salary, { ...salary, id: 8, type: 'freelance' }],
+        txns: [],
+        employeeRate: 0.2,
+      },
+      '2026-10',
+    );
+    expect(byDay.get(8)).toEqual([
+      { key: 'bill-4', name: 'DBS Altitude bill', cents: 0, kind: 'bill' },
+    ]);
+    expect(byDay.get(25)).toEqual([
+      {
+        key: 'payday-7',
+        name: 'Payday · Acme',
+        cents: 800_000,
+        kind: 'payday',
+      },
+    ]);
+    expect(byDay.get(1)?.map(i => i.kind)).toEqual(['charge']);
+  });
+
+  it('no payday before the salary starts, or once it is paused', () => {
+    const items = (source: IncomeSourceRow) =>
+      calendarItems(
+        {
+          charges: [],
+          cards: [],
+          incomes: [source],
+          txns: [],
+          employeeRate: 0.2,
+        },
+        '2026-09',
+      );
+    expect(items({ ...salary, start_date: '2026-09-26' }).size).toBe(0);
+    expect(items({ ...salary, is_active: false }).size).toBe(0);
+    expect(items({ ...salary, payday: 31 }).has(30)).toBe(true);
+  });
 });

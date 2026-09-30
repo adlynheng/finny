@@ -2,7 +2,6 @@ import type { IncomeSourceRow, RecurringChargeRow } from '@/types/domain';
 import {
   chargePostings,
   incomePostings,
-  paydayOf,
   paydays,
   type IncomeContext,
 } from '../posting';
@@ -35,7 +34,7 @@ const income = (over: Partial<IncomeSourceRow> = {}): IncomeSourceRow => ({
   custom_every: null,
   custom_unit: null,
   start_date: '2026-01-10',
-  payday: '25th',
+  payday: 25,
   account_id: 1,
   is_active: true,
   last_posted_date: '2026-08-31',
@@ -61,40 +60,24 @@ const context: IncomeContext = {
   ],
 };
 
-describe('paydayOf', () => {
-  it.each([
-    ['25th', 25],
-    ['25', 25],
-    ['25th of month', 25],
-    ['Last day of month', 'last'],
-    ['', 'last'],
-    [null, 'last'],
-    ['40th', 'last'],
-  ] as const)('%s is %s', (text, day) => {
-    expect(paydayOf(text)).toBe(day);
-  });
-});
-
 describe('paydays', () => {
   it('each month’s pay day after the last posted, today included', () => {
-    expect(paydays('25th', '2026-07-25', '2026-09-25')).toEqual([
+    expect(paydays(25, '2026-07-25', '2026-09-25')).toEqual([
       '2026-08-25',
       '2026-09-25',
     ]);
   });
 
   it('a short month pays on its last day', () => {
-    expect(paydays('31', '2026-01-31', '2026-03-31')).toEqual([
+    expect(paydays(31, '2026-01-31', '2026-03-31')).toEqual([
       '2026-02-28',
       '2026-03-31',
     ]);
-    expect(paydays('Last day of month', '2026-01-31', '2026-02-28')).toEqual([
-      '2026-02-28',
-    ]);
+    expect(paydays(null, '2026-01-31', '2026-02-28')).toEqual(['2026-02-28']);
   });
 
   it('nothing once today is posted', () => {
-    expect(paydays('25th', '2026-09-30', '2026-09-30')).toEqual([]);
+    expect(paydays(25, '2026-09-30', '2026-09-30')).toEqual([]);
   });
 });
 

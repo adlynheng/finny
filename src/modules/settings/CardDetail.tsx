@@ -12,6 +12,7 @@ import type { CardRow } from '@/types/domain';
 import { monthSpentCents } from '@/utils/derive/budget';
 import { formatMoney } from '@/utils/format/money';
 import { cardKind } from './CardFace';
+import { dayOfMonthLabel } from './income';
 
 const plus = (color: string) => (
   <PlusIcon size={10} color={color} strokeWidth={1.4} />
@@ -42,7 +43,13 @@ function useCardStats(card: CardRow): Stat[] {
           ? formatMoney(card.credit_limit_cents)
           : '—',
       },
-      { label: 'Statement', value: card.statement_date ?? '—' },
+      {
+        label: 'Statement',
+        value:
+          card.statement_day !== null
+            ? dayOfMonthLabel(card.statement_day)
+            : card.statement_date ?? '—',
+      },
     ];
   }
   const spent = monthSpentCents(

@@ -33,7 +33,7 @@ const salary = {
   custom_every: null,
   custom_unit: null,
   start_date: '2026-01-10',
-  payday: '25th',
+  payday: 25,
   account_id: 1,
   is_active: true,
   last_posted_date: '2026-09-01',

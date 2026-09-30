@@ -12,6 +12,7 @@ import { useAddCard } from '@/hooks/useCards';
 import { cardThemes } from '@/theme/gradients';
 import { tokens } from '@/theme/tokens';
 import { CARD_THEMES, type CardTheme, type CardType } from '@/types/domain';
+import { parseDayOfMonth } from './income';
 
 const NETWORKS = ['VISA', 'mastercard', 'AMEX'] as const;
 type Network = (typeof NETWORKS)[number];
@@ -27,7 +28,9 @@ export const isLast4 = (text: string) => /^\d{4}$/.test(text);
 /**
  * The Add card form: its name, last four digits, network, Credit or Debit,
  * a rewards line and a colour from the six card themes. A credit card gets a
- * liability account of its own for what it owes; a debit card spends from
+ * liability account of its own for what it owes, and can take its billing
+ * cycle (the statement day and the bill's due day, both or neither), which
+ * puts its bills on the payments calendar; a debit card spends from
  * one of the savings accounts, picked here (the design has no such field,
  * but every card belongs to an account). Mount it only while open.
  */
@@ -50,11 +53,23 @@ export function AddCardSheet({
   const [rewards, setRewards] = useState('');
   const [theme, setTheme] = useState<CardTheme>('Green');
   const [linkedId, setLinkedId] = useState<number | null>(null);
+  const [statement, setStatement] = useState('');
+  const [billDue, setBillDue] = useState('');
+  const statementDay = parseDayOfMonth(statement);
+  const billDueDay = parseDayOfMonth(billDue);
   const linked = linkedId ?? savings[0]?.id ?? null;
 
   const credit = kind === 'credit';
+  // The cycle needs both days, or neither.
+  const cycleValid =
+    !credit ||
+    (statement === '' && billDue === '') ||
+    (statementDay !== null && billDueDay !== null);
   const valid =
-    bank.trim() !== '' && isLast4(last4) && (credit || linked !== null);
+    bank.trim() !== '' &&
+    isLast4(last4) &&
+    (credit || linked !== null) &&
+    cycleValid;
 
   const save = () => {
     if (!valid) {
@@ -74,6 +89,8 @@ export function AddCardSheet({
           // As the design: a credit card counts toward the budget, a debit card not.
           include_in_budget: credit,
           account_id: credit ? undefined : linked!,
+          statement_day: credit ? statementDay : null,
+          bill_due_day: credit ? billDueDay : null,
         },
         account: credit
           ? {
@@ -139,6 +156,35 @@ export function AddCardSheet({
           onChange={setKind}
         />
       </FormField>
+      {credit && (
+        <>
+          <Input
+            testID="card-statement-day"
+            label="Statement day"
+            placeholder="e.g. 18"
+            keyboardType="number-pad"
+            maxLength={2}
+            value={statement}
+            onChangeText={t => setStatement(t.replace(/[^0-9]/g, ''))}
+          />
+          <Input
+            testID="card-bill-due-day"
+            label="Bill due day"
+            placeholder="e.g. 8"
+            keyboardType="number-pad"
+            maxLength={2}
+            value={billDue}
+            onChangeText={t => setBillDue(t.replace(/[^0-9]/g, ''))}
+          />
+          <Text
+            testID="card-cycle-hint"
+            className="font-sans text-[12px] text-muted"
+          >
+            Days of the month, 1–31; 31 is the last day. The bill shows on the
+            payments calendar with what its cycle spent.
+          </Text>
+        </>
+      )}
       {!credit && (
         <FormField label="Spends from">
           <ChipRow

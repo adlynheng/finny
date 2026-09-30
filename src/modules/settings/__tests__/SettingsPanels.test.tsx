@@ -326,7 +326,7 @@ describe('Fixed variables', () => {
       'Salary',
       'S$12,000 / mo',
       'Salary',
-      'Paid 25th · take-home ≈ S$9,600',
+      'Paid on the 25th · take-home ≈ S$9,600',
       'S$12,000',
       '89.2% of income',
     ]);
@@ -375,10 +375,22 @@ describe('Fixed variables', () => {
     await draw('fixed');
     await fireEvent.press(screen.getByLabelText('Add income'));
     expect(screen.getByLabelText('Monthly amount')).toBeTruthy();
-    expect(screen.getByLabelText('Pay day').props.value).toBe(
-      'Last day of month',
+    expect(screen.getByLabelText('Pay day').props.value).toBe('31');
+    expect(text('income-hint')).toBe(
+      'Day of the month, 1–31; 31 pays on the last day. Salary is subject to CPF contributions.',
     );
-    expect(text('income-hint')).toBe('Salary is subject to CPF contributions.');
+    // A pay day is a day of the month.
+    await fireEvent.changeText(screen.getByLabelText('Source'), 'Acme');
+    await fireEvent.changeText(screen.getByLabelText('Monthly amount'), '9000');
+    await fireEvent.changeText(screen.getByLabelText('Pay day'), '32');
+    expect(screen.getByLabelText('Add').props.accessibilityState.disabled).toBe(
+      true,
+    );
+    await fireEvent.changeText(screen.getByLabelText('Pay day'), '2a5');
+    expect(screen.getByLabelText('Pay day').props.value).toBe('25');
+    expect(screen.getByLabelText('Add').props.accessibilityState.disabled).toBe(
+      false,
+    );
     expect(screen.queryByTestId('income-frequency')).toBeNull();
 
     await fireEvent.press(

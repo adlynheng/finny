@@ -19,12 +19,12 @@ import type {
 } from '@/types/domain';
 import { nextDue, scheduleOf, type Schedule } from '@/utils/derive/recurrence';
 import {
-  daysInMonth,
+  dayInMonth,
   monthKey,
   parseDate,
   toIsoDate,
 } from '@/utils/format/date';
-import { INCOME_LABELS } from '@/modules/settings/income';
+import { INCOME_LABELS, LAST_DAY } from '@/modules/settings/income';
 
 const dayAfter = (date: string) => toIsoDate(addDays(parseDate(date), 1));
 
@@ -52,33 +52,20 @@ export function dueDates(
 }
 
 /**
- * The day of the month a salary's free-text pay day names: the first number in it (`25th`,
- * `25`), or the month's last day for `Last day of month` and anything without one.
+ * A salary's pay dates after `after`, up to and including `today`: its pay day each month (31,
+ * or none, the last day), on the last day of a shorter month.
  */
-export function paydayOf(text: string | null): number | 'last' {
-  const n = Number(text?.match(/\d{1,2}/)?.[0]);
-  return Number.isInteger(n) && n >= 1 && n <= 31 ? n : 'last';
-}
-
-/** A salary's pay dates after `after`, up to and including `today`; a short month pays on its last day. */
 export function paydays(
-  payday: string | null,
+  payday: number | null,
   after: string,
   today: string,
 ): string[] {
-  const day = paydayOf(payday);
   const from = dayAfter(after);
   if (from > today) {
     return [];
   }
   return eachMonthOfInterval({ start: parseDate(from), end: parseDate(today) })
-    .map(month => {
-      const key = monthKey(month);
-      const last = daysInMonth(key);
-      return `${key}-${String(
-        day === 'last' ? last : Math.min(day, last),
-      ).padStart(2, '0')}`;
-    })
+    .map(month => dayInMonth(monthKey(month), payday ?? LAST_DAY))
     .filter(date => date >= from && date <= today);
 }
 
