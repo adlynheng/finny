@@ -15,10 +15,10 @@ import {
   monthlyEquivalentCents,
   nextDue,
   periodSuffix,
+  scheduleOf,
 } from '@/utils/derive/recurrence';
 import { formatDayMonth } from '@/utils/format/date';
 import { formatMoney, formatMoneyExact } from '@/utils/format/money';
-import { scheduleOf } from './payments';
 import { RecurringChargeSheet } from './RecurringChargeSheet';
 
 /** A hovered row: raised 2px, with a shadow under it. */

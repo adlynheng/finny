@@ -210,10 +210,27 @@ describe('the form', () => {
     expect(lastWrite()[1]).toEqual(['eq', 'id', 5]);
   });
 
-  it('deletes a charge, unlinking its past payments first', async () => {
+  it('asks before deleting a charge: future charges stop, past payments stay', async () => {
     await open();
     await fireEvent.press(row(2));
     await fireEvent.press(screen.getByLabelText('Delete charge'));
+    expect(screen.getByTestId('confirm-detail').props.children).toBe(
+      'Future charges stop. Its past payments stay in your transactions. This can’t be undone.',
+    );
+    await fireEvent.press(screen.getAllByLabelText('Cancel').at(-1)!);
+    expect(screen.queryByTestId('confirm-overlay')).toBeNull();
+    expect(stub.chainsFor('recurring_charge')).not.toContainEqual([
+      ['delete'],
+      ['eq', 'id', 2],
+    ]);
+    expect(screen.getByText('Edit recurring charge')).toBeTruthy();
+  });
+
+  it('deletes a charge once confirmed, unlinking its past payments first', async () => {
+    await open();
+    await fireEvent.press(row(2));
+    await fireEvent.press(screen.getByLabelText('Delete charge'));
+    await fireEvent.press(screen.getByTestId('confirm-delete'));
 
     await waitFor(() =>
       expect(lastWrite()).toEqual([['delete'], ['eq', 'id', 2]]),

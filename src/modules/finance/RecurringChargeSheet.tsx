@@ -5,6 +5,7 @@ import { addMonths, startOfMonth } from 'date-fns';
 import { Icon } from '@/components/icons/Icon';
 import { categoryIcon } from '@/components/icons/registry';
 import { ChipRow, type ChipOption } from '@/components/ui/ChipRow';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { DatePicker } from '@/components/ui/DatePicker';
 import { FormField } from '@/components/ui/FormField';
 import { Input, noFocusRing } from '@/components/ui/Input';
@@ -28,6 +29,7 @@ import {
 import {
   monthlyEquivalentCents,
   nextDue,
+  scheduleOf,
   type Schedule,
 } from '@/utils/derive/recurrence';
 import { toIsoDate } from '@/utils/format/date';
@@ -37,7 +39,6 @@ import {
   inputToCents,
   sanitizeAmountInput,
 } from '@/utils/format/money';
-import { scheduleOf } from './payments';
 
 /** The recurring-charge categories, in the design's order. */
 const CATEGORY_SET = [
@@ -67,8 +68,8 @@ const chipIcon = (path: string) => (color: string, size: number) =>
  * The recurring-charge form in the Sheet: name and amount, category, the
  * account it is paid from, the interval (with an Every N days / weeks / months
  * row for Custom), the next due date, and a live `≈ S$X per month` from the
- * recurrence derive. Editing adds Delete; its past payments stay in the
- * ledger. Mount it only while open, so each opening starts from `charge`.
+ * recurrence derive. Editing adds Delete, which asks first; its past payments
+ * stay in the ledger. Mount it only while open, so each opening starts from `charge`.
  */
 export function RecurringChargeSheet({
   charge,
@@ -84,6 +85,7 @@ export function RecurringChargeSheet({
   );
   const upsert = useUpsertRecurringCharge();
   const remove = useDeleteRecurringCharge();
+  const [confirming, setConfirming] = useState(false);
   const mobile = Platform.OS === 'ios';
 
   const schedule = charge && scheduleOf(charge);
@@ -170,7 +172,7 @@ export function RecurringChargeSheet({
         danger: charge
           ? {
               label: mobile ? 'Delete charge' : 'Delete',
-              onPress: () => remove.mutate(charge.id, { onSuccess: onClose }),
+              onPress: () => setConfirming(true),
               disabled: remove.isPending,
             }
           : undefined,
@@ -261,6 +263,22 @@ export function RecurringChargeSheet({
         <Text testID="rf-error" className="font-sans text-[12px] text-danger">
           Couldn’t save the charge. Try again.
         </Text>
+      )}
+      {charge && (
+        <ConfirmDialog
+          open={confirming}
+          name={charge.name}
+          detail="Future charges stop. Its past payments stay in your transactions."
+          confirmLabel="Delete charge"
+          onConfirm={() =>
+            remove.mutate(charge.id, {
+              onSuccess: onClose,
+              onError: () => setConfirming(false),
+            })
+          }
+          onCancel={() => setConfirming(false)}
+          pending={remove.isPending}
+        />
       )}
     </Sheet>
   );

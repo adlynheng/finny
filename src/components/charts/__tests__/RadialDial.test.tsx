@@ -134,8 +134,25 @@ describe('RadialDial', () => {
       // 1,180 ms: under way.
       await act(() => jest.advanceTimersByTime(260));
       expect(opacity('dial-ticks-exp-6')).toBeGreaterThan(0);
-      await act(() => jest.advanceTimersByTime(900));
-      expect(opacity('dial-ticks-exp-6')).toBe(1);
+      // All but done just before the layers merge at 1,980 ms.
+      await act(() => jest.advanceTimersByTime(790));
+      expect(opacity('dial-ticks-exp-6')).toBeGreaterThan(0.95);
+    });
+
+    it('merges each group into one layer once grown in, keeping every tick', async () => {
+      const ticks = () =>
+        allById(/^dial-centres-/).reduce(
+          (n, el) => n + (el.props.d as string).split('M').length - 1,
+          0,
+        );
+      await render(<RadialDial {...plan()} />);
+      const before = ticks();
+      expect(allById(/^dial-ticks-exp-/)).toHaveLength(7);
+      // Done at 1,080 + 900 ms.
+      await act(() => jest.advanceTimersByTime(1_980));
+      expect(allById(/^dial-ticks-exp-/)).toHaveLength(1);
+      expect(opacity('dial-ticks-exp-0')).toBe(1);
+      expect(ticks()).toBe(before);
     });
 
     it('grows the budget ticks in 25 ms a day, day 1 first', async () => {

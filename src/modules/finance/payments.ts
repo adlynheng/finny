@@ -7,16 +7,9 @@
 
 import { setDate } from 'date-fns';
 
-import { FREQUENCIES, isOneOf, type RecurringChargeRow } from '@/types/domain';
-import { occurrencesInMonth, type Schedule } from '@/utils/derive/recurrence';
+import type { RecurringChargeRow } from '@/types/domain';
+import { occurrencesInMonth, scheduleOf } from '@/utils/derive/recurrence';
 import { parseMonth, toIsoDate, type MonthKey } from '@/utils/format/date';
-
-/** A row's schedule, or null for a frequency the app does not know. */
-export function scheduleOf(charge: RecurringChargeRow): Schedule | null {
-  return isOneOf(FREQUENCIES, charge.frequency)
-    ? { ...charge, frequency: charge.frequency }
-    : null;
-}
 
 /** Each day of `month` with charges on it, and those charges. Inactive charges are left out. */
 export function chargesByDay(

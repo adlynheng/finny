@@ -154,6 +154,8 @@ const controls = {
   soft: 'rgba(28,28,26,.05)',
   softHover: 'rgba(28,28,26,.1)',
   dangerHover: 'rgba(180,83,47,.08)',
+  /** The delete confirmation's filled Delete, on hover. */
+  destructiveHover: '#9a4526',
   /** Outline buttons (Trading's Sell). */
   outlineBorder: 'rgba(28,28,26,.18)',
   chipBorder: 'rgba(28,28,26,.08)',
@@ -497,6 +499,7 @@ export const tokens = {
       },
       /** The Personal Finance grid's first row, 300px. */
       finance: { topRowHeight: 300 },
+      planner: { heroHeight: 392 },
     },
     mobile: {
       width: 390,

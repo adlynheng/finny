@@ -6,14 +6,22 @@
  *
  * Layered like the sphere (ringParts): the static drawing is one <Svg>, and
  * the spinning ring, the pulse and each run of four ticks are layers of their
- * own, so only views animate.
+ * own, so only views animate. Once the ticks have grown in, each group's runs
+ * merge into one layer: a dial redrawn as a slider moves (the Planner's) then
+ * updates a handful of paths rather than some two dozen animated layers.
  */
 
+import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import Animated, { useAnimatedProps } from 'react-native-reanimated';
 import { Circle, Path, Text as SvgText } from 'react-native-svg';
 import { tokens } from '@/theme/tokens';
-import { dialGeometry, type DialConfig, type LaidGroup } from './dialLayout';
+import {
+  dialGeometry,
+  type DialConfig,
+  type DialRun,
+  type LaidGroup,
+} from './dialLayout';
 import { Layer, Pulse, SpinRing, TickLayer, emphasis } from './ringParts';
 import { useEased } from './useEased';
 
@@ -35,17 +43,33 @@ type Props = DialConfig & {
   testID?: string;
 };
 
+/** A group's runs as one: the paths simply join, each tick starting with its own move. */
+function merged(runs: readonly DialRun[]): DialRun[] {
+  return runs.length > 1
+    ? [
+        {
+          firstIndex: runs[0]!.firstIndex,
+          centre: runs.map(r => r.centre).join(''),
+          sides: runs.map(r => r.sides).join(''),
+        },
+      ]
+    : [...runs];
+}
+
 function TickGroup({
   group,
   selected,
   stagger,
   animate,
+  entered,
   testID,
 }: {
   group: LaidGroup;
   selected: string | null;
   stagger: DialConfig['stagger'];
   animate: boolean;
+  /** Grown in: the runs draw as one layer. */
+  entered: boolean;
   testID: string;
 }) {
   const { on, hot } = emphasis(group.key, selected);
@@ -62,9 +86,11 @@ function TickGroup({
   );
   return (
     <>
-      {group.runs.map((run, index) => (
+      {(entered ? merged(group.runs) : group.runs).map((run, index) => (
         <TickLayer
-          key={run.firstIndex}
+          // By place in the group, not round the ring: the first layer stays
+          // mounted through the merge, and a merged group through any redraw.
+          key={index}
           run={run}
           half={HALF}
           animate={animate}
@@ -135,6 +161,24 @@ export function RadialDial({
   // render anyway.
   const geo = dialGeometry(config);
   const { centre } = config;
+  // Merge once the last run has grown in; a group that gains ticks after
+  // that is drawn at once.
+  const lastRun = Math.max(
+    0,
+    ...geo.groups.flatMap(g => g.runs.map(r => r.firstIndex)),
+  );
+  const [entered, setEntered] = useState(!animate);
+  useEffect(() => {
+    if (entered) return;
+    const t = setTimeout(
+      () => setEntered(true),
+      (lastRun + config.stagger.from) * config.stagger.ms +
+        tokens.motion.fnGrow.durationMs,
+    );
+    return () => clearTimeout(t);
+    // The entrance is timed once, from the first drawing.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const c = look.centre;
 
   return (
@@ -273,7 +317,8 @@ export function RadialDial({
           group={g}
           selected={selected}
           stagger={config.stagger}
-          animate={animate}
+          animate={animate && !entered}
+          entered={entered}
           testID={testID}
         />
       ))}

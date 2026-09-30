@@ -134,6 +134,8 @@ describe('tailwind theme', () => {
       `${desktop.contentPadding.bottom}px`,
     );
     expect(theme.spacing['frame-gap']).toBe(`${desktop.gap}px`);
+    expect(theme.spacing['finance-row']).toBe('300px');
+    expect(theme.spacing['planner-row']).toBe('392px');
   });
 
   it('names the mobile frame and bar geometry', () => {

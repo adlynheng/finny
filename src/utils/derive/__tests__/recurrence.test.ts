@@ -4,6 +4,7 @@ import {
   nextDue,
   occurrencesInMonth,
   periodSuffix,
+  scheduleOf,
   stepDate,
   type Schedule,
 } from '../recurrence';
@@ -219,5 +220,19 @@ describe('labels', () => {
   ])('labels %o "%s" and "%s"', (s, label, suffix) => {
     expect(intervalLabel(s)).toBe(label);
     expect(periodSuffix(s)).toBe(suffix);
+  });
+});
+
+describe('scheduleOf', () => {
+  it('reads a row’s schedule, or null for a frequency the app does not know', () => {
+    const row = {
+      frequency: 'quarterly',
+      custom_every: null,
+      custom_unit: null,
+      start_date: '2026-10-05',
+      end_date: null,
+    };
+    expect(scheduleOf(row)).toEqual(row);
+    expect(scheduleOf({ ...row, frequency: 'fortnightly' })).toBeNull();
   });
 });

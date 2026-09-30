@@ -3,7 +3,13 @@ import { Pressable, Text } from 'react-native';
 import { tokens, type ColorName } from '@/theme/tokens';
 import { cx } from './cardChrome';
 
-export type ButtonVariant = 'primary' | 'ghost' | 'danger' | 'outline' | 'soft';
+export type ButtonVariant =
+  | 'primary'
+  | 'ghost'
+  | 'danger'
+  | 'destructive'
+  | 'outline'
+  | 'soft';
 
 /**
  * md: a modal's actions (Save, Cancel, Delete). sm: a card's actions (Add
@@ -59,6 +65,13 @@ const look: Record<
     text: 'text-danger',
     icon: 'danger',
   },
+  // The delete confirmation's Delete: filled with the danger colour.
+  destructive: {
+    rest: 'bg-danger',
+    hover: 'hover:bg-destructive-hover',
+    text: 'text-white',
+    icon: 'white',
+  },
   // Trading's Sell: fills with ink on hover, its label turning white.
   outline: {
     rest: 'border border-outline-border',
@@ -92,6 +105,7 @@ const padding: Record<ButtonSize, Partial<Record<ButtonVariant, string>>> = {
     primary: 'px-[18px] py-[10px]',
     ghost: 'px-[16px] py-[10px]',
     danger: 'px-[14px] py-[10px]',
+    destructive: 'px-[18px] py-[10px]',
     outline: 'px-[16px] py-[10px]',
     soft: 'px-[16px] py-[10px]',
   },
@@ -99,6 +113,7 @@ const padding: Record<ButtonSize, Partial<Record<ButtonVariant, string>>> = {
     primary: 'px-[12px] py-[8px] ios:px-[13px] ios:py-0',
     ghost: 'px-[12px] py-[8px]',
     danger: 'px-[12px] py-[8px]',
+    destructive: 'px-[12px] py-[8px]',
     outline: 'h-[28px] px-[14px]',
     soft: 'px-[12px] py-[7px]',
   },
@@ -107,7 +122,7 @@ const padding: Record<ButtonSize, Partial<Record<ButtonVariant, string>>> = {
 
 /**
  * Primary (ink, white text, lime icon), ghost (a 5% ink wash on hover),
- * danger text, outline (a hairline border that fills with ink on hover) and
+ * danger text, destructive (danger fill, white text), outline (a hairline border that fills with ink on hover) and
  * soft (a faint ink fill). Disabled fades and neither presses nor hovers,
  * which the Ask Finny button relies on.
  */

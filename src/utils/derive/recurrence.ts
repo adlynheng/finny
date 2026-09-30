@@ -16,7 +16,12 @@ import {
   getDate,
 } from 'date-fns';
 
-import { CUSTOM_UNITS, isOneOf, type Frequency } from '@/types/domain';
+import {
+  CUSTOM_UNITS,
+  FREQUENCIES,
+  isOneOf,
+  type Frequency,
+} from '@/types/domain';
 import {
   firstOfMonth,
   lastOfMonth,
@@ -34,6 +39,18 @@ export type Schedule = {
   /** Income sources have no end date. */
   end_date?: string | null;
 };
+
+/**
+ * A charge's or income source's schedule, or null for a frequency the app
+ * does not know.
+ */
+export function scheduleOf(
+  row: Omit<Schedule, 'frequency'> & { frequency: string },
+): Schedule | null {
+  return isOneOf(FREQUENCIES, row.frequency)
+    ? { ...row, frequency: row.frequency }
+    : null;
+}
 
 type Interval = { unit: 'days' | 'months'; size: number };
 

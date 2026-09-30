@@ -46,6 +46,7 @@ module.exports = {
         soft: controls.soft,
         'soft-hover': controls.softHover,
         'danger-hover': controls.dangerHover,
+        'destructive-hover': controls.destructiveHover,
         'outline-border': controls.outlineBorder,
         'chip-border': controls.chipBorder,
         'input-border': controls.input.border,
@@ -91,6 +92,8 @@ module.exports = {
         'hero-sphere': px(desktop.overview.sphereLeft),
         // The Personal Finance grid: h-finance-row.
         'finance-row': px(desktop.finance.topRowHeight),
+        // The Goals & Planner grid: h-planner-row.
+        'planner-row': px(desktop.planner.heroHeight),
         // Mobile frame: h-mobile-header, px-mobile-x, pt-mobile-top, pb-mobile-bottom;
         // the bar's inset-x-bar-x, bottom-bar-bottom, h-bar-tab, size-fab.
         'mobile-header': px(mobile.headerHeight),

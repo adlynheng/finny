@@ -29,9 +29,11 @@ values (
   now(), now(), now()
 );
 
+-- The plan fits the salary: of S$12,000 gross, CPF takes S$2,400 and the recurring charges
+-- about S$1,970, leaving S$7,630 for investments, savings and expenditure (S$7,500 here).
 update settings
 set
-  monthly_savings_cents = 395000,
+  monthly_savings_cents = 200000,
   monthly_investment_cents = 200000,
   monthly_expenditure_cents = 350000,
   payday = '25th'
@@ -122,7 +124,7 @@ where o.date between (select min(month) from seed_months) and current_date;
 -- Salary, paid on the 25th into DBS Multiplier.
 insert into income_source (name, employer, type, base_income_cents, frequency, start_date, payday, account_id)
 values (
-  'Salary', 'Acme Pte Ltd', 'salary', 680000, 'monthly',
+  'Salary', 'Acme Pte Ltd', 'salary', 1200000, 'monthly',
   date_trunc('month', current_date)::date + 24, '25th',
   (select id from account where name = 'DBS Multiplier')
 );
@@ -192,7 +194,7 @@ select
 from seed_months m
 join (
   values
-    (null::int, 12, 'Year-end bonus · Acme Pte Ltd', 'Salary', 'DBS Multiplier', 20, 680000),
+    (null::int, 12, 'Year-end bonus · Acme Pte Ltd', 'Salary', 'DBS Multiplier', 20, 1200000),
     (null, 2, 'STI ETF dividend', 'Dividends', 'Interactive Brokers', 21, 21240),
     (null, 8, 'STI ETF dividend', 'Dividends', 'Interactive Brokers', 21, 21240),
     (1, null, 'Freelance payout', 'Freelance', 'DBS Multiplier', 19, 85000),

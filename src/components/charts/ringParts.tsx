@@ -104,13 +104,16 @@ export function TickLayer({
 }) {
   const spec = motion.fnGrow;
   const grow = useSharedValue(animate ? 0 : 1);
+  // The entrance plays once, on mount: a layer that stays mounted while its
+  // ticks move (a dial re-dealt by a slider) keeps them drawn.
   useEffect(() => {
     if (!animate) return;
     grow.value = withDelay(
       delayMs,
       withTiming(1, { duration: spec.durationMs, easing: easing(spec) }),
     );
-  }, [animate, delayMs, grow, spec]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const from = spec.from.scale!;
   const style = useAnimatedStyle(() => ({
     opacity: grow.value,
