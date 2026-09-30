@@ -9,8 +9,12 @@ import { useAccounts } from '@/hooks/useAccounts';
 import { useAssetClasses } from '@/hooks/useAssetClasses';
 import { useUiStore } from '@/stores/uiStore';
 import { tokens } from '@/theme/tokens';
-import { classIdOf, shareOfAssets } from '@/utils/derive/networth';
-import { formatMoney, formatPercent } from '@/utils/format/money';
+import {
+  cardsOwedCents,
+  classIdOf,
+  shareOfAssets,
+} from '@/utils/derive/networth';
+import { MINUS, formatMoney, formatPercent } from '@/utils/format/money';
 
 type Row = ReturnType<typeof shareOfAssets>[number];
 
@@ -32,11 +36,22 @@ const typeFill = (type: string) => TYPE_FILL[type] ?? TYPE_FILL.Broker;
  * sphere's own hover lights every account in the class here. The hovered
  * account's balance and share replace the total in the headline.
  *
+ * On Settings the accounts panel sets `hoveredAccountId` too, so a row and
+ * its segment light together from either side.
+ *
  * Mobile has no hover, so a tap does the same and tapping the lit account
  * again clears it. There the card grows with its rows rather than scrolling
  * them, and the headline's label sits under the figure.
  */
-export function ShareOfAssetsCard() {
+export function ShareOfAssetsCard({
+  settings = false,
+}: {
+  /**
+   * The Settings variant: "Gross assets" under the total, and a footer
+   * totalling what the credit cards owe.
+   */
+  settings?: boolean;
+}) {
   const accounts = useAccounts().data;
   const classes = useAssetClasses().data;
   const hoveredAccount = useUiStore(s => s.hoveredAccountId);
@@ -90,6 +105,8 @@ export function ShareOfAssetsCard() {
         >
           {shown
             ? `${shown.name} · ${formatPercent(shown.fraction * 100)}`
+            : settings
+            ? 'Gross assets'
             : `Across ${rows.length} accounts`}
         </Text>
       </View>
@@ -152,6 +169,25 @@ export function ShareOfAssetsCard() {
           </Pressable>
         ))}
       </ScrollView>
+      {settings && (
+        <View
+          testID="share-owed"
+          className="mt-[10px] flex-row items-baseline justify-between border-t border-white/30 pt-[10px]"
+        >
+          <Text className="font-sans text-[12px] text-white">
+            Card balances owed
+          </Text>
+          <Text
+            testID="share-owed-total"
+            className="font-sans text-[12px] tabular-nums text-white"
+          >
+            {MINUS}
+            {formatMoney(accounts ? cardsOwedCents(accounts) : 0, {
+              decimals: 2,
+            })}
+          </Text>
+        </View>
+      )}
     </GradientCard>
   );
 }

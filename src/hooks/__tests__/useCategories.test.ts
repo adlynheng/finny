@@ -113,4 +113,17 @@ it('inserts, renames and deletes, refreshing every kind', async () => {
     [['update', { name: 'Pet care' }], ['eq', 'id', 9], ['select'], ['single']],
     [['delete'], ['eq', 'id', 9]],
   ]);
+  // Its transactions and charges are unlinked first, so the delete is not blocked.
+  expect(stub.chainsFor('txn')).toEqual([
+    [
+      ['update', { category_id: null }],
+      ['eq', 'category_id', 9],
+    ],
+  ]);
+  expect(stub.chainsFor('recurring_charge')).toEqual([
+    [
+      ['update', { category_id: null }],
+      ['eq', 'category_id', 9],
+    ],
+  ]);
 });

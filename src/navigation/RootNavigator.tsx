@@ -2,12 +2,10 @@
  * The signed-in app: the five screens, switched like tabs, inside the app frame. React
  * Navigation's ready-made navigators need react-native-screens, which has no macOS support, so
  * this is a small navigator on its tab router that draws no chrome of its own.
- *
- * Screens without a page yet are stand-ins.
  */
 
 import type { ReactNode } from 'react';
-import { Platform, Pressable, Text, View } from 'react-native';
+import { Platform, View } from 'react-native';
 import {
   createNavigatorFactory,
   TabRouter,
@@ -16,10 +14,10 @@ import {
 
 import { AppFrame } from '@/components/ui/AppFrame';
 import { MobileFrame } from '@/components/ui/MobileFrame';
-import { supabase } from '@/lib/supabase';
 import { FinanceScreen } from '@/modules/finance/FinanceScreen';
 import { OverviewScreen } from '@/modules/net-worth/OverviewScreen';
 import { PlannerScreen } from '@/modules/planner/PlannerScreen';
+import { SettingsScreen } from '@/modules/settings/SettingsScreen';
 import { TradingScreen } from '@/modules/trading/TradingScreen';
 import { NewTransactionSheet } from '@/modules/transactions/NewTransactionSheet';
 import { useUiStore } from '@/stores/uiStore';
@@ -75,12 +73,13 @@ function FinnyNavigator({ initialRouteName, children }: NavigatorProps) {
 
 const Finny = createNavigatorFactory(FinnyNavigator)();
 
-/** The screens built so far; the rest are stand-ins. */
-const SCREEN_COMPONENTS: Partial<Record<ScreenName, () => ReactNode>> = {
+/** Each screen's page. */
+const SCREEN_COMPONENTS: Record<ScreenName, () => ReactNode> = {
   Overview: OverviewScreen,
   Finance: FinanceScreen,
   Trading: TradingScreen,
   Planner: PlannerScreen,
+  Settings: SettingsScreen,
 };
 
 export function RootNavigator() {
@@ -90,30 +89,9 @@ export function RootNavigator() {
         <Finny.Screen
           key={name}
           name={name}
-          component={SCREEN_COMPONENTS[name] ?? Placeholder}
+          component={SCREEN_COMPONENTS[name]}
         />
       ))}
     </Finny.Navigator>
-  );
-}
-
-function Placeholder({ route }: { route: { name: ScreenName } }) {
-  return (
-    <View className="flex-1 gap-y-2 ios:px-mobile-x ios:pt-mobile-top">
-      <Text className="font-sans text-[24px] font-light text-ink">
-        {SCREENS.find(s => s.name === route.name)!.label}
-      </Text>
-      {route.name === 'Settings' && (
-        <Pressable
-          accessibilityRole="button"
-          // Local: signing out here leaves the other device signed in.
-          onPress={() => supabase.auth.signOut({ scope: 'local' })}
-        >
-          <Text className="font-sans text-[13px] font-medium text-ink">
-            Sign out
-          </Text>
-        </Pressable>
-      )}
-    </View>
   );
 }

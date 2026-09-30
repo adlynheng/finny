@@ -8,7 +8,12 @@
  * `Other`, so an unknown or missing key never renders as an empty box.
  */
 
-import type { AccountType, CategoryKind, TxnKind } from '@/types/domain';
+import type {
+  AccountType,
+  CategoryKind,
+  IncomeType,
+  TxnKind,
+} from '@/types/domain';
 
 /**
  * The design draws dots as zero-length lines (`M4 8h.01`), which render only
@@ -65,6 +70,13 @@ export const accountTypeIcons: Record<AccountType, string> = {
   CPF: 'M8 2l5 2v4c0 3-2.2 5-5 6-2.8-1-5-3-5-6V4z',
   Broker: 'M2.5 12.5l3.5-4 3 2.5 4.5-6 M10 5h3.5v3.5',
   'Credit card': 'M2 4.5h12v8H2z M2 7h12 M4.5 10.5h2',
+};
+
+/** `income_source.type`, from the Settings fixed variables panel. */
+export const incomeTypeIcons: Record<IncomeType, string> = {
+  salary: depositIcons.Salary,
+  freelance: 'M3 4h10v6.5H3z M1.5 12.5h13',
+  other: OTHER,
 };
 
 /** Portfolio health's "Today's ideas". */

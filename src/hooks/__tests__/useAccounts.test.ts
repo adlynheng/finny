@@ -131,6 +131,24 @@ it('deletes an account by id and refreshes, and rejects when the delete fails', 
   await act(() => result.current.mutateAsync(3));
 
   expect(stub.chainsFor('account')).toEqual([[['delete'], ['eq', 'id', 3]]]);
+  // What points at it is unlinked first, and its cards go with it.
+  for (const table of [
+    'txn',
+    'recurring_charge',
+    'income_source',
+    'position',
+    'sale',
+  ]) {
+    expect(stub.chainsFor(table)).toEqual([
+      [
+        ['update', { account_id: null }],
+        ['eq', 'account_id', 3],
+      ],
+    ]);
+  }
+  expect(stub.chainsFor('card')).toEqual([
+    [['delete'], ['eq', 'account_id', 3]],
+  ]);
   expect(client.getQueryState(queryKeys.accounts.list())?.isInvalidated).toBe(
     true,
   );

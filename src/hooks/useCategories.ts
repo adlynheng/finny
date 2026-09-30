@@ -59,12 +59,33 @@ export function useUpsertCategory() {
   });
 }
 
+/**
+ * Deletes a category. Its transactions and recurring charges stay,
+ * uncategorised: they are unlinked first, since a reference would otherwise
+ * block the delete.
+ */
 export function useDeleteCategory() {
+  const queryClient = useQueryClient();
   const onSettled = useInvalidateCategories();
   return useMutation({
     mutationFn: async (id: number) => {
+      for (const table of ['txn', 'recurring_charge'] as const) {
+        unwrap(
+          await supabase
+            .from(table)
+            .update({ category_id: null })
+            .eq('category_id', id),
+        );
+      }
       unwrap(await supabase.from('category').delete().eq('id', id));
     },
-    onSettled,
+    onSettled: () =>
+      Promise.all([
+        onSettled(),
+        queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.recurringCharges.all,
+        }),
+      ]),
   });
 }

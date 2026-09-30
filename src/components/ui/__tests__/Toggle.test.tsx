@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import { knobLeft, Toggle } from '@/components/ui/Toggle';
 import { classes } from '../../../../test/classes';
@@ -17,6 +18,8 @@ const renderToggle = (props: { value: boolean; disabled?: boolean }) => {
 };
 
 describe('Toggle', () => {
+  afterEach(() => jest.restoreAllMocks());
+
   it('is a 34×20 pill with a 16px round knob', async () => {
     await renderToggle({ value: false });
     expect(classes(toggle())).toEqual(
@@ -46,6 +49,21 @@ describe('Toggle', () => {
     expect(knobLeft(true)).toBe(16);
   });
 
+  it('mobile: a 40×24 pill with a 20px knob, 2px in', async () => {
+    expect(knobLeft(false, true)).toBe(2);
+    expect(knobLeft(true, true)).toBe(18);
+    await renderToggle({ value: false });
+    expect(classes(toggle())).toEqual(
+      expect.arrayContaining([
+        'ios:w-toggle-w-mobile',
+        'ios:h-toggle-h-mobile',
+      ]),
+    );
+    expect(classes(screen.getByTestId('toggle-knob'))).toContain(
+      'ios:size-toggle-knob-mobile',
+    );
+  });
+
   it('lifts the knob with a small shadow', async () => {
     await renderToggle({ value: false });
     expect(screen.getByTestId('toggle-knob')).toHaveStyle({
@@ -54,6 +72,7 @@ describe('Toggle', () => {
   });
 
   it('rests the knob at its side', async () => {
+    jest.replaceProperty(Platform, 'OS', 'macos');
     await renderToggle({ value: true });
     expect(screen.getByTestId('toggle-knob')).toHaveStyle({ left: 16 });
   });

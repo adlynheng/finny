@@ -3,10 +3,17 @@ import { gradients } from '@/theme/gradients';
 import { cardChrome, cardRadius, cx } from './cardChrome';
 import { GradientFill } from './GradientFill';
 
-/** The card gradients; the hero glows are backgrounds, not cards. */
+/** The card gradients; the glows and the bank-card parts are not cards. */
 export type CardGradientName = Exclude<
   keyof typeof gradients,
-  'heroGlow' | 'heroGlowDial' | 'pnlGlow' | 'pnlGlowMobile'
+  | 'heroGlow'
+  | 'heroGlowDial'
+  | 'pnlGlow'
+  | 'pnlGlowMobile'
+  | 'cardFanGlow'
+  | 'cardFanGlowMobile'
+  | 'cardSheen'
+  | 'cardChip'
 >;
 
 type Props = Omit<ViewProps, 'style'> & {

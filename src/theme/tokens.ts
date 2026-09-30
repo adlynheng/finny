@@ -175,6 +175,8 @@ const controls = {
     width: 34,
     height: 20,
     knob: 16,
+    /** The mobile switch: a 40×24 touch target with a 20px knob. */
+    mobile: { width: 40, height: 24, knob: 20 },
     offColor: 'rgba(28,28,26,.14)',
     knobShadow: '0 1px 2px rgba(0,0,0,.2)',
     durationMs: 200,
@@ -408,6 +410,49 @@ const dialog = {
   },
 } as const;
 
+/**
+ * The Settings hero's card fan. Cards spread across `span` with an even step
+ * of at most `maxStep` (`spread / (n − 1)` otherwise); the selected card sits
+ * in front, the rest drop, tilt by their distance from the middle and shrink.
+ * Mobile's step is worked out over a narrower spread than its span.
+ */
+const cardFan = {
+  desktop: { cardWidth: 320, radius: 12, height: 236, span: 360, spread: 360, maxStep: 180 },
+  mobile: { cardWidth: 230, radius: 11, height: 178, span: 128, spread: 112, maxStep: 56 },
+  /** Width over height, a bank card's. */
+  aspect: 1.586,
+  dropPx: 26,
+  tiltDeg: 6,
+  restScale: 0.92,
+  frontZ: 50,
+  moveMs: 450,
+  easing: [0.2, 0.7, 0.2, 1] as const,
+  /** The shadow's own transition: CSS `.3s` at the default `ease`. */
+  shadowMs: 300,
+  shadowEasing: [0.25, 0.1, 0.25, 1] as const,
+  shadow: {
+    front: '0 26px 50px rgba(0,0,0,.24)',
+    rest: '0 10px 24px rgba(0,0,0,.14)',
+  },
+  /** Concentric rings in the top-right corner, in a 400 × 252 viewBox. */
+  contours: {
+    viewBox: [400, 252] as const,
+    centre: [330, 30] as const,
+    radii: [
+      [50, 34],
+      [100, 70],
+      [150, 106],
+      [200, 142],
+      [250, 178],
+      [300, 214],
+    ] as const,
+    opacity: 0.17,
+    width: 0.8,
+  },
+  /** The EMV chip's corners, per layout (34 × 25 and 26 × 19). */
+  chipRadius: { desktop: 5, mobile: 4 },
+} as const;
+
 const fnSpin: MotionToken = {
   durationMs: 120000,
   easing: 'linear',
@@ -559,6 +604,7 @@ export const tokens = {
   dialog,
   gradients,
   cardThemes,
+  cardFan,
   motion,
 } as const;
 

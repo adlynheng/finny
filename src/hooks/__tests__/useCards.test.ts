@@ -1,6 +1,11 @@
 import { act, waitFor } from '@testing-library/react-native';
 
-import { useCards, useSetCardInBudget, useUpsertCard } from '../useCards';
+import {
+  useAddCard,
+  useCards,
+  useSetCardInBudget,
+  useUpsertCard,
+} from '../useCards';
 import { supabase } from '@/lib/supabase';
 import { queryKeys } from '@/lib/queryKeys';
 import { renderHookWithClient } from '../../../test/queryTestUtils';
@@ -107,4 +112,56 @@ it('toggles whether a card counts toward the monthly budget', async () => {
   expect(
     client.getQueryState(queryKeys.snapshots.window(12))?.isInvalidated,
   ).toBe(true);
+});
+
+it('adds a credit card on a new account of its own, then refreshes cards and accounts', async () => {
+  stub.respond('account', { data: { id: 9 }, error: null });
+  stub.respond('card', { data: { id: 4 }, error: null });
+  const { result, client } = await renderHookWithClient(() => useAddCard());
+  client.setQueryData(queryKeys.accounts.list(), []);
+  client.setQueryData(queryKeys.cards.list(), []);
+  const card = {
+    bank: 'Citi',
+    product_name: 'Credit',
+    card_type: 'credit',
+    last4: '1234',
+  };
+  const account = { name: 'Citi', type: 'Credit card', is_liability: true };
+
+  await act(async () => {
+    await result.current.mutateAsync({ card, account });
+  });
+
+  expect(stub.chainsFor('account')).toEqual([
+    [['insert', account], ['select'], ['single']],
+  ]);
+  expect(stub.chainsFor('card')).toEqual([
+    [['insert', { ...card, account_id: 9 }], ['select'], ['single']],
+  ]);
+  expect(client.getQueryState(queryKeys.accounts.list())?.isInvalidated).toBe(
+    true,
+  );
+  expect(client.getQueryState(queryKeys.cards.list())?.isInvalidated).toBe(
+    true,
+  );
+});
+
+it('adds a debit card on the account it names', async () => {
+  stub.respond('card', { data: { id: 5 }, error: null });
+  const { result } = await renderHookWithClient(() => useAddCard());
+  const card = {
+    bank: 'UOB',
+    product_name: 'Debit',
+    card_type: 'debit',
+    account_id: 2,
+  };
+
+  await act(async () => {
+    await result.current.mutateAsync({ card });
+  });
+
+  expect(stub.chainsFor('account')).toEqual([]);
+  expect(stub.chainsFor('card')).toEqual([
+    [['insert', card], ['select'], ['single']],
+  ]);
 });

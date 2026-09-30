@@ -110,6 +110,9 @@ module.exports = {
         'toggle-w': px(controls.toggle.width),
         'toggle-h': px(controls.toggle.height),
         'toggle-knob': px(controls.toggle.knob),
+        'toggle-w-mobile': px(controls.toggle.mobile.width),
+        'toggle-h-mobile': px(controls.toggle.mobile.height),
+        'toggle-knob-mobile': px(controls.toggle.mobile.knob),
         // h-input (desktop), h-input-touch (mobile).
         input: px(controls.input.height),
         'input-touch': px(controls.input.touchHeight),

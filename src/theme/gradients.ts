@@ -183,6 +183,56 @@ export const gradients = {
     stops: heroGlowStops,
     blur: 28,
   },
+  /**
+   * Glow behind the Settings card fan: CSS's `circle at 50% 50%`, blurred 30px
+   * (28px on mobile).
+   */
+  cardFanGlow: {
+    kind: 'radial',
+    shape: 'circle',
+    cx: 0.5,
+    cy: 0.5,
+    stops: [
+      { color: 'rgba(216,242,58,.42)', offset: 0 },
+      { color: 'rgba(233,168,86,.3)', offset: 0.4 },
+      { color: 'rgba(239,239,236,0)', offset: 0.7 },
+    ],
+    blur: 30,
+  },
+  cardFanGlowMobile: {
+    kind: 'radial',
+    shape: 'circle',
+    cx: 0.5,
+    cy: 0.5,
+    stops: [
+      { color: 'rgba(216,242,58,.42)', offset: 0 },
+      { color: 'rgba(233,168,86,.3)', offset: 0.4 },
+      { color: 'rgba(239,239,236,0)', offset: 0.7 },
+    ],
+    blur: 28,
+  },
+  /** The white sheen over every card face: `120% 90% at 100% 0%`. */
+  cardSheen: {
+    kind: 'radial',
+    shape: 'ellipse',
+    rx: 1.2,
+    ry: 0.9,
+    cx: 1,
+    cy: 0,
+    stops: [
+      { color: 'rgba(255,255,255,.28)', offset: 0 },
+      { color: 'rgba(255,255,255,0)', offset: 0.55 },
+    ],
+  },
+  /** A card face's EMV chip. */
+  cardChip: {
+    kind: 'linear',
+    angle: 135,
+    stops: [
+      { color: '#efe8c9', offset: 0 },
+      { color: '#bdb287', offset: 1 },
+    ],
+  },
 } satisfies Record<string, GradientSpec>;
 
 export type CardThemeName =

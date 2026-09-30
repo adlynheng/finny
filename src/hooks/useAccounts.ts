@@ -68,12 +68,48 @@ export function useUpsertAccount() {
   });
 }
 
+/**
+ * Deletes an account. What pointed at it stays, unlinked: its transactions,
+ * recurring charges, income sources, positions and sales, since a reference
+ * would otherwise block the delete. Its cards go with it, as a card cannot
+ * exist without an account.
+ */
 export function useDeleteAccount() {
+  const queryClient = useQueryClient();
   const onSettled = useInvalidateAccounts();
   return useMutation({
     mutationFn: async (id: number) => {
+      for (const table of LINKED_TABLES) {
+        unwrap(
+          await supabase
+            .from(table)
+            .update({ account_id: null })
+            .eq('account_id', id),
+        );
+      }
+      unwrap(await supabase.from('card').delete().eq('account_id', id));
       unwrap(await supabase.from('account').delete().eq('id', id));
     },
-    onSettled,
+    onSettled: () =>
+      Promise.all([
+        onSettled(),
+        ...[
+          queryKeys.cards.all,
+          queryKeys.transactions.all,
+          queryKeys.recurringCharges.all,
+          queryKeys.incomeSources.all,
+          queryKeys.positions.all,
+          queryKeys.sales.all,
+        ].map(queryKey => queryClient.invalidateQueries({ queryKey })),
+      ]),
   });
 }
+
+/** The tables whose rows can point at an account, in the order they are unlinked. */
+const LINKED_TABLES = [
+  'txn',
+  'recurring_charge',
+  'income_source',
+  'position',
+  'sale',
+] as const;

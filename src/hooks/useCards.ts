@@ -4,7 +4,7 @@ import { queryKeys } from '@/lib/queryKeys';
 import { supabase } from '@/lib/supabase';
 import { isExisting, type Save } from '@/lib/save';
 import { unwrap } from '@/lib/unwrap';
-import type { CardInsert, CardUpdate } from '@/types/domain';
+import type { AccountInsert, CardInsert, CardUpdate } from '@/types/domain';
 
 export function useCards() {
   return useQuery({
@@ -46,6 +46,47 @@ export function useUpsertCard() {
       return unwrap(await supabase.from('card').insert(card).select().single());
     },
     onSettled,
+  });
+}
+
+/**
+ * The Add card form's save. A credit card gets its own liability account,
+ * created first, which its balance owed lives on; a debit card spends from
+ * the account it names. Resolves to the saved card.
+ */
+export function useAddCard() {
+  const queryClient = useQueryClient();
+  const onSettled = useInvalidateCards();
+  return useMutation({
+    mutationFn: async ({
+      card,
+      account,
+    }: {
+      card: Omit<CardInsert, 'account_id'> & { account_id?: number };
+      /** The new card's own account, when it needs one. */
+      account?: AccountInsert;
+    }) => {
+      const accountId = account
+        ? unwrap(
+            await supabase.from('account').insert(account).select().single(),
+          ).id
+        : card.account_id;
+      if (accountId === undefined) {
+        throw new Error('A card needs an account');
+      }
+      return unwrap(
+        await supabase
+          .from('card')
+          .insert({ ...card, account_id: accountId })
+          .select()
+          .single(),
+      );
+    },
+    onSettled: () =>
+      Promise.all([
+        onSettled(),
+        queryClient.invalidateQueries({ queryKey: queryKeys.accounts.all }),
+      ]),
   });
 }
 

@@ -226,11 +226,12 @@ describe('card chrome', () => {
 
 describe('controls', () => {
   // Read off the design's form markup.
-  it('toggle: 34×20 pill, 16px shadowed knob, 14% ink when off', () => {
+  it('toggle: 34×20 pill (40×24 on mobile), 16px shadowed knob (20px), 14% ink when off', () => {
     expect(tokens.controls.toggle).toEqual({
       width: 34,
       height: 20,
       knob: 16,
+      mobile: { width: 40, height: 24, knob: 20 },
       offColor: 'rgba(28,28,26,.14)',
       knobShadow: '0 1px 2px rgba(0,0,0,.2)',
       durationMs: 200,

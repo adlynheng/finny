@@ -47,12 +47,27 @@ export function useUpsertIncomeSource() {
   });
 }
 
+/**
+ * Deletes an income source. Its past payments stay in the ledger: they are
+ * unlinked first, since `txn.income_id` would otherwise block the delete.
+ */
 export function useDeleteIncomeSource() {
+  const queryClient = useQueryClient();
   const onSettled = useInvalidateIncomeSources();
   return useMutation({
     mutationFn: async (id: number) => {
+      unwrap(
+        await supabase
+          .from('txn')
+          .update({ income_id: null })
+          .eq('income_id', id),
+      );
       unwrap(await supabase.from('income_source').delete().eq('id', id));
     },
-    onSettled,
+    onSettled: () =>
+      Promise.all([
+        onSettled(),
+        queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all }),
+      ]),
   });
 }
