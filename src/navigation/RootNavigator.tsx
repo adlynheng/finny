@@ -14,6 +14,7 @@ import {
 
 import { AppFrame } from '@/components/ui/AppFrame';
 import { MobileFrame } from '@/components/ui/MobileFrame';
+import { usePostDue } from '@/hooks/usePostDue';
 import { FinanceScreen } from '@/modules/finance/FinanceScreen';
 import { OverviewScreen } from '@/modules/net-worth/OverviewScreen';
 import { useSnapshotSync } from '@/modules/net-worth/useSnapshotSync';
@@ -38,6 +39,7 @@ function FinnyNavigator({ initialRouteName, children }: NavigatorProps) {
   const newOpen = useUiStore(s => s.newTransactionOpen);
   const setUi = useUiStore(s => s.set);
   useSnapshotSync();
+  usePostDue();
   const screen = (
     <View testID={`screen-${route.name}`} className="flex-1">
       {descriptors[route.key]!.render()}

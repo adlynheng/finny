@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { Text } from 'react-native';
 
+import { ChipRow } from '@/components/ui/ChipRow';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { FormField } from '@/components/ui/FormField';
 import { Input } from '@/components/ui/Input';
 import { Segmented } from '@/components/ui/Segmented';
 import { Sheet } from '@/components/ui/Sheet';
+import { useAccounts } from '@/hooks/useAccounts';
 import {
   useDeleteIncomeSource,
   useUpsertIncomeSource,
@@ -75,7 +77,8 @@ function formSchedule(source: IncomeSourceRow | null): {
  * The income drawer: the type, the source, the amount — per month, or per
  * payment for a stream that is not monthly — then a salary's pay day, or
  * another stream's frequency, with Repeats every N weeks or months for
- * Custom. Editing adds Remove income stream, which asks first; its past
+ * Custom, and the savings account it is paid into, where each payment posts
+ * on its day (a salary's take-home; its CPF goes to the CPF accounts). Editing adds Remove income stream, which asks first; its past
  * payments stay. Mount it only while open.
  */
 export function IncomeSheet({
@@ -102,6 +105,11 @@ export function IncomeSheet({
   const [freq, setFreq] = useState<Freq>(initial.freq);
   const [every, setEvery] = useState(initial.every);
   const [unit, setUnit] = useState<Unit>(initial.unit);
+  const accounts = (useAccounts().data ?? []).filter(
+    a => a.is_active && a.type === 'Savings',
+  );
+  const [accountId, setAccountId] = useState(source?.account_id ?? null);
+  const account = accountId ?? accounts[0]?.id ?? null;
 
   const salary = type === 'salary';
   const custom = !salary && freq === 'custom';
@@ -126,6 +134,7 @@ export function IncomeSheet({
       custom_unit: custom ? unit : null,
       payday: salary ? payday.trim() || DEFAULT_PAYDAY : null,
       start_date: source?.start_date ?? today(),
+      account_id: account,
     };
     upsert.mutate(source ? { id: source.id, ...fields } : fields, {
       onSuccess: onClose,
@@ -216,6 +225,14 @@ export function IncomeSheet({
           </FormField>
         </>
       )}
+      <FormField label="Paid into">
+        <ChipRow
+          testID="income-account"
+          options={accounts.map(a => ({ value: String(a.id), label: a.name }))}
+          value={account === null ? null : String(account)}
+          onChange={v => setAccountId(Number(v))}
+        />
+      </FormField>
       <Text testID="income-hint" className="font-sans text-[12px] text-muted">
         {salary
           ? 'Salary is subject to CPF contributions.'

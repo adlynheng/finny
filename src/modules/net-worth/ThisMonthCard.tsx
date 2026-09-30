@@ -12,9 +12,9 @@ import { formatMoney, formatSignedMoney } from '@/utils/format/money';
 
 /**
  * The brown-olive card: this month's money in and out, transfers left out by
- * the month totals, with a bar of out against in. With no income yet the
- * ratio means nothing, so the bar reads full. Mobile's button just says Add.
- * With no transactions at all this month the bar is empty and says so.
+ * the month totals, with a bar splitting the two: solid white is money in's
+ * share, the faint track the rest, money out. So the bar is full with no
+ * spending and empty with no income. Mobile's button just says Add.
  */
 export function ThisMonthCard() {
   const month = monthKey(today());
@@ -22,6 +22,8 @@ export function ThisMonthCard() {
   const setUi = useUiStore(s => s.set);
   const { inCents, outCents, netCents } = monthTotals(txns ?? []);
   const spent = inCents > 0 ? outCents / inCents : null;
+  const moved = inCents + outCents;
+  const inShare = moved > 0 ? inCents / moved : 0;
   const none = txns != null && monthTxnCount(txns) === 0;
 
   return (
@@ -54,8 +56,8 @@ export function ThisMonthCard() {
         <View
           testID="month-bar"
           className="absolute inset-y-0 left-0 rounded-[2px] bg-white"
-          // Out against in, as a share of the track: data, so not a class.
-          style={{ width: `${none ? 0 : Math.min(1, spent ?? 1) * 100}%` }}
+          // Money in's share of the track: data, so not a class.
+          style={{ width: `${inShare * 100}%` }}
         />
       </View>
       <View className="flex-row justify-between gap-x-[8px]">

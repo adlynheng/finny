@@ -50,8 +50,9 @@ it('shows this month’s money in and out, leaving transfers out', async () => {
     '59% of income spent',
   );
   expect(screen.getByTestId('month-net')).toHaveTextContent('Net +S$3,202');
+  // Money in's share of in and out together; the faint rest is money out.
   expect(screen.getByTestId('month-bar')).toHaveStyle({
-    width: `${(466_000 / 786_200) * 100}%`,
+    width: `${(786_200 / (786_200 + 466_000)) * 100}%`,
   });
   expect(stub.chainsFor('txn')[0]).toEqual(
     expect.arrayContaining([
@@ -61,7 +62,7 @@ it('shows this month’s money in and out, leaving transfers out', async () => {
   );
 });
 
-it('fills the bar when spending outruns income', async () => {
+it('gives money in the smaller share when spending outruns income', async () => {
   stub.respond('txn', {
     data: [txn('deposit', 100_000), txn('expense', -150_000)],
     error: null,
@@ -71,15 +72,15 @@ it('fills the bar when spending outruns income', async () => {
   expect(await screen.findByTestId('month-spent')).toHaveTextContent(
     '150% of income spent',
   );
-  expect(screen.getByTestId('month-bar')).toHaveStyle({ width: '100%' });
+  expect(screen.getByTestId('month-bar')).toHaveStyle({ width: '40%' });
 });
 
-it('with no income, fills the bar rather than dividing by zero', async () => {
+it('with no income, leaves the bar all money out', async () => {
   stub.respond('txn', { data: [txn('expense', -12_000)], error: null });
   await renderWithClient(<ThisMonthCard />);
 
   expect(await screen.findByTestId('month-out')).toHaveTextContent('S$120');
-  expect(screen.getByTestId('month-bar')).toHaveStyle({ width: '100%' });
+  expect(screen.getByTestId('month-bar')).toHaveStyle({ width: '0%' });
   expect(screen.getByTestId('month-spent')).toHaveTextContent('No income yet');
   expect(screen.getByTestId('month-net')).toHaveTextContent('Net −S$120');
 });
@@ -90,4 +91,14 @@ it('opens the new-transaction form', async () => {
 
   await fireEvent.press(await screen.findByTestId('month-add'));
   expect(useUiStore.getState().newTransactionOpen).toBe(true);
+});
+
+it('with income and no spending, fills the bar with money in', async () => {
+  stub.respond('txn', { data: [txn('deposit', 50_000)], error: null });
+  await renderWithClient(<ThisMonthCard />);
+
+  expect(await screen.findByTestId('month-bar')).toHaveStyle({ width: '100%' });
+  expect(screen.getByTestId('month-spent')).toHaveTextContent(
+    '0% of income spent',
+  );
 });

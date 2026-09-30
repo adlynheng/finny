@@ -413,6 +413,10 @@ describe('Fixed variables', () => {
     await fireEvent.press(
       within(screen.getByTestId('income-unit')).getByText('Weeks'),
     );
+    // Paid into a savings account: the first, unless another is picked.
+    const into = within(screen.getByTestId('income-account'));
+    expect(into.queryByText('CPF Ordinary')).toBeNull();
+    await fireEvent.press(into.getByText('UOB One'));
     await fireEvent.press(screen.getByLabelText('Add'));
     expect(inserts('income_source')[0]![0]).toEqual([
       'insert',
@@ -425,6 +429,7 @@ describe('Fixed variables', () => {
         custom_unit: 'weeks',
         payday: null,
         start_date: TODAY,
+        account_id: 2,
       },
     ]);
   });
