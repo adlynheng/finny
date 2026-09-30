@@ -16,3 +16,7 @@ jest.mock('expo-blur', () => ({ BlurView: require('react-native').View }));
 // Jest does not compile NativeWind: className stays a plain prop, which is what
 // the component tests assert. Registering a third-party view is a no-op here.
 jest.mock('nativewind', () => ({ cssInterop: () => {} }));
+
+// No test reaches the network: a fetch fails, so market data falls back as it does offline.
+// A test that needs a reply mocks fetch itself.
+global.fetch = jest.fn(() => Promise.reject(new Error('No network in tests')));

@@ -2,10 +2,10 @@
  * Market data: latest quotes, daily closes and the USD/SGD rate. Prices and
  * rates are live passthrough, never written to a table.
  *
- * These are stubs (build plan Phase K): they answer from a fixed table so the
- * Trading page can be built and reviewed before the market-data Edge
- * Functions exist. Phase N replaces the three fetchers' bodies (Tasks 86–89);
- * their signatures stay. The table holds the design's prices for the seeded
+ * The USD/SGD rate is live (Task 86). Quotes and closes are still stubs
+ * (build plan Phase K): they answer from a fixed table so the Trading page can
+ * be built and reviewed before the market-data Edge Functions exist. Tasks
+ * 87–89 replace their bodies; their signatures stay. The table holds the design's prices for the seeded
  * symbols, and the closes are the design's own seeded random walk ending at
  * today's price, so the P&L chart and sparklines draw as the design does. A
  * symbol the table does not know has no quote and no closes.
@@ -106,8 +106,21 @@ export async function fetchBars(
   }));
 }
 
+/** exchangerate.fun's latest rates: no key, no limit, updated hourly. */
+export const FX_URL = 'https://api.exchangerate.fun/latest?base=USD';
+
+/** The live USD/SGD rate, stamped with when it was fetched. Throws on a failed or malformed reply. */
 export async function fetchUsdSgd(): Promise<UsdSgd> {
-  return { rate: FALLBACK_USD_SGD, fetchedAt: now() };
+  const response = await fetch(FX_URL);
+  if (!response.ok) {
+    throw new Error(`FX rates: HTTP ${response.status}`);
+  }
+  const body: { rates?: Record<string, unknown> } = await response.json();
+  const rate = body.rates?.SGD;
+  if (typeof rate !== 'number' || !(rate > 0)) {
+    throw new Error('FX rates: no USD/SGD rate');
+  }
+  return { rate, fetchedAt: now() };
 }
 
 /** The design's `gen()`: 366 closes from a year ago to today, ending at today's price. */
