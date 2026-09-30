@@ -19,6 +19,7 @@ import { renderWithClient } from '../../../../test/queryTestUtils';
 import {
   cards,
   respondSettings,
+  settingsRow,
   themedCards,
 } from '../../../../test/settingsFixtures';
 import { testIDsInOrder } from '../../../../test/sheetCases';
@@ -142,12 +143,49 @@ describe('the hero’s columns', () => {
 
   it('left: initials, name and email, and the meta chips', async () => {
     await draw();
-    expect(screen.getByTestId('settings-initials').props.children).toBe('WL');
+    expect(screen.getByTestId('avatar-initials').props.children).toBe('WL');
+    expect(screen.getByTestId('settings-name')).toHaveTextContent(
+      'Wei Ling Tan',
+    );
     expect(screen.getByText('weiling.tan@gmail.com')).toBeTruthy();
+    expect(screen.queryByText('Sign out')).toBeNull();
     const profile = within(screen.getByTestId('settings-profile'));
     expect(profile.getByText('3 cards')).toBeTruthy();
     expect(profile.getByText('5 accounts')).toBeTruthy();
     expect(profile.getByText('Singapore · SGD')).toBeTruthy();
+  });
+
+  it('edits the name in place, saving it on return', async () => {
+    await draw();
+    await fireEvent.press(screen.getByTestId('settings-name'));
+    const input = screen.getByTestId('settings-name-input');
+    expect(input.props.value).toBe('Wei Ling Tan');
+    const renamed = { ...settingsRow, name: 'Wei Ling' };
+    stub.respond('settings', { data: renamed, error: null });
+    await fireEvent.changeText(input, '  Wei Ling ');
+    await fireEvent(input, 'submitEditing');
+    expect(stub.chainsFor('settings').at(-2)?.[0]).toEqual([
+      'update',
+      { name: 'Wei Ling' },
+    ]);
+    expect(await screen.findByTestId('settings-name')).toHaveTextContent(
+      /^Wei Ling$/,
+    );
+    expect(screen.getByTestId('avatar-initials').props.children).toBe('WL');
+  });
+
+  it('keeps the old name when the new one is blank', async () => {
+    await draw();
+    await fireEvent.press(screen.getByTestId('settings-name'));
+    const input = screen.getByTestId('settings-name-input');
+    await fireEvent.changeText(input, '   ');
+    await fireEvent(input, 'blur');
+    expect(screen.getByTestId('settings-name')).toHaveTextContent(
+      'Wei Ling Tan',
+    );
+    expect(
+      stub.chainsFor('settings').some(chain => chain[0]?.[0] === 'update'),
+    ).toBe(false);
   });
 
   it('right, a credit card: rewards, earned, limit and statement date', async () => {

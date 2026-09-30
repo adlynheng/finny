@@ -449,9 +449,8 @@ describe('Share of assets (Settings)', () => {
   it('says Gross assets and totals what the cards owe, liabilities only', async () => {
     await draw();
     expect(text('share-label')).toBe('Gross assets');
-    expect(screen.getByTestId('share-owed-total').props.children).toEqual([
-      '−',
-      'S$1,200.00',
-    ]);
+    expect(screen.getByTestId('share-owed-total')).toHaveTextContent(
+      '−S$1,200.00',
+    );
   });
 });

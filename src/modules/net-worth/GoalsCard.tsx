@@ -1,8 +1,10 @@
 import { Text, View } from 'react-native';
 
+import { AddButton } from '@/components/ui/Empty';
 import { GradientCard } from '@/components/ui/GradientCard';
 import { useGoals } from '@/hooks/useGoals';
 import { useSettings } from '@/hooks/useSettings';
+import { useGoTo } from '@/navigation/useGoTo';
 import { isOneOf, GOAL_SOURCES, type GoalRow } from '@/types/domain';
 import {
   contributionCents,
@@ -16,11 +18,14 @@ import { formatMoney } from '@/utils/format/money';
 /**
  * The four-stop card: each goal's progress along a hairline track, with its
  * ETA and monthly contribution from the goals derive, paced against the
- * savings or investment pot in the settings row.
+ * savings or investment pot in the settings row. With no goals it is the
+ * design's empty card: an empty dashed track, a line on what a goal does,
+ * and a way to Goals & Planner to make one.
  */
 export function GoalsCard() {
   const goals = useGoals().data;
   const settings = useSettings().data;
+  const goTo = useGoTo();
   const plan = settings && {
     savingsCents: settings.monthly_savings_cents,
     investmentCents: settings.monthly_investment_cents,
@@ -39,22 +44,35 @@ export function GoalsCard() {
     >
       <View className="flex-row items-baseline justify-between gap-x-[8px]">
         <Text className="font-sans text-[13px] text-white">Savings goals</Text>
-        {goals && goals.length > 0 && (
+        {goals && (
           <Text
             testID="goals-summary"
             className="font-sans text-[11px] text-white opacity-85"
           >
-            {active.length} active · {formatMoney(savedCents)} saved
+            {goals.length > 0
+              ? `${active.length} active · ${formatMoney(savedCents)} saved`
+              : 'None yet'}
           </Text>
         )}
       </View>
       {goals?.length === 0 && (
-        <Text
-          testID="goals-empty"
-          className="flex-1 font-sans text-[13px] text-white opacity-85"
-        >
-          No goals yet. Set one up in Goals & Planner.
-        </Text>
+        <View testID="goals-empty" className="gap-y-[12px]">
+          <View className="h-[12px]">
+            <View className="absolute inset-x-0 top-[6px] border-t border-dashed border-white/50" />
+            <View className="absolute left-0 top-0 size-[12px] rounded-full border border-white/70" />
+            <View className="absolute right-0 top-[3px] h-[7px] w-px bg-white/70" />
+          </View>
+          <Text className="font-sans text-[12px] leading-[17px] text-white">
+            Give a goal a target and a date. Finny works out what to put aside
+            each month.
+          </Text>
+          <AddButton
+            testID="goals-new"
+            variant="light"
+            label="New goal"
+            onPress={() => goTo('Planner')}
+          />
+        </View>
       )}
       {plan &&
         goals?.map(g => (

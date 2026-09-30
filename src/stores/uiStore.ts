@@ -47,6 +47,8 @@ type UiFields = {
 
   /** The new-transaction form: the FAB and the This month card's button both open it. */
   newTransactionOpen: boolean;
+  /** Trading's Add position form: the panel's button and the empty hero's both open it. */
+  addPositionOpen: boolean;
 };
 
 type UiActions = {
@@ -78,6 +80,7 @@ export function initialUiState(): UiFields {
     settingsPanel: 'accounts',
     selectedCardId: null,
     newTransactionOpen: false,
+    addPositionOpen: false,
   };
 }
 

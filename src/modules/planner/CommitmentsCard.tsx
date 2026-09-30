@@ -5,8 +5,10 @@ import Svg, { Defs, Pattern, Rect } from 'react-native-svg';
 import { Icon } from '@/components/icons/Icon';
 import { categoryIcon } from '@/components/icons/registry';
 import { cx } from '@/components/ui/cardChrome';
+import { AddButton, EmptyNote, GhostRows } from '@/components/ui/Empty';
 import { Glass } from '@/components/ui/Glass';
 import { GradientCard } from '@/components/ui/GradientCard';
+import { useGoTo } from '@/navigation/useGoTo';
 import { tokens } from '@/theme/tokens';
 import type { Commitment } from '@/utils/derive/plan';
 import { formatMoney } from '@/utils/format/money';
@@ -28,6 +30,9 @@ const flexOf = (c: Commitment) => Math.max(c.cents, MIN_FLEX_CENTS);
  * highlights its row.
  *
  * Memoised: none of it moves with the sliders.
+ *
+ * With no recurring charges it is the design's empty card, pointing to where
+ * they are added.
  */
 export const CommitmentsCard = memo(function CommitmentsCard({
   commitments,
@@ -36,6 +41,8 @@ export const CommitmentsCard = memo(function CommitmentsCard({
 }: Pick<Planner, 'commitments' | 'fixedCents' | 'grossCents'>) {
   const [hot, setHot] = useState<string | null>(null);
   const mobile = Platform.OS === 'ios';
+  const goTo = useGoTo();
+  const empty = commitments.length === 0;
   const hover = (key: string) => ({
     onHoverIn: () => setHot(key),
     onHoverOut: () => setHot(h => (h === key ? null : h)),
@@ -85,14 +92,37 @@ export const CommitmentsCard = memo(function CommitmentsCard({
           testID="commitments-sub"
           className="font-sans text-[13px] text-white opacity-90"
         >
-          per month ·{' '}
-          {grossCents > 0
-            ? ((fixedCents / grossCents) * 100).toFixed(1)
-            : '0.0'}
-          % of gross
+          {empty
+            ? 'per month · none yet'
+            : `per month · ${
+                grossCents > 0
+                  ? ((fixedCents / grossCents) * 100).toFixed(1)
+                  : '0.0'
+              }% of gross`}
         </Text>
       </View>
-      {mobile ? (
+      {empty ? (
+        <View
+          testID="commitments-empty"
+          className="mt-[18px] min-h-0 flex-1 gap-y-[14px]"
+        >
+          <GhostRows count={4} tone="gradient" />
+          <EmptyNote
+            tone="gradient"
+            className="mt-auto"
+            title="Nothing fixed yet"
+            body="Rent, loan repayments and insurance are recurring charges on Personal Finance. Add them there and they come off the top here."
+            action={
+              <AddButton
+                testID="commitments-add"
+                variant="light"
+                label="Add in Personal Finance"
+                onPress={() => goTo('Finance')}
+              />
+            }
+          />
+        </View>
+      ) : mobile ? (
         <>
           <View className="mt-[16px] h-[30px] flex-row gap-x-[3px]">
             {commitments.map(bar)}

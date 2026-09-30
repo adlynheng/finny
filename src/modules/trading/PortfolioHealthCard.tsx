@@ -4,6 +4,7 @@ import Svg, { Path } from 'react-native-svg';
 import { Rings } from '@/components/charts/Rings';
 import { Icon } from '@/components/icons/Icon';
 import { ideaIcons, tabIcons } from '@/components/icons/registry';
+import { GhostRows } from '@/components/ui/Empty';
 import { Glass } from '@/components/ui/Glass';
 import { GradientCard } from '@/components/ui/GradientCard';
 import { tokens } from '@/theme/tokens';
@@ -28,6 +29,9 @@ const METRICS = [
  * the middle, a verdict, and "Today's ideas", all computed from the current
  * book. Ask Finny has no chat to open in this build, so its button is shown
  * faded and does nothing.
+ *
+ * With nothing held there is nothing to score: the design's empty card, with
+ * dashed rings, a dash for each score and dashed rows where ideas will go.
  */
 export function PortfolioHealthCard({
   book,
@@ -37,6 +41,7 @@ export function PortfolioHealthCard({
   animate?: boolean;
 }) {
   const mobile = Platform.OS === 'ios';
+  const empty = book.holdings.length === 0;
   const scores = healthScores(book.holdings, book.totals);
   const ringScores = METRICS.map(m => scores[m.key]);
   const ideas = ideasFor(book.holdings, book.totals, book.idle);
@@ -59,7 +64,11 @@ export function PortfolioHealthCard({
             className="font-sans text-[11px] text-white opacity-90"
           >
             AI review
-            {book.quotedAt ? ` · updated ${formatTime(book.quotedAt)}` : ''}
+            {empty
+              ? ' · waiting for holdings'
+              : book.quotedAt
+              ? ` · updated ${formatTime(book.quotedAt)}`
+              : ''}
           </Text>
         </View>
         <Pressable
@@ -94,8 +103,23 @@ export function PortfolioHealthCard({
       </View>
 
       <View className="mt-[4px] flex-row items-center gap-x-[18px] ios:mt-[10px] ios:gap-x-[16px]">
-        <View className="size-[128px] ios:size-[112px]">
-          <Rings testID="health-rings" scores={ringScores} animate={animate} />
+        <View className="size-[128px] items-center justify-center ios:size-[112px]">
+          {empty ? (
+            <>
+              <View className="absolute inset-[6px] rounded-full border border-dashed border-white/45" />
+              <View className="absolute inset-[22px] rounded-full border border-dashed border-white/35 ios:inset-[19px]" />
+              <View className="absolute inset-[38px] rounded-full border border-dashed border-white/25 ios:inset-[33px]" />
+              <Text className="font-sans text-[22px] font-light text-white">
+                –
+              </Text>
+            </>
+          ) : (
+            <Rings
+              testID="health-rings"
+              scores={ringScores}
+              animate={animate}
+            />
+          )}
         </View>
         <View className="min-w-0 gap-y-[9px] ios:flex-1">
           {METRICS.map(m => (
@@ -104,7 +128,9 @@ export function PortfolioHealthCard({
               className="flex-row items-center gap-x-[10px] ios:gap-x-[8px]"
             >
               <View className="size-[14px] items-center justify-center rounded-full border border-white/70">
-                <View className={`${m.dot} rounded-full bg-white`} />
+                {!empty && (
+                  <View className={`${m.dot} rounded-full bg-white`} />
+                )}
               </View>
               <Text
                 numberOfLines={1}
@@ -114,9 +140,11 @@ export function PortfolioHealthCard({
               </Text>
               <Text
                 testID={`health-${m.key}`}
-                className="ml-auto pl-[10px] font-sans text-[13px] tabular-nums text-white ios:pl-0"
+                className={`ml-auto pl-[10px] font-sans text-[13px] tabular-nums text-white ios:pl-0 ${
+                  empty ? 'opacity-85' : ''
+                }`}
               >
-                {scores[m.key]}
+                {empty ? '–' : scores[m.key]}
               </Text>
             </View>
           ))}
@@ -127,7 +155,9 @@ export function PortfolioHealthCard({
             className="mt-[2px] self-start px-[10px] py-[5px] ios:mt-0"
           >
             <Text className="font-sans text-[11px] text-white">
-              {verdict(overallScore(ringScores))}
+              {empty
+                ? 'Scored once you hold something'
+                : verdict(overallScore(ringScores))}
             </Text>
           </Glass>
         </View>
@@ -141,7 +171,18 @@ export function PortfolioHealthCard({
           Not financial advice
         </Text>
       </View>
-      {mobile ? (
+      {empty ? (
+        <View
+          testID="health-empty"
+          className="mt-[8px] min-h-0 flex-1 gap-y-[14px]"
+        >
+          <GhostRows count={2} tone="gradient" />
+          <Text className="mt-auto font-sans text-[12px] leading-[17px] text-white">
+            Each morning Finny reviews your book and suggests a few ideas:
+            rebalancing, concentration, cash to deploy.
+          </Text>
+        </View>
+      ) : mobile ? (
         <View className="mt-[8px] gap-y-[4px]">{list}</View>
       ) : (
         <ScrollView

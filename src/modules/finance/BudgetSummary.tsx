@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 
 import { cx } from '@/components/ui/cardChrome';
+import { AddButton } from '@/components/ui/Empty';
 import { Glass } from '@/components/ui/Glass';
 import { noFocusRing } from '@/components/ui/Input';
 import { useUpdateSettings } from '@/hooks/useSettings';
 import { tokens } from '@/theme/tokens';
+import { formatMonthShort } from '@/utils/format/date';
 import {
   centsToInput,
   formatAmount,
@@ -20,11 +22,16 @@ import type { Budget } from './useBudget';
  * over, in the danger colour), and the limit with the days to go. Edit limit
  * swaps that line in place for a Monthly limit field with Save and Cancel —
  * inline, not a modal — and Save writes `settings.monthly_expenditure_cents`.
+ *
+ * With no limit set it is the design's empty hero: this month beside the
+ * heading, S$0 with "no limit set", and a Set limit button that opens the
+ * same field.
  */
 export function BudgetSummary({ budget }: { budget: Budget | null }) {
   const [draft, setDraft] = useState<string | null>(null);
   const update = useUpdateSettings();
   const over = budget !== null && budget.leftCents < 0;
+  const unset = budget !== null && budget.limitCents === 0;
 
   const save = () => {
     const cents = inputToCents(draft ?? '');
@@ -36,12 +43,26 @@ export function BudgetSummary({ budget }: { budget: Budget | null }) {
 
   return (
     <View testID="budget-summary" className="gap-y-[12px] ios:gap-y-[10px]">
-      <Text
-        role="heading"
-        className="font-sans text-[40px] font-normal leading-[40px] tracking-[-0.02em] text-ink ios:text-[32px] ios:leading-[32px]"
-      >
-        Budget
-      </Text>
+      <View className="flex-row items-center gap-x-[12px] ios:gap-x-[10px]">
+        <Text
+          role="heading"
+          className="font-sans text-[40px] font-normal leading-[40px] tracking-[-0.02em] text-ink ios:text-[32px] ios:leading-[32px]"
+        >
+          Budget
+        </Text>
+        {unset && (
+          <Glass
+            testID="budget-month"
+            recipe="chip"
+            radius={6}
+            className="px-[10px] py-[6px]"
+          >
+            <Text className="font-sans text-[12px] text-muted">
+              {formatMonthShort(budget.month, { year: true })}
+            </Text>
+          </Glass>
+        )}
+      </View>
       {budget && (
         <>
           <View className="flex-row flex-wrap items-start gap-x-[6px] ios:gap-x-[5px]">
@@ -55,7 +76,7 @@ export function BudgetSummary({ budget }: { budget: Budget | null }) {
                 over ? 'text-danger' : 'text-ink',
               )}
             >
-              {formatAmount(budget.leftCents)}
+              {formatAmount(unset ? 0 : budget.leftCents)}
             </Text>
             <Text
               testID="budget-left-label"
@@ -64,11 +85,25 @@ export function BudgetSummary({ budget }: { budget: Budget | null }) {
                 over ? 'text-danger' : 'text-muted',
               )}
             >
-              {over ? 'over limit' : 'left to spend'}
+              {unset ? 'no limit set' : over ? 'over limit' : 'left to spend'}
             </Text>
           </View>
           <View className="min-h-[32px] flex-row flex-wrap items-center gap-[10px] ios:min-h-[40px] ios:gap-[8px]">
-            {draft === null ? (
+            {draft === null && unset ? (
+              <>
+                <Text
+                  testID="budget-limit"
+                  className="font-sans text-[14px] text-muted ios:text-[13px]"
+                >
+                  Set a monthly limit to track what's safe to spend
+                </Text>
+                <AddButton
+                  testID="budget-edit"
+                  label="Set limit"
+                  onPress={() => setDraft('')}
+                />
+              </>
+            ) : draft === null ? (
               <>
                 <Text
                   testID="budget-limit"
@@ -108,6 +143,7 @@ export function BudgetSummary({ budget }: { budget: Budget | null }) {
                     value={draft}
                     onChangeText={t => setDraft(sanitizeAmountInput(t))}
                     onSubmitEditing={save}
+                    placeholder="3,000"
                     keyboardType="decimal-pad"
                     placeholderTextColor={tokens.colors.muted2}
                     {...noFocusRing}

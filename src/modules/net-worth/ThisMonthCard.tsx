@@ -14,6 +14,7 @@ import { formatMoney, formatSignedMoney } from '@/utils/format/money';
  * The brown-olive card: this month's money in and out, transfers left out by
  * the month totals, with a bar of out against in. With no income yet the
  * ratio means nothing, so the bar reads full. Mobile's button just says Add.
+ * With no transactions at all this month the bar is empty and says so.
  */
 export function ThisMonthCard() {
   const month = monthKey(today());
@@ -21,6 +22,7 @@ export function ThisMonthCard() {
   const setUi = useUiStore(s => s.set);
   const { inCents, outCents, netCents } = monthTotals(txns ?? []);
   const spent = inCents > 0 ? outCents / inCents : null;
+  const none = txns != null && monthTxnCount(txns) === 0;
 
   return (
     <GradientCard
@@ -53,7 +55,7 @@ export function ThisMonthCard() {
           testID="month-bar"
           className="absolute inset-y-0 left-0 rounded-[2px] bg-white"
           // Out against in, as a share of the track: data, so not a class.
-          style={{ width: `${Math.min(1, spent ?? 1) * 100}%` }}
+          style={{ width: `${none ? 0 : Math.min(1, spent ?? 1) * 100}%` }}
         />
       </View>
       <View className="flex-row justify-between gap-x-[8px]">
@@ -61,17 +63,23 @@ export function ThisMonthCard() {
           testID="month-spent"
           className="font-sans text-[12px] text-white opacity-90"
         >
-          {spent === null
+          {none
+            ? 'No transactions yet'
+            : spent === null
             ? 'No income yet'
             : `${Math.round(spent * 100)}% of income spent`}
         </Text>
         <Text testID="month-net" className="font-sans text-[12px] text-white">
-          Net {formatSignedMoney(netCents)}
+          Net {none ? formatMoney(0) : formatSignedMoney(netCents)}
         </Text>
       </View>
     </GradientCard>
   );
 }
+
+/** The month's rows the card counts: transfers are left out, as in its totals. */
+const monthTxnCount = (txns: readonly { kind: string }[]) =>
+  txns.filter(t => t.kind !== 'transfer').length;
 
 const plus = (color: string) => (
   <PlusIcon size={10} color={color} strokeWidth={1.4} />

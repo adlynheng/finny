@@ -14,6 +14,7 @@ import { tokens } from '@/theme/tokens';
 import {
   formatDayMonth,
   formatMonthLong,
+  formatMonthShort,
   formatWeekdayShort,
   monthKey,
   shiftMonth,
@@ -54,13 +55,20 @@ function tileBorder(selected: boolean, isToday: boolean) {
  * names the selected day's charges and their total; it opens on the next one.
  * The month (the UI store's `calendarMonth`) steps from this month to three
  * ahead.
+ *
+ * With no recurring charges it is the design's empty card: nothing
+ * scheduled, this month alone (no stepping), and a strip saying what will
+ * appear.
  */
 export function PaymentsCalendarCard() {
-  const month = useUiStore(s => s.calendarMonth);
+  const storedMonth = useUiStore(s => s.calendarMonth);
   const setUi = useUiStore(s => s.set);
   const charges = useRecurringCharges().data ?? [];
   const today = currentDay();
   const thisMonth = monthKey(today);
+  const none = !charges.some(c => c.is_active);
+  // Nothing to step through: the empty card stays on this month.
+  const month = none ? thisMonth : storedMonth;
   // The pressed day, for the month it was pressed in.
   const [picked, setPicked] = useState<{ month: string; day: number } | null>(
     null,
@@ -96,20 +104,36 @@ export function PaymentsCalendarCard() {
             testID="payments-due"
             className="font-sans text-[11px] text-white opacity-90"
           >
-            {formatMoneyExact(due)} due{' '}
-            {month === thisMonth
-              ? `for the rest of ${formatMonthLong(month)}`
-              : `in ${formatMonthLong(month)}`}
+            {none
+              ? 'Nothing scheduled'
+              : `${formatMoneyExact(due)} due ${
+                  month === thisMonth
+                    ? `for the rest of ${formatMonthLong(month)}`
+                    : `in ${formatMonthLong(month)}`
+                }`}
           </Text>
         </View>
-        <MonthStepper
-          testID="payments-month"
-          tone="onGradient"
-          month={month}
-          min={thisMonth}
-          max={shiftMonth(thisMonth, MONTHS_AHEAD)}
-          onChange={m => setUi({ calendarMonth: m })}
-        />
+        {none ? (
+          <Glass
+            testID="payments-month"
+            recipe="onGradientTray"
+            radius={6}
+            className="px-[10px] py-[6px]"
+          >
+            <Text className="font-sans text-[11px] text-white">
+              {formatMonthShort(month)}
+            </Text>
+          </Glass>
+        ) : (
+          <MonthStepper
+            testID="payments-month"
+            tone="onGradient"
+            month={month}
+            min={thisMonth}
+            max={shiftMonth(thisMonth, MONTHS_AHEAD)}
+            onChange={m => setUi({ calendarMonth: m })}
+          />
+        )}
       </View>
       <View className="mt-[10px] flex-row items-baseline gap-x-[10px] ios:mt-[12px]">
         <Text className="font-sans text-[34px] font-light leading-[34px] tracking-[-0.02em] text-white ios:text-[32px] ios:leading-[32px]">
@@ -190,37 +214,51 @@ export function PaymentsCalendarCard() {
         fill="bg-white/[.12]"
         className="mt-[10px] flex-row items-center gap-x-[10px] px-[12px] py-[9px] ios:py-[11px]"
       >
-        <View className="size-[14px] items-center justify-center rounded-full border-[1.5px] border-lime">
-          <View className="size-[5px] rounded-full bg-lime" />
-        </View>
-        <View className="min-w-0 flex-1 flex-row items-center gap-x-[10px] ios:flex-col ios:items-start ios:gap-x-0 ios:gap-y-[1px]">
-          <Text
-            testID="payments-strip-day"
-            className="font-sans text-[12px] text-white"
-          >
-            {sel === null
-              ? 'No charges'
-              : `${formatWeekdayShort(dateOf(month, sel))} ${formatDayMonth(
-                  dateOf(month, sel),
-                )}`}
-          </Text>
-          <Text
-            testID="payments-strip-names"
-            numberOfLines={1}
-            className="min-w-0 flex-1 font-sans text-[12px] text-white opacity-90 ios:flex-none ios:text-[11px]"
-          >
-            {selCharges.map(c => c.name).join(', ')}
-          </Text>
-        </View>
-        {selCharges.length > 0 && (
-          <Text
-            testID="payments-strip-total"
-            className="font-sans text-[13px] text-white ios:text-[14px]"
-          >
-            {formatMoneyExact(
-              selCharges.reduce((s, c) => s + c.amount_cents, 0),
+        {none ? (
+          <>
+            <View className="size-[14px] rounded-full border-[1.5px] border-white/70" />
+            <Text
+              testID="payments-strip-day"
+              className="min-w-0 flex-1 font-sans text-[12px] text-white"
+            >
+              Recurring charges show up here on their due dates
+            </Text>
+          </>
+        ) : (
+          <>
+            <View className="size-[14px] items-center justify-center rounded-full border-[1.5px] border-lime">
+              <View className="size-[5px] rounded-full bg-lime" />
+            </View>
+            <View className="min-w-0 flex-1 flex-row items-center gap-x-[10px] ios:flex-col ios:items-start ios:gap-x-0 ios:gap-y-[1px]">
+              <Text
+                testID="payments-strip-day"
+                className="font-sans text-[12px] text-white"
+              >
+                {sel === null
+                  ? 'No charges'
+                  : `${formatWeekdayShort(dateOf(month, sel))} ${formatDayMonth(
+                      dateOf(month, sel),
+                    )}`}
+              </Text>
+              <Text
+                testID="payments-strip-names"
+                numberOfLines={1}
+                className="min-w-0 flex-1 font-sans text-[12px] text-white opacity-90 ios:flex-none ios:text-[11px]"
+              >
+                {selCharges.map(c => c.name).join(', ')}
+              </Text>
+            </View>
+            {selCharges.length > 0 && (
+              <Text
+                testID="payments-strip-total"
+                className="font-sans text-[13px] text-white ios:text-[14px]"
+              >
+                {formatMoneyExact(
+                  selCharges.reduce((s, c) => s + c.amount_cents, 0),
+                )}
+              </Text>
             )}
-          </Text>
+          </>
         )}
       </Glass>
     </GradientCard>

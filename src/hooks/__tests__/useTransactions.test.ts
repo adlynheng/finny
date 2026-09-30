@@ -28,6 +28,7 @@ async function add(
     useAddTransaction(),
   );
   client.setQueryData(queryKeys.transactions.list('2026-09'), []);
+  client.setQueryData(queryKeys.accounts.list(), []);
   await act(async () => {
     await result.current.mutateAsync(input);
   });
@@ -253,6 +254,20 @@ describe('adding', () => {
     },
   );
 
+  it('refreshes the accounts, whose balances the database moved', async () => {
+    const client = await add({
+      kind: 'deposit',
+      accountId: 1,
+      amountCents: 5_000,
+      date: '2026-09-24',
+      description: 'Refund',
+    });
+
+    expect(client.getQueryState(queryKeys.accounts.list())?.isInvalidated).toBe(
+      true,
+    );
+  });
+
   it('refreshes every month once saved', async () => {
     const client = await add({
       kind: 'expense',
@@ -275,6 +290,7 @@ describe('deleting', () => {
       useDeleteTransaction(),
     );
     client.setQueryData(queryKeys.transactions.list(), []);
+    client.setQueryData(queryKeys.accounts.list(), []);
 
     await act(async () => {
       await result.current.mutateAsync(42);
@@ -284,5 +300,8 @@ describe('deleting', () => {
     expect(
       client.getQueryState(queryKeys.transactions.list())?.isInvalidated,
     ).toBe(true);
+    expect(client.getQueryState(queryKeys.accounts.list())?.isInvalidated).toBe(
+      true,
+    );
   });
 });

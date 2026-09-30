@@ -24,6 +24,7 @@ import Animated, {
 import {
   Circle,
   Ellipse,
+  Line,
   Text as SvgText,
   type EllipseProps,
 } from 'react-native-svg';
@@ -341,6 +342,130 @@ export function Sphere({
         />
       ))}
       <HoverSurface testID="sphere-hover" onHover={onHover} />
+    </View>
+  );
+}
+
+/** The empty sphere's strokes, from the design's `eSphere()`. */
+const EMPTY = {
+  meridianOpacity: 0.18,
+  latitude: { opacity: 0.14, width: 0.7, dash: '2 4' },
+  tick: { outer: 208, opacity: 0.14, width: 0.8 },
+  outerRing: { opacity: 0.08, width: 0.7 },
+  spinRing: { opacity: 0.2, width: 0.6, dash: '1 5' },
+  caption: { y: 238, size: 12 },
+} as const;
+
+/**
+ * The sphere before anything is tracked (the design's `eSphere()`): the
+ * turning meridians, dashed latitudes, an even ring of faint ticks, the
+ * spinning ring and the pulsing pole, and a caption for what will fill it.
+ */
+export function EmptySphere({
+  labels = true,
+  animate = true,
+}: {
+  /** Desktop's roomier viewBox; mobile draws it larger in the compact one. */
+  labels?: boolean;
+  animate?: boolean;
+}) {
+  const half = labels ? SPHERE.half.labels : SPHERE.half.compact;
+  const clock = useSharedValue(0);
+  useEffect(() => {
+    if (!animate) return;
+    clock.value = withRepeat(
+      withTiming(2, {
+        duration: motion.fnMeridian.durationMs * 2,
+        easing: Easing.linear,
+      }),
+      -1,
+      false,
+    );
+  }, [animate, clock]);
+
+  const { count, inner } = SPHERE.ticks;
+  return (
+    <View testID="sphere-empty" className="aspect-square w-full">
+      <Layer half={half}>
+        {Array.from({ length: SPHERE.meridians }, (_, i) => (
+          <Meridian
+            key={i}
+            i={i}
+            clock={animate ? clock : null}
+            opacity={EMPTY.meridianOpacity}
+          />
+        ))}
+        {Array.from({ length: SPHERE.latitudes }, (_, j) => {
+          const phi = -Math.PI / 2 + ((j + 0.5) / SPHERE.latitudes) * Math.PI;
+          const rx = R * Math.cos(phi);
+          return (
+            <Ellipse
+              key={j}
+              cx={0}
+              cy={-R * Math.sin(phi)}
+              rx={rx}
+              ry={rx * SPHERE.latitudeFlatten}
+              fill="none"
+              stroke={ink}
+              strokeOpacity={EMPTY.latitude.opacity}
+              strokeWidth={EMPTY.latitude.width}
+              strokeDasharray={EMPTY.latitude.dash}
+            />
+          );
+        })}
+        {Array.from({ length: count }, (_, i) => {
+          const a = ((-90 + ((i + 0.5) * 360) / count) * Math.PI) / 180;
+          return (
+            <Line
+              key={i}
+              x1={inner * Math.cos(a)}
+              y1={inner * Math.sin(a)}
+              x2={EMPTY.tick.outer * Math.cos(a)}
+              y2={EMPTY.tick.outer * Math.sin(a)}
+              stroke={ink}
+              strokeOpacity={EMPTY.tick.opacity}
+              strokeWidth={EMPTY.tick.width}
+              strokeLinecap="round"
+            />
+          );
+        })}
+        <Circle
+          r={SPHERE.outerRing}
+          fill="none"
+          stroke={ink}
+          strokeOpacity={EMPTY.outerRing.opacity}
+          strokeWidth={EMPTY.outerRing.width}
+        />
+        <SvgText
+          testID="sphere-empty-caption"
+          x={0}
+          y={EMPTY.caption.y}
+          textAnchor="middle"
+          fontSize={EMPTY.caption.size}
+          fontFamily={FONT}
+          fill={muted}
+        >
+          Cash, CPF, investments and property map here
+        </SvgText>
+      </Layer>
+      <SpinRing
+        half={half}
+        radius={SPHERE.spinRing}
+        animate={animate}
+        stroke={EMPTY.spinRing}
+        testID="sphere-empty-spin"
+      />
+      <Pulse
+        half={half}
+        x={0}
+        y={-R}
+        radius={look.pole.pulseRadius}
+        animate={animate}
+        testID="sphere-empty-pulse"
+      />
+      <Layer half={half}>
+        <Circle cx={0} cy={-R} r={look.pole.radius} fill={lime} />
+      </Layer>
     </View>
   );
 }

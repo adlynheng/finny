@@ -1,7 +1,7 @@
 /**
  * Every icon in the design, as the single SVG path string it draws on a
  * 16×16 viewBox (stroked, never filled). Paths are copied from the design
- * files, not redrawn, apart from their dots (see OTHER).
+ * files, not redrawn, apart from their dots (see OTHER) and Pets.
  *
  * `category.icon` stores a registry key (`'Groceries'`), never a path, so the
  * icon set can change without a data migration. Every lookup falls back to
@@ -36,6 +36,8 @@ export const expenseIcons = {
   Health: 'M6 2.5h4V6h3.5v4H10v3.5H6V10H2.5V6H6z',
   Housing: 'M2.5 7.5L8 3l5.5 4.5 M4 6.5v7h8v-7 M6.5 13.5v-3.5h3v3.5',
   Travel: 'M2 9.5l12-5-3 9-3-3.5z M8 10l-1.5 3',
+  // Not in the design: a cat's head, ears up, drawn to the set's 1.1 stroke.
+  Pets: 'M3 7.5V2.5l3 2.5h4l3-2.5v5c0 3.3-2.2 5.5-5 5.5s-5-2.2-5-5.5z M5.95 8a.55 .55 0 1 0 1.1 0a.55 .55 0 1 0-1.1 0 M8.95 8a.55 .55 0 1 0 1.1 0a.55 .55 0 1 0-1.1 0 M7.4 10.2l.6.6.6-.6',
   // Insurance, Bills and Services are in the Personal Finance design's set,
   // not the Settings picker's.
   Insurance: 'M8 2l5 2v4c0 3-2.2 5-5 6-2.8-1-5-3-5-6V4z',

@@ -9,7 +9,8 @@ export type ButtonVariant =
   | 'danger'
   | 'destructive'
   | 'outline'
-  | 'soft';
+  | 'soft'
+  | 'light';
 
 /**
  * md: a modal's actions (Save, Cancel, Delete). sm: a card's actions (Add
@@ -87,6 +88,13 @@ const look: Record<
     text: 'text-ink',
     icon: 'ink',
   },
+  // White on a gradient card: an empty card's action (Add an account).
+  light: {
+    rest: 'bg-white',
+    hover: 'hover:bg-light-hover',
+    text: 'text-ink',
+    icon: 'ink',
+  },
 };
 
 /** Each size's corners and label size. */
@@ -108,6 +116,7 @@ const padding: Record<ButtonSize, Partial<Record<ButtonVariant, string>>> = {
     destructive: 'px-[18px] py-[10px]',
     outline: 'px-[16px] py-[10px]',
     soft: 'px-[16px] py-[10px]',
+    light: 'px-[16px] py-[10px]',
   },
   sm: {
     primary: 'px-[12px] py-[8px] ios:px-[13px] ios:py-0',
@@ -116,6 +125,7 @@ const padding: Record<ButtonSize, Partial<Record<ButtonVariant, string>>> = {
     destructive: 'px-[12px] py-[8px]',
     outline: 'h-[28px] px-[14px]',
     soft: 'px-[12px] py-[7px]',
+    light: 'px-[13px] py-[8px] ios:py-0',
   },
   touch: {},
 };
@@ -123,7 +133,7 @@ const padding: Record<ButtonSize, Partial<Record<ButtonVariant, string>>> = {
 /**
  * Primary (ink, white text, lime icon), ghost (a 5% ink wash on hover),
  * danger text, destructive (danger fill, white text), outline (a hairline border that fills with ink on hover) and
- * soft (a faint ink fill). Disabled fades and neither presses nor hovers,
+ * soft (a faint ink fill) and light (white, on a gradient card). Disabled fades and neither presses nor hovers,
  * which the Ask Finny button relies on.
  */
 export function Button({

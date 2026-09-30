@@ -51,7 +51,14 @@ it('tracks each goal’s progress, ETA and contribution from its pot', async () 
   stub.respond('goal', {
     data: [
       goal(1, 'Emergency fund', 'savings', 2_400_000, 2_100_000, '2026-11-30'),
-      goal(2, 'Home renovation', 'investment', 3_000_000, 1_840_000, '2027-03-31'),
+      goal(
+        2,
+        'Home renovation',
+        'investment',
+        3_000_000,
+        1_840_000,
+        '2027-03-31',
+      ),
       goal(3, 'Japan trip', 'savings', 100_000, 120_000, '2026-12-01'),
       goal(4, 'Someday', 'savings', 500_000, 0, null),
     ],
@@ -69,18 +76,18 @@ it('tracks each goal’s progress, ETA and contribution from its pot', async () 
   expect(screen.getByTestId('goal-3')).toHaveTextContent(/^Japan trip100%/);
   expect(screen.getByTestId('goal-3-fill')).toHaveStyle({ width: '100%' });
   expect(screen.getByTestId('goal-3-eta')).toHaveTextContent('Reached');
-  expect(screen.getByTestId('goal-4-eta')).toHaveTextContent(
-    'No contribution',
-  );
+  expect(screen.getByTestId('goal-4-eta')).toHaveTextContent('No contribution');
   expect(screen.getByTestId('goals-summary')).toHaveTextContent(
     '3 active · S$40,600 saved',
   );
 });
 
-it('prompts for a first goal rather than showing an empty card', async () => {
+it('with no goals, is the empty card: None yet, what a goal does, and New goal', async () => {
   stub.respond('goal', { data: [], error: null });
   await renderWithClient(<GoalsCard />);
 
-  expect(await screen.findByTestId('goals-empty')).toBeTruthy();
-  expect(screen.queryByTestId('goals-summary')).toBeNull();
+  const empty = await screen.findByTestId('goals-empty');
+  expect(screen.getByTestId('goals-summary')).toHaveTextContent('None yet');
+  expect(empty).toHaveTextContent(/Give a goal a target and a date/);
+  expect(screen.getByTestId('goals-new')).toHaveTextContent('New goal');
 });

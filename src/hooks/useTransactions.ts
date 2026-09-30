@@ -101,10 +101,18 @@ function rowsFor(input: NewTransaction): TxnInsert[] {
   ];
 }
 
+/**
+ * Refreshes the transactions, and the accounts: the database moves an account's balance with
+ * every row added, changed or deleted (migration 0006).
+ */
 function useInvalidateTransactions() {
   const queryClient = useQueryClient();
   return () =>
-    queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
+    Promise.all(
+      [queryKeys.transactions.all, queryKeys.accounts.all].map(queryKey =>
+        queryClient.invalidateQueries({ queryKey }),
+      ),
+    );
 }
 
 /** Resolves to the saved rows: one, or two for a transfer. Both transfer rows save or neither. */

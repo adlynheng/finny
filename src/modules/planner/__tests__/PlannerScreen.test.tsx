@@ -365,11 +365,15 @@ describe('on macOS', () => {
       );
     });
 
-    it('asks for a first goal when there are none', async () => {
+    it('asks for a first goal when there are none, beside dashed stand-ins', async () => {
       respondPlanner(stub, { goalRows: [] });
       await open();
-      has('plan-goals-empty', 'No goals yet');
+      has('plan-goals-summary', 'None yet');
+      has('plan-goals-empty', 'Create your first goal');
+      expect(screen.getAllByTestId('plan-goal-ghost')).toHaveLength(3);
       has('plan-impact', '0 of 0 goals on track');
+      await fireEvent.press(byId('plan-goal-first'));
+      expect(await screen.findByTestId('goal-name')).toBeTruthy();
     });
 
     describe('the New goal form', () => {

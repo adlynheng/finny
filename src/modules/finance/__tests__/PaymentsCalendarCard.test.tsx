@@ -115,12 +115,17 @@ it('steps from this month to three ahead, and no further either way', async () =
   ).toBe(true);
 });
 
-it('says so when the month has no charges', async () => {
+it('with no charges at all, is the empty card: nothing scheduled, this month only', async () => {
   stub.respond('recurring_charge', { data: [], error: null });
   await renderWithClient(<PaymentsCalendarCard />);
 
   expect(await screen.findByTestId('payments-strip-day')).toHaveTextContent(
-    'No charges',
+    'Recurring charges show up here on their due dates',
   );
+  expect(screen.getByTestId('payments-due')).toHaveTextContent(
+    'Nothing scheduled',
+  );
+  expect(screen.getByTestId('payments-month')).toHaveTextContent('Sep');
+  expect(screen.queryByTestId('payments-month-next')).toBeNull();
   expect(screen.queryByTestId('payments-strip-total')).toBeNull();
 });

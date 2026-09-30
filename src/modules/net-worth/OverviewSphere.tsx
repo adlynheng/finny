@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { Sphere } from '@/components/charts/Sphere';
+import { EmptySphere, Sphere } from '@/components/charts/Sphere';
 import type { SphereClass } from '@/components/charts/sphereLayout';
 import { useAccounts } from '@/hooks/useAccounts';
 import { useAssetClasses } from '@/hooks/useAssetClasses';
@@ -50,8 +50,15 @@ export function OverviewSphere({ labels = true }: { labels?: boolean }) {
     [slices],
   );
 
-  if (!accounts || sphereClasses.length === 0) {
+  if (!accounts) {
     return null;
+  }
+  // Nothing tracked yet: the design's empty sphere, as the empty hero beside it.
+  if (sphereClasses.length === 0) {
+    const worth = netWorth(accounts);
+    return worth.liabilitiesCents === 0 ? (
+      <EmptySphere labels={labels} />
+    ) : null;
   }
   return (
     <Sphere

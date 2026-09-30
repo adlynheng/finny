@@ -16,6 +16,7 @@ import { AppFrame } from '@/components/ui/AppFrame';
 import { MobileFrame } from '@/components/ui/MobileFrame';
 import { FinanceScreen } from '@/modules/finance/FinanceScreen';
 import { OverviewScreen } from '@/modules/net-worth/OverviewScreen';
+import { useSnapshotSync } from '@/modules/net-worth/useSnapshotSync';
 import { PlannerScreen } from '@/modules/planner/PlannerScreen';
 import { SettingsScreen } from '@/modules/settings/SettingsScreen';
 import { TradingScreen } from '@/modules/trading/TradingScreen';
@@ -36,6 +37,7 @@ function FinnyNavigator({ initialRouteName, children }: NavigatorProps) {
   const select = (name: ScreenName) => navigation.navigate(name);
   const newOpen = useUiStore(s => s.newTransactionOpen);
   const setUi = useUiStore(s => s.set);
+  useSnapshotSync();
   const screen = (
     <View testID={`screen-${route.name}`} className="flex-1">
       {descriptors[route.key]!.render()}

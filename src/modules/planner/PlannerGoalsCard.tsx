@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { cx } from '@/components/ui/cardChrome';
+import { AddButton, EmptyNote } from '@/components/ui/Empty';
 import { useDeleteGoal } from '@/hooks/useGoals';
 import { tokens } from '@/theme/tokens';
 import { goalProgress } from '@/utils/derive/goals';
@@ -27,6 +28,8 @@ import {
  * The goals, each paced against its pot as the plan now stands: moving a
  * slider re-derives every share, status and ETA here. New goal opens the
  * form; each goal's × asks before deleting it. Two columns on desktop, one on mobile.
+ * With none yet it is the design's empty card: a first goal to create beside
+ * dashed stand-ins for the goals to come.
  */
 export const PlannerGoalsCard = memo(function PlannerGoalsCard({
   planner,
@@ -50,15 +53,13 @@ export const PlannerGoalsCard = memo(function PlannerGoalsCard({
       <View className="flex-row items-center justify-between gap-x-[8px]">
         <View className="min-w-0 shrink flex-row items-baseline gap-x-[10px] ios:flex-col ios:items-start ios:gap-y-[2px]">
           <Text className="font-sans text-[13px] text-ink">Goals</Text>
-          {goals.length > 0 && (
-            <Text
-              testID="plan-goals-summary"
-              numberOfLines={mobile ? undefined : 1}
-              className="shrink font-sans text-[12px] text-muted"
-            >
-              {summary}
-            </Text>
-          )}
+          <Text
+            testID="plan-goals-summary"
+            numberOfLines={mobile ? undefined : 1}
+            className="shrink font-sans text-[12px] text-muted"
+          >
+            {goals.length > 0 ? summary : 'None yet'}
+          </Text>
         </View>
         <Button
           testID="plan-goal-new"
@@ -71,13 +72,41 @@ export const PlannerGoalsCard = memo(function PlannerGoalsCard({
         />
       </View>
       {goals.length === 0 ? (
-        <Text
+        <View
           testID="plan-goals-empty"
-          className="mt-[14px] font-sans text-[13px] text-muted"
+          className="mt-[10px] min-h-0 flex-1 flex-row flex-wrap gap-x-[36px] pb-[10px] ios:flex-col ios:pb-0"
         >
-          No goals yet. Add one and the plan paces it from your savings or
-          investments.
-        </Text>
+          <EmptyNote
+            tone="glass"
+            className="min-w-0 basis-[45%] grow justify-center border-t border-ink/[.06] py-[18px]"
+            title="Create your first goal"
+            body="An emergency fund, a trip, a renovation. Give it a target and a date, and Finny works out the monthly amount and adds a slider to your plan."
+            action={
+              <AddButton
+                testID="plan-goal-first"
+                label="New goal"
+                onPress={() => setAdding(true)}
+              />
+            }
+          />
+          {[0, 1, 2].map(i => (
+            <View
+              key={i}
+              testID="plan-goal-ghost"
+              className="min-w-0 basis-[45%] grow justify-center gap-y-[12px] border-t border-ink/[.06] py-[18px]"
+            >
+              <View className="flex-row justify-between">
+                <View className="h-[8px] w-[38%] rounded-full bg-ink/[.07]" />
+                <View className="h-[8px] w-[12%] rounded-full bg-ink/[.07]" />
+              </View>
+              <View className="h-[12px] justify-center">
+                <View className="border-t border-dashed border-ink/20" />
+                <View className="absolute left-0 size-[10px] rounded-full border border-ink/25" />
+              </View>
+              <View className="h-[6px] w-[30%] rounded-full bg-ink/[.05]" />
+            </View>
+          ))}
+        </View>
       ) : (
         <ScrollView
           testID="plan-goals-list"

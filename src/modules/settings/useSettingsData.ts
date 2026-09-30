@@ -85,39 +85,88 @@ export type PanelHead = {
   count: string;
   summary: string;
   action: string;
+  /** With nothing in the panel yet: the design's empty note, in place of its body. */
+  empty: { title: string; body: string } | null;
 };
 
-/** Each panel's title, summary line and action, in the nav's order. */
+/** Each panel's empty note, from the design (Fixed variables' reworded for its income streams). */
+const EMPTY: Record<SettingsPanel, { title: string; body: string }> = {
+  accounts: {
+    title: 'No accounts yet',
+    body: 'Add savings, CPF and brokerage accounts with their balances. They feed your net worth and the share of assets.',
+  },
+  expenditure: {
+    title: 'No categories yet',
+    body: 'Categories sort every transaction and drive the spending breakdown on Personal Finance.',
+  },
+  deposit: {
+    title: 'No categories yet',
+    body: 'Categories sort every transaction and drive the spending breakdown on Personal Finance.',
+  },
+  fixed: {
+    title: 'No fixed variables yet',
+    body: 'Your salary and other income, with the CPF that comes off it. They set what the monthly plan has to allocate.',
+  },
+};
+
+/**
+ * Each panel's title, summary line and action, in the nav's order. An empty
+ * panel's summary is "None yet", as is its nav subtitle, except the category
+ * panels', which say where categories come from.
+ */
 export function panelHeads(
   data: SettingsData,
 ): Record<SettingsPanel, PanelHead> {
+  const lengths: Record<SettingsPanel, number> = {
+    accounts: data.accounts.length,
+    expenditure: data.expense.length,
+    deposit: data.deposit.length,
+    fixed: data.incomes.length,
+  };
   const head = (
+    key: SettingsPanel,
     title: string,
     count: string,
     detail: string,
     action: string,
-  ): PanelHead => ({ title, count, summary: `${count} · ${detail}`, action });
+  ): PanelHead =>
+    lengths[key] === 0
+      ? {
+          title,
+          count:
+            key === 'expenditure' || key === 'deposit'
+              ? 'Start from defaults or your own'
+              : 'None yet',
+          summary: 'None yet',
+          action,
+          empty: EMPTY[key],
+        }
+      : { title, count, summary: `${count} · ${detail}`, action, empty: null };
   const month = data.monthLabel;
   return {
     accounts: head(
+      'accounts',
       'Accounts & balances',
       plural(data.accounts.length, 'account'),
       `${formatMoney(data.assetsCents)} in assets`,
       'New account',
     ),
     expenditure: head(
+      'expenditure',
       'Expenditure categories',
       plural(data.expense.length, 'category', 'categories'),
       `${formatMoney(sumOf(data.expense), { decimals: 2 })} spent in ${month}`,
       'New category',
     ),
     deposit: head(
+      'deposit',
       'Deposit categories',
       plural(data.deposit.length, 'category', 'categories'),
       `${formatMoney(sumOf(data.deposit))} received in ${month}`,
       'New category',
     ),
     fixed: head(
+      'fixed',
       'Fixed variables',
       plural(data.incomes.length, 'income stream'),
       `${formatMoney(data.incomeMonthlyCents)} / month`,

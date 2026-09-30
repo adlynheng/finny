@@ -1,24 +1,19 @@
-import { Pressable, Text, View } from 'react-native';
+import { useState } from 'react';
+import { Pressable, Text, TextInput, View } from 'react-native';
 
+import { Icon } from '@/components/icons/Icon';
+import { Avatar } from '@/components/ui/Avatar';
 import { Glass } from '@/components/ui/Glass';
-import { supabase } from '@/lib/supabase';
+import { noFocusRing } from '@/components/ui/Input';
+import { useUpdateSettings } from '@/hooks/useSettings';
+import { tokens } from '@/theme/tokens';
 import type { SettingsRow } from '@/types/domain';
 import { plural } from './useSettingsData';
 
-/** Up to two initials: "Wei Ling Tan" is WL, "Adlyn" is A. */
-export function initialsOf(name: string): string {
-  return name
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map(word => word[0]?.toUpperCase() ?? '')
-    .join('');
-}
-
 /**
  * The hero's left column (the mobile page's header): the Settings heading,
- * an avatar tile with the user's initials in lime on ink beside their name
- * and email, and three meta chips — cards, accounts, and region and currency.
+ * the avatar beside the user's name, which edits in place, and email, and
+ * three meta chips — cards, accounts, and region and currency.
  */
 export function ProfileHeader({
   settings,
@@ -39,31 +34,16 @@ export function ProfileHeader({
       testID="settings-profile"
       className="flex-1 gap-y-[16px] pl-[6px] pt-[6px] ios:flex-none ios:gap-y-[14px] ios:px-[4px] ios:pt-0"
     >
-      <View className="flex-row items-center justify-between gap-x-[10px]">
-        <Text
-          accessibilityRole="header"
-          className="font-sans text-[40px] font-normal leading-[40px] tracking-[-0.02em] text-ink ios:text-[32px] ios:leading-[32px]"
-        >
-          Settings
-        </Text>
-        <SignOut />
-      </View>
+      <Text
+        accessibilityRole="header"
+        className="font-sans text-[40px] font-normal leading-[40px] tracking-[-0.02em] text-ink ios:text-[32px] ios:leading-[32px]"
+      >
+        Settings
+      </Text>
       <View className="mt-auto flex-row items-center gap-x-[14px] ios:mt-0 ios:gap-x-[12px]">
-        <View className="size-[52px] items-center justify-center rounded-8 bg-ink ios:size-[48px]">
-          <Text
-            testID="settings-initials"
-            className="font-sans text-[17px] font-medium text-lime ios:text-[16px]"
-          >
-            {initialsOf(settings.name)}
-          </Text>
-        </View>
+        <Avatar name={settings.name} size="lg" />
         <View className="min-w-0 flex-1 gap-y-[2px]">
-          <Text
-            numberOfLines={1}
-            className="font-sans text-[20px] text-ink ios:text-[19px]"
-          >
-            {settings.name}
-          </Text>
+          <NameField name={settings.name} />
           {settings.email ? (
             <Text
               numberOfLines={1}
@@ -91,18 +71,58 @@ export function ProfileHeader({
   );
 }
 
+/** Not in the design: a pencil beside the name says it can be edited. */
+const PENCIL = 'M10.5 2.5l3 3-8 8h-3v-3z M9 4l3 3';
+
+const NAME_TEXT = 'font-sans text-[20px] text-ink ios:text-[19px]';
+
 /**
- * Not in the design, whose Settings page has no way out: kept from the
- * stand-in page, small and muted beside the heading, until it has a home.
+ * The user's name, which a press turns into a field. Return or leaving the
+ * field saves it; an empty name is not saved, and the old one comes back.
  */
-function SignOut() {
+function NameField({ name: saved }: { name: string }) {
+  const update = useUpdateSettings();
+  const [draft, setDraft] = useState<string | null>(null);
+  // The new name while it saves, so the old one does not flash back.
+  const name = (update.isPending && update.variables.name) || saved;
+
+  if (draft === null) {
+    return (
+      <Pressable
+        testID="settings-name"
+        accessibilityRole="button"
+        accessibilityLabel="Edit name"
+        onPress={() => setDraft(name)}
+        className="group flex-row items-center gap-x-[8px] self-start"
+      >
+        <Text numberOfLines={1} className={`shrink ${NAME_TEXT}`}>
+          {name}
+        </Text>
+        <View className="opacity-60 group-hover:opacity-100">
+          <Icon path={PENCIL} size={12} color={tokens.colors.muted} />
+        </View>
+      </Pressable>
+    );
+  }
+  const save = () => {
+    const next = draft.trim();
+    setDraft(null);
+    if (next && next !== name) {
+      update.mutate({ name: next });
+    }
+  };
   return (
-    <Pressable
-      accessibilityRole="button"
-      // Local: signing out here leaves the other device signed in.
-      onPress={() => supabase.auth.signOut({ scope: 'local' })}
-    >
-      <Text className="font-sans text-[12px] text-muted">Sign out</Text>
-    </Pressable>
+    <TextInput
+      testID="settings-name-input"
+      accessibilityLabel="Name"
+      autoFocus
+      value={draft}
+      onChangeText={setDraft}
+      onSubmitEditing={save}
+      onBlur={save}
+      returnKeyType="done"
+      {...noFocusRing}
+      className={`border-b border-ink/20 p-0 ${NAME_TEXT}`}
+    />
   );
 }

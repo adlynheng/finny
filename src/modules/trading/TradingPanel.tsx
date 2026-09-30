@@ -4,6 +4,7 @@ import { Platform, Text, View } from 'react-native';
 import { PlusIcon } from '@/components/icons/PlusIcon';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { AddButton, EmptyNote, GhostRows } from '@/components/ui/Empty';
 import { Segmented } from '@/components/ui/Segmented';
 import { useUiStore, type TradingTab } from '@/stores/uiStore';
 import type { Holding } from '@/utils/derive/portfolio';
@@ -30,6 +31,9 @@ const count = (n: number, one: string, many: string) =>
  * The glass panel under the hero: Positions, Watchlist and Portfolio tabs, a
  * line about the open tab, the USD/SGD rate and when it was fetched, and Add
  * position. The Sell and Add position forms open from here.
+ *
+ * A tab with nothing to list is the design's empty tab: dashed rows, and
+ * beside them what fills it (and, for Positions, a first one to add).
  */
 export function TradingPanel({
   book,
@@ -44,7 +48,8 @@ export function TradingPanel({
   const expanded = useUiStore(s => s.expandedSymbols);
   const setUi = useUiStore(s => s.set);
   const [selling, setSelling] = useState<Holding | null>(null);
-  const [adding, setAdding] = useState(false);
+  const adding = useUiStore(s => s.addPositionOpen);
+  const setAdding = (open: boolean) => setUi({ addPositionOpen: open });
   const mobile = Platform.OS === 'ios';
   const click = mobile ? 'tap' : 'click';
 
@@ -65,7 +70,11 @@ export function TradingPanel({
         }).primary
       }`
     : '';
-  const line = {
+  const tabEmpty =
+    tab === 'watchlist'
+      ? book.watched.length === 0
+      : book.holdings.length === 0;
+  const full = {
     positions: `${count(book.holdings.length, 'holding', 'holdings')}${
       account ? ` · ${account}` : ''
     }${realised} · ${click} a row for lots`,
@@ -80,6 +89,7 @@ export function TradingPanel({
       'instrument types',
     )} · ${count(byIndustry(book.holdings).length, 'industry', 'industries')}`,
   }[tab];
+  const line = tabEmpty ? full.split(' · ')[0] : full;
 
   const tabs = (
     <Segmented
@@ -176,7 +186,8 @@ export function TradingPanel({
         </View>
       )}
 
-      {tab === 'positions' && (
+      {tabEmpty && <EmptyTab tab={tab} onAdd={() => setAdding(true)} />}
+      {!tabEmpty && tab === 'positions' && (
         <PositionsTab
           book={book}
           charted={charted}
@@ -184,10 +195,10 @@ export function TradingPanel({
           mobile={mobile}
         />
       )}
-      {tab === 'watchlist' && (
+      {!tabEmpty && tab === 'watchlist' && (
         <WatchlistTab book={book} charted={charted} mobile={mobile} />
       )}
-      {tab === 'portfolio' && (
+      {!tabEmpty && tab === 'portfolio' && (
         <PortfolioTab book={book} mobile={mobile} animate={animate} />
       )}
 
@@ -208,8 +219,8 @@ export function TradingPanel({
           book={book}
           onClose={() => setAdding(false)}
           onAdded={s => {
-            setAdding(false);
             setUi({
+              addPositionOpen: false,
               tradingTab: 'positions',
               expandedSymbols: expanded.includes(s)
                 ? expanded
@@ -219,6 +230,51 @@ export function TradingPanel({
         />
       )}
     </Card>
+  );
+}
+
+/** Each tab's empty note, from the design. */
+const EMPTY_COPY: Record<TradingTab, { title: string; body: string }> = {
+  positions: {
+    title: 'No positions yet',
+    body: 'Add a holding and its buy lots. Finny tracks cost basis, P&L and FX, with US$ prices shown in S$ too.',
+  },
+  watchlist: {
+    title: 'Nothing on your watchlist',
+    body: "Follow tickers you don't own yet to see their price and 30-day trend.",
+  },
+  portfolio: {
+    title: 'No mix to show yet',
+    body: 'Your split by instrument and industry fills in from your positions.',
+  },
+};
+
+function EmptyTab({ tab, onAdd }: { tab: TradingTab; onAdd: () => void }) {
+  const { title, body } = EMPTY_COPY[tab];
+  return (
+    <View
+      testID="trading-empty"
+      className="mt-[14px] min-h-0 flex-1 flex-row gap-x-[40px] ios:mt-[12px] ios:flex-col ios:gap-y-[14px]"
+    >
+      <View className="min-w-0 flex-1 ios:flex-none">
+        <GhostRows count={3} tone="glass" />
+      </View>
+      <EmptyNote
+        tone="glass"
+        className="w-[360px] justify-end self-stretch pb-[4px] ios:w-auto ios:pb-0"
+        title={title}
+        body={body}
+        action={
+          tab === 'positions' && (
+            <AddButton
+              testID="add-first-position"
+              label="Add your first position"
+              onPress={onAdd}
+            />
+          )
+        }
+      />
+    </View>
   );
 }
 

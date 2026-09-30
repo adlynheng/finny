@@ -53,7 +53,7 @@ export function OverviewScreen() {
     <View testID="overview-grid" className="flex-1 gap-y-frame-gap">
       <View className="min-h-0 flex-1 flex-row gap-x-frame-gap">
         <View testID="overview-hero" className="grow-[2.7] basis-frame-gap">
-          <View className="absolute left-hero-inset top-hero-inset z-10">
+          <View className="absolute bottom-0 left-hero-inset top-hero-inset z-10">
             <NetWorthHero />
           </View>
           <View

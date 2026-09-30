@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { Platform, Pressable, View } from 'react-native';
+import { Platform, Pressable, Text, View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -8,6 +8,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import { PlusIcon } from '@/components/icons/PlusIcon';
 import { GradientFill } from '@/components/ui/GradientFill';
 import { gradients } from '@/theme/gradients';
 import { tokens } from '@/theme/tokens';
@@ -178,5 +179,47 @@ function FanCard({
         />
       </Pressable>
     </Animated.View>
+  );
+}
+
+/**
+ * No cards yet (the design's empty hero): two dashed card outlines over the
+ * glow, the front one a button to add the first card.
+ */
+export function EmptyFan({ onAdd }: { onAdd: () => void }) {
+  const mobile = Platform.OS === 'ios';
+  return (
+    <View
+      testID="card-fan-empty"
+      className="h-[236px] w-full ios:h-[178px] ios:w-[358px] ios:self-center"
+    >
+      <View
+        pointerEvents="none"
+        className="absolute bottom-[-6%] left-[10%] right-[10%] top-[10%] ios:left-[8%] ios:right-[8%]"
+      >
+        <GradientFill
+          gradient={
+            mobile ? gradients.cardFanGlowMobile : gradients.cardFanGlow
+          }
+        />
+      </View>
+      {/* Centred, then nudged as the design's translate(-38%,-54%) rotate(7deg). */}
+      <View className="absolute left-1/2 top-1/2 aspect-[1.586] w-[320px] -translate-x-[122px] -translate-y-[109px] rotate-[7deg] rounded-12 border border-dashed border-ink/[.16] bg-white/20 ios:w-[230px] ios:-translate-x-[87px] ios:-translate-y-[78px] ios:rounded-[11px]" />
+      <Pressable
+        testID="card-fan-add"
+        accessibilityRole="button"
+        accessibilityLabel="Add your first card"
+        onPress={onAdd}
+        className="absolute left-1/2 top-1/2 aspect-[1.586] w-[320px] -translate-x-[186px] -translate-y-[97px] -rotate-[4deg] items-center justify-center gap-y-[10px] rounded-12 border-[1.5px] border-dashed border-ink/[.28] bg-white/45 hover:bg-white/75 ios:w-[230px] ios:-translate-x-[133px] ios:-translate-y-[70px] ios:rounded-[11px]"
+        style={POINTER}
+      >
+        <View className="size-[36px] items-center justify-center rounded-full bg-ink">
+          <PlusIcon size={10} color={tokens.colors.lime} strokeWidth={1.4} />
+        </View>
+        <Text className="font-sans text-[14px] text-ink">
+          Add your first card
+        </Text>
+      </Pressable>
+    </View>
   );
 }

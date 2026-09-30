@@ -190,7 +190,12 @@ describe('Categories view', () => {
   });
 
   it('says so when the month has neither', async () => {
-    stub.respond('txn', { data: [], error: null });
+    // The month's read comes back empty; the whole ledger's does not.
+    stub.respond(
+      'txn',
+      { data: [], error: null },
+      { data: september, error: null },
+    );
     await renderWithClient(<TransactionsCard />);
     expect(await screen.findByTestId('tx-empty')).toHaveTextContent(
       'No spending or income this month.',

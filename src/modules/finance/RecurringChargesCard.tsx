@@ -4,6 +4,7 @@ import { Platform, Pressable, ScrollView, Text, View } from 'react-native';
 import { Icon } from '@/components/icons/Icon';
 import { PlusIcon } from '@/components/icons/PlusIcon';
 import { categoryIcon } from '@/components/icons/registry';
+import { AddButton, EmptyNote, GhostRows } from '@/components/ui/Empty';
 import { Glass } from '@/components/ui/Glass';
 import { GradientCard } from '@/components/ui/GradientCard';
 import { useCategories } from '@/hooks/useCategories';
@@ -31,7 +32,9 @@ const LIFTED = {
  * The recurring charges: their total as a monthly equivalent, then each
  * charge largest first, with its category, interval and next due date. Add
  * and a row press open the charge form; saving or deleting there refreshes
- * this list and the payments calendar together.
+ * this list and the payments calendar together. With none yet it is the
+ * design's empty card: dashed rows where charges will go, and a note on what
+ * adding one does.
  */
 export function RecurringChargesCard() {
   const charges = (useRecurringCharges().data ?? []).filter(c => c.is_active);
@@ -96,25 +99,48 @@ export function RecurringChargesCard() {
       {/* The list reaches the card's edges, its padding inside the scroll (the
           design's 8px bottom plus the card's), so a hovered row's shadow
           fades out rather than being cut off. */}
-      <ScrollView
-        className="-mx-card -mb-card mt-[12px] min-h-0 flex-1 ios:mx-0 ios:mb-0 ios:mt-[14px] ios:flex-none"
-        contentContainerClassName="gap-y-[4px] px-card pb-[26px] pt-[4px] ios:px-0 ios:pb-0 ios:pt-0"
-        showsVerticalScrollIndicator={false}
-        // Mobile lists every charge in the page's own scroll.
-        scrollEnabled={!mobile}
-      >
-        {rows.map(({ charge, schedule }) => (
-          <ChargeRow
-            key={charge.id}
-            charge={charge}
-            category={categories.find(c => c.id === charge.category_id)}
-            interval={intervalLabel(schedule!)}
-            per={periodSuffix(schedule!)}
-            next={nextDue(schedule!)}
-            onPress={() => setEditing(charge)}
+      {rows.length === 0 ? (
+        <View
+          testID="recurring-empty"
+          className="mt-[16px] min-h-0 flex-1 gap-y-[14px]"
+        >
+          <GhostRows count={3} tone="gradient" />
+          <EmptyNote
+            tone="gradient"
+            className="mt-auto"
+            title="No recurring charges"
+            body="Add subscriptions, rent or insurance once. Finny puts each due date on the calendar and counts it in your budget."
+            action={
+              <AddButton
+                testID="recurring-add-first"
+                variant="light"
+                label="Add recurring charge"
+                onPress={() => setEditing('new')}
+              />
+            }
           />
-        ))}
-      </ScrollView>
+        </View>
+      ) : (
+        <ScrollView
+          className="-mx-card -mb-card mt-[12px] min-h-0 flex-1 ios:mx-0 ios:mb-0 ios:mt-[14px] ios:flex-none"
+          contentContainerClassName="gap-y-[4px] px-card pb-[26px] pt-[4px] ios:px-0 ios:pb-0 ios:pt-0"
+          showsVerticalScrollIndicator={false}
+          // Mobile lists every charge in the page's own scroll.
+          scrollEnabled={!mobile}
+        >
+          {rows.map(({ charge, schedule }) => (
+            <ChargeRow
+              key={charge.id}
+              charge={charge}
+              category={categories.find(c => c.id === charge.category_id)}
+              interval={intervalLabel(schedule!)}
+              per={periodSuffix(schedule!)}
+              next={nextDue(schedule!)}
+              onPress={() => setEditing(charge)}
+            />
+          ))}
+        </ScrollView>
+      )}
       {editing !== null && (
         <RecurringChargeSheet
           charge={editing === 'new' ? null : editing}

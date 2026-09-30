@@ -45,6 +45,10 @@ type Range = (typeof RANGES)[number]['value'];
  * flow: income against expenses over 6 or 12 months, the hovered month (else
  * this one) headlining. Every figure comes from one monthly series over the
  * ledger, so this month's matches the rest of the page.
+ *
+ * Before any income or spending is logged it is the design's empty card: no
+ * views to switch, a dash for the rate, and a dashed line where Saved and
+ * Spent will split.
  */
 export function IncomeExpensesCard() {
   const view = useUiStore(s => s.cashFlowView);
@@ -58,6 +62,8 @@ export function IncomeExpensesCard() {
     [txns, month],
   );
   const compact = Platform.OS === 'ios';
+  const empty =
+    series !== null && series.every(m => m.inCents === 0 && m.outCents === 0);
 
   const views = (
     <Tray>
@@ -93,11 +99,11 @@ export function IncomeExpensesCard() {
           <Text className="font-sans text-[13px] text-white">
             Income vs expenses
           </Text>
-          {!compact && views}
+          {!compact && !empty && views}
         </View>
-        {compact ? (
+        {compact && !empty ? (
           views
-        ) : view === 'savings' ? (
+        ) : empty || view === 'savings' ? (
           <Text className="font-sans text-[11px] text-white opacity-85">
             {formatMonthShort(month, { year: true })}
           </Text>
@@ -105,7 +111,10 @@ export function IncomeExpensesCard() {
           ranges
         )}
       </View>
-      {series &&
+      {empty ? (
+        <EmptyFlow />
+      ) : (
+        series &&
         (view === 'savings' ? (
           <SavingsView series={series} compact={compact} />
         ) : (
@@ -116,8 +125,48 @@ export function IncomeExpensesCard() {
             ranges={compact ? ranges : null}
             compact={compact}
           />
-        ))}
+        ))
+      )}
     </GradientCard>
+  );
+}
+
+/**
+ * Nothing logged: a dash for the rate, a dashed line from a filled dot to an
+ * open one with a note on what will fill it, and S$0 in each tile.
+ */
+function EmptyFlow() {
+  return (
+    <View testID="flow-empty" className="flex-1">
+      <View className="mt-[10px] min-h-0 flex-1 flex-row gap-x-[18px] ios:mt-[14px] ios:flex-col ios:gap-y-[14px]">
+        <View className="justify-center gap-y-[4px]">
+          <Text className="font-sans text-[48px] font-light leading-[48px] tracking-[-0.03em] text-white ios:text-[44px] ios:leading-[44px]">
+            –
+          </Text>
+          <Text className="font-sans text-[13px] text-white">Savings rate</Text>
+          <Text className="font-sans text-[11px] text-white opacity-85">
+            Needs income and spending
+          </Text>
+        </View>
+        <View className="my-[6px] mr-[70px] min-w-0 flex-1 ios:mr-[16px] ios:h-[90px] ios:flex-none">
+          <Text className="absolute bottom-[50%] left-[16px] right-0 mb-[10px] max-w-[260px] font-sans text-[12px] leading-[17px] text-white">
+            Saved and spent split apart from here as the month fills in.
+          </Text>
+          <View className="absolute inset-x-0 top-[50%] border-t border-dashed border-white/60" />
+          <View className="absolute -left-[4.5px] top-[50%] -mt-[4.5px] size-[9px] rounded-full bg-white" />
+          <View className="absolute -right-[4.5px] top-[50%] -mt-[4.5px] size-[9px] rounded-full border-[1.5px] border-white" />
+        </View>
+      </View>
+      <View className="mt-[12px] flex-row gap-x-[4px]">
+        <Tile label="Income" value={formatMoney(0)} testID="flow-income" />
+        <Tile label="Expenses" value={formatMoney(0)} testID="flow-expenses" />
+        <Tile
+          label={Platform.OS === 'ios' ? 'Net flow' : 'Net cash flow'}
+          value={formatMoney(0)}
+          testID="flow-net"
+        />
+      </View>
+    </View>
   );
 }
 

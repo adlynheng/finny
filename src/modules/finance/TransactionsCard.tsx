@@ -15,6 +15,7 @@ import { categoryIcon, transactionIcon } from '@/components/icons/registry';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { cx } from '@/components/ui/cardChrome';
+import { AddButton, EmptyNote, GhostRows } from '@/components/ui/Empty';
 import { noFocusRing } from '@/components/ui/Input';
 import { MonthStepper } from '@/components/ui/MonthStepper';
 import { Segmented } from '@/components/ui/Segmented';
@@ -72,12 +73,19 @@ function signedAmount(row: TxnListRow) {
  * filter, search and month live in the UI store, so switching views keeps
  * them. A category row is a shortcut back to the list: it sets the view, the
  * In or Out filter and the search together.
+ *
+ * Before the first transaction it is the design's empty card: no views, month
+ * or search to use, zero totals, dashed rows and a note on what logging one
+ * does.
  */
 export function TransactionsCard() {
   const month = useUiStore(s => s.transactionsMonth);
   const view = useUiStore(s => s.transactionsView);
   const setUi = useUiStore(s => s.set);
   const txns = useTransactions(month).data;
+  // Every transaction, shared with the cash flow card: none at all is the empty card.
+  const ledger = useTransactions().data;
+  const empty = ledger?.length === 0;
   const accounts = useAccounts().data ?? [];
   const categories = useCategories().data ?? [];
   const thisMonth = monthKey(today());
@@ -119,9 +127,11 @@ export function TransactionsCard() {
       <View className="flex-row flex-wrap items-center justify-between gap-x-[8px] gap-y-[8px]">
         <View className="flex-row items-center gap-x-[10px]">
           <Text className="font-sans text-[13px] text-ink">Transactions</Text>
-          {!mobile && views}
+          {!mobile && !empty && views}
         </View>
-        {mobile ? (
+        {empty ? (
+          add
+        ) : mobile ? (
           views
         ) : (
           <View className="flex-row items-center gap-x-[6px]">
@@ -130,13 +140,15 @@ export function TransactionsCard() {
           </View>
         )}
       </View>
-      {mobile && (
+      {empty && <EmptyTransactions />}
+      {mobile && !empty && (
         <View className="mt-[10px] flex-row items-center justify-between gap-x-[8px]">
           {stepper}
           {add}
         </View>
       )}
       {txns &&
+        !empty &&
         (view === 'list' ? (
           <ListView
             rows={listRows(txns, { accounts, categories })}
@@ -150,6 +162,40 @@ export function TransactionsCard() {
           />
         ))}
     </Card>
+  );
+}
+
+/** No transactions at all: zero totals, dashed rows, and a first one to add. */
+function EmptyTransactions() {
+  const setUi = useUiStore(s => s.set);
+  return (
+    <View testID="tx-ledger-empty" className="min-h-0 flex-1">
+      <View className="mt-[12px] flex-row gap-x-[14px] pb-[8px]">
+        <Text className="font-sans text-[12px] text-muted">
+          In <Text className="text-ink">{formatMoney(0)}</Text>
+        </Text>
+        <Text className="font-sans text-[12px] text-muted">
+          Out <Text className="text-ink">{formatMoney(0)}</Text>
+        </Text>
+        <Text className="ml-auto font-sans text-[12px] text-muted">
+          0 transactions
+        </Text>
+      </View>
+      <GhostRows count={4} tone="glass" />
+      <EmptyNote
+        tone="glass"
+        className="mb-[12px] mt-auto pt-[14px] ios:mb-0"
+        title="No transactions yet"
+        body="Log an expense, deposit or transfer. Each one lands here, counts against your limit and feeds the cash flow chart."
+        action={
+          <AddButton
+            testID="tx-add-first"
+            label="Add your first transaction"
+            onPress={() => setUi({ newTransactionOpen: true })}
+          />
+        }
+      />
+    </View>
   );
 }
 

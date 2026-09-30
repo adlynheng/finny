@@ -47,6 +47,7 @@ module.exports = {
         'soft-hover': controls.softHover,
         'danger-hover': controls.dangerHover,
         'destructive-hover': controls.destructiveHover,
+        'light-hover': controls.lightHover,
         'outline-border': controls.outlineBorder,
         'chip-border': controls.chipBorder,
         'input-border': controls.input.border,

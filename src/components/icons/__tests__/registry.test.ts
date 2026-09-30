@@ -51,6 +51,7 @@ describe('icon registries', () => {
       'Health',
       'Housing',
       'Travel',
+      'Pets',
       'Insurance',
       'Bills',
       'Services',
@@ -141,7 +142,7 @@ describe('fallbacks', () => {
   it.each(CATEGORY_KINDS)(
     'a %s category with no icon, or an unknown one, falls back to Other',
     kind => {
-      for (const key of [null, undefined, '', 'Pets', 'constructor']) {
+      for (const key of [null, undefined, '', 'Pottery', 'constructor']) {
         expect(categoryIcon(kind, key)).toBe(DOTS);
       }
     },

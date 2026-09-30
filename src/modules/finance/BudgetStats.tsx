@@ -10,16 +10,27 @@ import type { Budget } from './useBudget';
  * each remaining day. Desktop sets them under a hairline at the foot of the
  * hero, each with a lime bullet; mobile puts them in a glass panel under the
  * dial, without the bullets.
+ *
+ * Before there is anything to go on, the notes say what each figure waits
+ * for: some spending, a few days of it, or a limit.
  */
 export function BudgetStats({ budget }: { budget: Budget }) {
   const mobile = Platform.OS === 'ios';
+  const unset = budget.limitCents === 0;
+  const none = budget.spentCents === 0;
   const stats = (
     <>
       <Stat
         testID="budget-spent"
         label="Spent so far"
         value={formatMoney(budget.spentCents)}
-        note={budget.pace.label}
+        note={
+          none
+            ? 'Nothing logged yet'
+            : unset
+            ? 'No limit set'
+            : budget.pace.label
+        }
         mobile={mobile}
       />
       <Stat
@@ -28,19 +39,29 @@ export function BudgetStats({ budget }: { budget: Budget }) {
         value={formatMoney(budget.dailyAverageCents)}
         perDay
         mobile={mobile}
-        note={`${mobile ? 'Avg' : 'Average'} over ${budget.elapsed} ${
-          budget.elapsed === 1 ? 'day' : 'days'
-        }`}
+        note={
+          none
+            ? mobile
+              ? 'Needs a few days'
+              : 'Needs a few days of spending'
+            : `${mobile ? 'Avg' : 'Average'} over ${budget.elapsed} ${
+                budget.elapsed === 1 ? 'day' : 'days'
+              }`
+        }
       />
       <Stat
         testID="budget-safe"
         label="Safe to spend"
-        value={formatMoney(budget.safeDailyCents)}
+        value={formatMoney(unset ? 0 : budget.safeDailyCents)}
         perDay
         mobile={mobile}
-        note={`${mobile ? '' : 'Per day · '}${budget.daysLeft} ${
-          budget.daysLeft === 1 ? 'day' : 'days'
-        } left`}
+        note={
+          unset
+            ? 'Set a limit first'
+            : `${mobile ? '' : 'Per day · '}${budget.daysLeft} ${
+                budget.daysLeft === 1 ? 'day' : 'days'
+              } left`
+        }
       />
     </>
   );

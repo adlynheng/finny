@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Platform, ScrollView, View } from 'react-native';
 
+import { AddButton, EmptyNote } from '@/components/ui/Empty';
 import { Glass } from '@/components/ui/Glass';
 import { useCards } from '@/hooks/useCards';
 import { ShareOfAssetsCard } from '@/modules/net-worth/ShareOfAssetsCard';
@@ -8,7 +9,7 @@ import { useUiStore } from '@/stores/uiStore';
 import { AccountsPanel } from './AccountsPanel';
 import { AddCardSheet } from './AddCardSheet';
 import { CardDetail } from './CardDetail';
-import { CardFan } from './CardFan';
+import { CardFan, EmptyFan } from './CardFan';
 import { CategoriesPanel } from './CategoriesPanel';
 import { FixedPanel } from './FixedPanel';
 import { ProfileHeader } from './ProfileHeader';
@@ -28,6 +29,9 @@ import {
  * On iOS the pieces stack in one scrolling column (FinnySettingsMobile): the
  * profile, the fan, the card's details, the nav as a row of chips, the
  * selected panel, and the share of assets.
+ *
+ * With no cards the fan is the design's empty one, and the card's details
+ * give way to a note and Add card.
  */
 export function SettingsScreen() {
   const cards = useCards().data;
@@ -50,15 +54,31 @@ export function SettingsScreen() {
       accountCount={data.accounts.length}
     />
   );
-  const fan = (
+  const add = () => setAdding(true);
+  const fan = selected ? (
     <CardFan
       cards={cards}
-      selectedId={selected?.id ?? null}
+      selectedId={selected.id}
       onSelect={select}
       holder={data.settings.name}
     />
+  ) : (
+    <EmptyFan onAdd={add} />
   );
-  const detail = <CardDetail card={selected} onAdd={() => setAdding(true)} />;
+  const detail = selected ? (
+    <CardDetail card={selected} onAdd={add} />
+  ) : (
+    <EmptyNote
+      testID="card-detail-empty"
+      tone="glass"
+      className="w-[360px] self-stretch justify-end pb-[24px] ios:w-auto ios:pb-0"
+      title="No cards yet"
+      body="Add a credit or debit card to track its rewards, statement date and the balance you owe."
+      action={
+        <AddButton testID="card-add-first" label="Add card" onPress={add} />
+      }
+    />
+  );
   const sheet = adding && (
     <AddCardSheet onClose={() => setAdding(false)} onAdded={select} />
   );

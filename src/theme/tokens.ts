@@ -156,6 +156,8 @@ const controls = {
   dangerHover: 'rgba(180,83,47,.08)',
   /** The delete confirmation's filled Delete, on hover. */
   destructiveHover: '#9a4526',
+  /** White buttons on a gradient card (an empty card's action), on hover. */
+  lightHover: '#f1f3ea',
   /** Outline buttons (Trading's Sell). */
   outlineBorder: 'rgba(28,28,26,.18)',
   chipBorder: 'rgba(28,28,26,.08)',
@@ -417,8 +419,22 @@ const dialog = {
  * Mobile's step is worked out over a narrower spread than its span.
  */
 const cardFan = {
-  desktop: { cardWidth: 320, radius: 12, height: 236, span: 360, spread: 360, maxStep: 180 },
-  mobile: { cardWidth: 230, radius: 11, height: 178, span: 128, spread: 112, maxStep: 56 },
+  desktop: {
+    cardWidth: 320,
+    radius: 12,
+    height: 236,
+    span: 360,
+    spread: 360,
+    maxStep: 180,
+  },
+  mobile: {
+    cardWidth: 230,
+    radius: 11,
+    height: 178,
+    span: 128,
+    spread: 112,
+    maxStep: 56,
+  },
   /** Width over height, a bank card's. */
   aspect: 1.586,
   dropPx: 26,

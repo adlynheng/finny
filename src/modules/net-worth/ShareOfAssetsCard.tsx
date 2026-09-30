@@ -3,10 +3,12 @@ import { Platform, Pressable, ScrollView, Text, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
 import { cx } from '@/components/ui/cardChrome';
+import { AddButton, EmptyNote, GhostRows } from '@/components/ui/Empty';
 import { Glass } from '@/components/ui/Glass';
 import { GradientCard } from '@/components/ui/GradientCard';
 import { useAccounts } from '@/hooks/useAccounts';
 import { useAssetClasses } from '@/hooks/useAssetClasses';
+import { useGoTo } from '@/navigation/useGoTo';
 import { useUiStore } from '@/stores/uiStore';
 import { tokens } from '@/theme/tokens';
 import {
@@ -42,6 +44,11 @@ const typeFill = (type: string) => TYPE_FILL[type] ?? TYPE_FILL.Broker;
  * Mobile has no hover, so a tap does the same and tapping the lit account
  * again clears it. There the card grows with its rows rather than scrolling
  * them, and the headline's label sits under the figure.
+ *
+ * With no asset accounts yet it is the design's empty card: S$0, a dashed bar
+ * and dashed rows where the accounts will go. On Overview it asks for an
+ * account (in Settings); on Settings, where the panel beside it already does,
+ * it only says what the bar will show.
  */
 export function ShareOfAssetsCard({
   settings = false,
@@ -57,8 +64,10 @@ export function ShareOfAssetsCard({
   const hoveredAccount = useUiStore(s => s.hoveredAccountId);
   const hoveredClass = useUiStore(s => s.hoveredAssetClassId);
   const setUi = useUiStore(s => s.set);
+  const goTo = useGoTo();
 
   const rows = accounts ? shareOfAssets(accounts) : [];
+  const empty = accounts !== undefined && rows.length === 0;
   const totalCents = rows.reduce((sum, r) => sum + r.cents, 0);
   const classOf = (r: Row) => (classes ? classIdOf(r, classes) : null);
   const lit = (r: Row) =>
@@ -105,70 +114,82 @@ export function ShareOfAssetsCard({
         >
           {shown
             ? `${shown.name} · ${formatPercent(shown.fraction * 100)}`
+            : empty
+            ? '0 accounts'
             : settings
             ? 'Gross assets'
             : `Across ${rows.length} accounts`}
         </Text>
       </View>
-      <View className="mt-[14px] h-[34px] flex-row gap-x-[2px]">
-        {rows.map(r => (
-          <Pressable
-            key={r.id}
-            testID={`share-segment-${r.id}`}
-            {...hover(r)}
-            className={cx(
-              'min-w-[3px] basis-0 overflow-hidden rounded-[3px]',
-              lit(r) ? 'bg-lime' : anyLit ? 'bg-white/25' : typeFill(r.type),
-            )}
-            // The segment's share of the bar: data, so not a class.
-            style={{ flexGrow: r.cents }}
-          >
-            <Hatch />
-          </Pressable>
-        ))}
-      </View>
-      <ScrollView
-        className="mt-[14px] min-h-0 flex-1 ios:flex-none"
-        contentContainerClassName="grow gap-y-[4px] ios:gap-y-[3px]"
-        showsVerticalScrollIndicator={false}
-        // Mobile lists every row in the page's own scroll.
-        scrollEnabled={Platform.OS !== 'ios'}
-      >
-        {rows.map(r => (
-          <Pressable
-            key={r.id}
-            testID={`share-row-${r.id}`}
-            {...hover(r)}
-            className="min-h-[34px] grow basis-0 ios:min-h-[40px]"
-          >
-            <Glass
-              recipe="onGradient"
-              radius={8}
-              fill={lit(r) ? 'bg-white/[.26]' : undefined}
-              className="flex-1 flex-row items-center gap-x-[10px] px-[12px]"
-            >
-              <View
+      {empty ? (
+        <EmptyShare settings={settings} onAdd={() => goTo('Settings')} />
+      ) : (
+        <>
+          <View className="mt-[14px] h-[34px] flex-row gap-x-[2px]">
+            {rows.map(r => (
+              <Pressable
+                key={r.id}
+                testID={`share-segment-${r.id}`}
+                {...hover(r)}
                 className={cx(
-                  'size-[8px] rounded-[2px]',
-                  lit(r) ? 'bg-lime' : typeFill(r.type),
+                  'min-w-[3px] basis-0 overflow-hidden rounded-[3px]',
+                  lit(r)
+                    ? 'bg-lime'
+                    : anyLit
+                    ? 'bg-white/25'
+                    : typeFill(r.type),
                 )}
-              />
-              <Text
-                numberOfLines={1}
-                className="min-w-0 flex-1 font-sans text-[12px] text-white ios:text-[13px]"
+                // The segment's share of the bar: data, so not a class.
+                style={{ flexGrow: r.cents }}
               >
-                {r.name}
-              </Text>
-              <Text className="font-sans text-[11px] tabular-nums text-white opacity-90">
-                {formatMoney(r.cents)}
-              </Text>
-              <Text className="w-[36px] text-right font-sans text-[12px] tabular-nums text-white">
-                {formatPercent(r.fraction * 100, 0)}
-              </Text>
-            </Glass>
-          </Pressable>
-        ))}
-      </ScrollView>
+                <Hatch />
+              </Pressable>
+            ))}
+          </View>
+          <ScrollView
+            className="mt-[14px] min-h-0 flex-1 ios:flex-none"
+            contentContainerClassName="grow gap-y-[4px] ios:gap-y-[3px]"
+            showsVerticalScrollIndicator={false}
+            // Mobile lists every row in the page's own scroll.
+            scrollEnabled={Platform.OS !== 'ios'}
+          >
+            {rows.map(r => (
+              <Pressable
+                key={r.id}
+                testID={`share-row-${r.id}`}
+                {...hover(r)}
+                className="min-h-[34px] grow basis-0 ios:min-h-[40px]"
+              >
+                <Glass
+                  recipe="onGradient"
+                  radius={8}
+                  fill={lit(r) ? 'bg-white/[.26]' : undefined}
+                  className="flex-1 flex-row items-center gap-x-[10px] px-[12px]"
+                >
+                  <View
+                    className={cx(
+                      'size-[8px] rounded-[2px]',
+                      lit(r) ? 'bg-lime' : typeFill(r.type),
+                    )}
+                  />
+                  <Text
+                    numberOfLines={1}
+                    className="min-w-0 flex-1 font-sans text-[12px] text-white ios:text-[13px]"
+                  >
+                    {r.name}
+                  </Text>
+                  <Text className="font-sans text-[11px] tabular-nums text-white opacity-90">
+                    {formatMoney(r.cents)}
+                  </Text>
+                  <Text className="w-[36px] text-right font-sans text-[12px] tabular-nums text-white">
+                    {formatPercent(r.fraction * 100, 0)}
+                  </Text>
+                </Glass>
+              </Pressable>
+            ))}
+          </ScrollView>
+        </>
+      )}
       {settings && (
         <View
           testID="share-owed"
@@ -181,14 +202,78 @@ export function ShareOfAssetsCard({
             testID="share-owed-total"
             className="font-sans text-[12px] tabular-nums text-white"
           >
-            {MINUS}
-            {formatMoney(accounts ? cardsOwedCents(accounts) : 0, {
-              decimals: 2,
-            })}
+            {empty
+              ? formatMoney(0)
+              : `${MINUS}${formatMoney(
+                  accounts ? cardsOwedCents(accounts) : 0,
+                  {
+                    decimals: 2,
+                  },
+                )}`}
           </Text>
         </View>
       )}
     </GradientCard>
+  );
+}
+
+/**
+ * The empty card's body: a dashed bar, then dashed rows. Overview's rows are a
+ * square and two lines, four of them, over "No accounts yet" and its action;
+ * Settings' are the icon rows, two, over a line on what the bar shows.
+ */
+function EmptyShare({
+  settings,
+  onAdd,
+}: {
+  settings: boolean;
+  onAdd: () => void;
+}) {
+  return (
+    <>
+      <View
+        testID="share-empty-bar"
+        className="mt-[14px] h-[34px] rounded-[3px] border border-dashed border-white/60"
+      />
+      <View className="mt-[14px] min-h-0 flex-1 gap-y-[4px] ios:flex-none">
+        {settings ? (
+          <>
+            <GhostRows count={2} tone="gradient" />
+            <Text className="mt-auto font-sans text-[12px] leading-[17px] text-white ios:mt-[14px]">
+              Each account you add takes its slice of the bar, sized by balance.
+            </Text>
+          </>
+        ) : (
+          <>
+            {Array.from({ length: 4 }, (_, i) => (
+              <View
+                key={i}
+                testID="share-ghost-row"
+                className="max-h-[44px] min-h-[34px] grow basis-0 flex-row items-center gap-x-[10px] rounded-8 border border-dashed border-white/45 px-[12px] ios:grow-0 ios:basis-auto ios:h-[40px]"
+              >
+                <View className="size-[8px] rounded-[2px] bg-white/30" />
+                <View className="h-[6px] w-[40%] rounded-full bg-white/[.24]" />
+                <View className="ml-auto h-[6px] w-[28px] rounded-full bg-white/[.24]" />
+              </View>
+            ))}
+            <EmptyNote
+              tone="gradient"
+              title="No accounts yet"
+              body="Add your bank, CPF and brokerage balances to see how your assets are split."
+              className="mt-auto pt-[14px]"
+              action={
+                <AddButton
+                  testID="share-add-account"
+                  variant="light"
+                  label="Add an account"
+                  onPress={onAdd}
+                />
+              }
+            />
+          </>
+        )}
+      </View>
+    </>
   );
 }
 

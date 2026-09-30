@@ -7,6 +7,7 @@ import { Glass } from '@/components/ui/Glass';
 import { GradientFill } from '@/components/ui/GradientFill';
 import { Segmented } from '@/components/ui/Segmented';
 import { cx } from '@/components/ui/cardChrome';
+import { AddButton } from '@/components/ui/Empty';
 import { useBars } from '@/hooks/useBars';
 import type { BarRange } from '@/lib/queryKeys';
 import { useUiStore, type TradingMode } from '@/stores/uiStore';
@@ -46,6 +47,8 @@ const SPAN = 74;
  * The chart and the strip share one hover: pointing at either shows that day
  * in both and in the readout. On mobile the range sits under the chart and the
  * strip takes two rows.
+ *
+ * Before the first buy there is nothing to chart: the design's empty hero.
  */
 export function TradingHero({
   book,
@@ -84,6 +87,10 @@ export function TradingHero({
     const invested = capitalSeries(selected, dates);
     return { values: invested, y: capitalScaleOf(invested) };
   }, [selected, dates]);
+
+  if (holdings.length === 0 && book.sales.length === 0) {
+    return <EmptyTradingHero />;
+  }
 
   const n = values.length;
   const day = hover !== null && hover < n ? hover : null;
@@ -271,6 +278,113 @@ export function TradingHero({
         onHover={setHover}
         mobile={mobile}
       />
+    </View>
+  );
+}
+
+/**
+ * No positions yet: S$0 of portfolio value, a flat dashed baseline ending at
+ * S$0 with a way to add the first holding over it, and zeros in the strip.
+ */
+function EmptyTradingHero() {
+  const setUi = useUiStore(s => s.set);
+  const stats = [
+    ['Capital invested', formatMoney(0)],
+    ['Unrealised P&L', formatMoney(0)],
+    ['Realised P&L', formatMoney(0)],
+    ['Positions', '0'],
+  ];
+  return (
+    <View
+      testID="trading-hero"
+      className="min-h-0 flex-1 pl-[6px] pt-[6px] ios:flex-none ios:gap-y-[12px] ios:p-0"
+    >
+      <View className="ios:gap-y-[12px] ios:px-[4px]">
+        <View className="flex-row items-center gap-x-[12px] ios:justify-between ios:gap-x-[10px]">
+          <Text className="font-sans text-[40px] font-normal leading-[40px] tracking-[-0.02em] text-ink ios:text-[32px] ios:leading-[32px]">
+            Trading
+          </Text>
+          <Glass
+            testID="trading-empty-chip"
+            recipe="chip"
+            radius={6}
+            className="px-[10px] py-[6px]"
+          >
+            <Text className="font-sans text-[12px] text-muted">
+              No positions yet
+            </Text>
+          </Glass>
+        </View>
+        <View className="mt-[14px] flex-row items-end gap-x-[18px] ios:mt-0 ios:flex-col ios:items-start ios:gap-y-[8px]">
+          <View className="flex-row items-start gap-x-[6px] ios:gap-x-[5px]">
+            <Text className="mt-[10px] font-sans text-[22px] font-light text-muted ios:mt-[8px] ios:text-[20px]">
+              S$
+            </Text>
+            <Text
+              testID="trading-value"
+              className="font-sans text-[64px] font-light leading-[61px] tracking-[-0.035em] text-ink ios:text-[52px] ios:leading-[49px]"
+            >
+              0
+            </Text>
+          </View>
+          <View className="mb-[4px] min-w-0 shrink gap-y-[6px] ios:mb-0">
+            <Text className="font-sans text-[14px] text-muted">
+              Portfolio value
+            </Text>
+            <Text className="font-sans text-[12px] text-muted">
+              Growth and P&L start from your first buy
+            </Text>
+          </View>
+        </View>
+      </View>
+
+      <View
+        testID="trading-empty-chart"
+        className="mr-[44px] mt-[14px] min-h-0 flex-1 ios:ml-[4px] ios:mt-[4px] ios:h-[200px] ios:flex-none"
+      >
+        {['top-[12%]', 'top-[37%]', 'top-[62%]'].map(top => (
+          <View
+            key={top}
+            className={`absolute inset-x-0 border-t border-ink/[.05] ${top}`}
+          />
+        ))}
+        <View className="absolute inset-x-0 top-[86%] border-t border-dashed border-ink/[.28]" />
+        <View className="absolute -right-[7px] top-[86%] -mt-[7px] size-[14px] items-center justify-center rounded-full bg-lime/35">
+          <View className="size-[7px] rounded-full border border-ink/20 bg-lime" />
+        </View>
+        <Text className="absolute -right-[36px] top-[86%] -mt-[7px] font-sans text-[10px] text-muted">
+          {formatMoney(0)}
+        </Text>
+        <View className="absolute inset-x-0 top-[45%] -translate-y-1/2 items-center gap-y-[12px]">
+          <Text className="max-w-[320px] text-center font-sans text-[13px] text-muted">
+            Add a holding with its buy date and price. The chart backfills from
+            there.
+          </Text>
+          {/* Button sits at its start; a shrink-wrapped holder centres it. */}
+          <View>
+            <AddButton
+              testID="trading-empty-add"
+              label="Add position"
+              onPress={() => setUi({ addPositionOpen: true })}
+            />
+          </View>
+        </View>
+      </View>
+
+      <View
+        testID="trading-strip"
+        className="mr-[44px] mt-[10px] flex-row gap-x-[4px] border-t border-ink/[.08] pt-[8px] ios:mr-0 ios:mt-0 ios:flex-wrap ios:gap-y-[8px]"
+      >
+        {stats.map(([label, value]) => (
+          <View
+            key={label}
+            className="min-w-0 flex-1 gap-y-[2px] ios:basis-[45%]"
+          >
+            <Text className="font-sans text-[11px] text-muted">{label}</Text>
+            <Text className="font-sans text-[15px] text-ink">{value}</Text>
+          </View>
+        ))}
+      </View>
     </View>
   );
 }

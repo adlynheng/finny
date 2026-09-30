@@ -5,13 +5,15 @@ import { Icon } from '@/components/icons/Icon';
 import { Button } from '@/components/ui/Button';
 import { cx } from '@/components/ui/cardChrome';
 import { Card } from '@/components/ui/Card';
+import { AddButton, EmptyNote, GhostRows } from '@/components/ui/Empty';
 import { ResponsiveGrid } from '@/components/ui/ResponsiveGrid';
 import type { PanelHead } from './useSettingsData';
 
 /**
  * The panel's frame: glass, with the title and summary on the left and the
  * panel's action on the right (stacked on mobile), then the body. On desktop
- * the body scrolls within the row; on mobile the page scrolls.
+ * the body scrolls within the row; on mobile the page scrolls. An empty
+ * panel shows dashed rows and its empty note (with the action again) instead.
  */
 export function PanelFrame({
   head,
@@ -53,7 +55,31 @@ export function PanelFrame({
         // Mobile shows the whole panel in the page's own scroll.
         scrollEnabled={Platform.OS !== 'ios'}
       >
-        {children}
+        {head.empty ? (
+          <View
+            testID="settings-panel-empty"
+            className="mt-[10px] flex-row gap-x-[40px] ios:mt-[12px] ios:flex-col ios:gap-y-[14px]"
+          >
+            <View className="min-w-0 flex-1 ios:flex-none">
+              <GhostRows count={4} tone="glass" />
+            </View>
+            <EmptyNote
+              tone="glass"
+              className="w-[320px] justify-end self-stretch ios:w-auto"
+              title={head.empty.title}
+              body={head.empty.body}
+              action={
+                <AddButton
+                  testID="settings-panel-empty-action"
+                  label={head.action}
+                  onPress={onAction}
+                />
+              }
+            />
+          </View>
+        ) : (
+          children
+        )}
       </ScrollView>
     </Card>
   );

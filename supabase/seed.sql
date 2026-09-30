@@ -122,6 +122,10 @@ from (
     ('AIA HealthShield', 'Insurance', 'DBS Multiplier', 62400, 'yearly', 1, 15)
 ) as r (name, cat, acct, cents, frequency, month_offset, day);
 
+-- The balances above are today's, so the history below must not move them again: the
+-- balance trigger (migration 0006) is off until the last transaction is in.
+alter table txn disable trigger txn_balance;
+
 -- Every charge's past payments, on the dates its schedule gives (stepped from the anchor, as the
 -- app's recurrence does, so a charge on the 29th pays on the 28th in February).
 insert into txn (account_id, date, description, category_id, kind, amount_cents, recurring_id)
@@ -251,6 +255,8 @@ cross join lateral (
     (t.dest, 'Transfer from ' || t.source, t.cents)
 ) as leg (account, description, cents)
 where t.date <= current_date and t.cents > 0;
+
+alter table txn enable trigger txn_balance;
 
 -- The card owes this month's spend: last month's was paid on the 15th.
 update account

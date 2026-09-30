@@ -1,10 +1,10 @@
 import { Pressable, View } from 'react-native';
-import Svg, { Circle, Path } from 'react-native-svg';
 
 import { Brand } from '@/components/ui/AppMark';
+import { Avatar } from '@/components/ui/Avatar';
 import { Glass } from '@/components/ui/Glass';
 import { Segmented } from '@/components/ui/Segmented';
-import { tokens } from '@/theme/tokens';
+import { useSettings } from '@/hooks/useSettings';
 import { SCREENS, type ScreenName } from './routes';
 
 const TABS = SCREENS.map(({ name, label }) => ({ value: name, label }));
@@ -14,8 +14,12 @@ type Props = {
   onSelect: (name: ScreenName) => void;
 };
 
-/** The desktop header: brand on the left, the tab pill centred, the profile button on the right. */
+/**
+ * The desktop header: brand on the left, the tab pill centred, and on the
+ * right the user's avatar, which opens Settings.
+ */
 export function DesktopHeader({ current, onSelect }: Props) {
+  const name = useSettings().data?.name ?? '';
   return (
     <>
       <Brand />
@@ -34,32 +38,15 @@ export function DesktopHeader({ current, onSelect }: Props) {
           />
         </Glass>
       </View>
-      <Glass recipe="chip" radius={6} className="ml-auto">
-        <Pressable
-          testID="profile-button"
-          accessibilityRole="button"
-          accessibilityLabel="Profile"
-          // The chip's .55 white plus .78 of the rest reads as the design's .9 white on hover.
-          className="size-[34px] items-center justify-center rounded-6 hover:bg-white/[.78]"
-        >
-          <Svg width={15} height={15} viewBox="0 0 16 16">
-            <Circle
-              cx={8}
-              cy={5.5}
-              r={2.8}
-              fill="none"
-              stroke={tokens.colors.ink}
-              strokeWidth={1.1}
-            />
-            <Path
-              d="M2.5 14c.8-2.8 3-4.2 5.5-4.2s4.7 1.4 5.5 4.2"
-              fill="none"
-              stroke={tokens.colors.ink}
-              strokeWidth={1.1}
-            />
-          </Svg>
-        </Pressable>
-      </Glass>
+      <Pressable
+        testID="profile-button"
+        accessibilityRole="button"
+        accessibilityLabel="Settings"
+        onPress={() => onSelect('Settings')}
+        className="ml-auto hover:opacity-[.85]"
+      >
+        <Avatar name={name} size="sm" />
+      </Pressable>
     </>
   );
 }
