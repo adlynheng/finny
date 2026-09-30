@@ -135,18 +135,33 @@ export function totalsOf(holdings: readonly Holding[]): Totals {
  * market value at that day's close less its cost basis (so the last day
  * matches the holdings' own P&L), summed. Days are every date any holding
  * has a close for; a holding with no close on a day counts from its last one,
- * and before its first counts nothing.
+ * and before its first counts nothing. Daily closes stop at the last full
+ * session, so given `today`, a holding with closes and a price ends on today
+ * at that price.
  */
 export function pnlSeries(
   holdings: readonly Holding[],
   bars: Record<string, readonly Bar[]>,
+  today?: string,
 ): { dates: string[]; values: number[] } {
+  const closesOf = new Map(
+    holdings.map(h => {
+      const closes = bars[h.symbol] ?? [];
+      const last = closes[closes.length - 1];
+      return [
+        h.symbol,
+        today && last && last.date < today && h.priceCents !== null
+          ? [...closes, { date: today, closeCents: h.priceCents }]
+          : closes,
+      ] as const;
+    }),
+  );
   const dates = [
-    ...new Set(holdings.flatMap(h => (bars[h.symbol] ?? []).map(b => b.date))),
+    ...new Set(holdings.flatMap(h => closesOf.get(h.symbol)!.map(b => b.date))),
   ].sort();
   const values = dates.map(() => 0);
   for (const h of holdings) {
-    const closes = bars[h.symbol] ?? [];
+    const closes = closesOf.get(h.symbol)!;
     let k = 0;
     let close: number | null = null;
     dates.forEach((date, i) => {

@@ -1,6 +1,7 @@
 import { Pressable, ScrollView, Text, View } from 'react-native';
 
 import { Sparkline } from '@/components/charts/Sparkline';
+import { Skeleton } from '@/components/ui/Empty';
 import { NumericCell, TableHeader, TableRow } from '@/components/ui/Table';
 import { cx } from '@/components/ui/cardChrome';
 import { watchlistColumns } from '@/components/ui/tableColumns';
@@ -63,6 +64,8 @@ export function WatchlistTab({
       dayChange: quote?.dayChangePercent ?? null,
     };
   });
+  // Until the first quotes arrive, prices and day changes are skeletons.
+  const loading = book.prices === 'loading';
   const press = (r: Row) =>
     r.held ? () => chart(r.instrument.symbol) : undefined;
 
@@ -101,12 +104,19 @@ export function WatchlistTab({
               dayChange={r.dayChange ?? 0}
               compact
             />
-            <View className="items-end gap-y-[1px]">
-              <Text className="font-sans text-[14px] tabular-nums text-ink">
-                {r.price?.primary ?? '—'}
-              </Text>
-              <DayChange value={r.dayChange} className="text-[11px]" />
-            </View>
+            {loading ? (
+              <View className="items-end gap-y-[6px]">
+                <Skeleton className="h-[10px] w-[56px]" />
+                <Skeleton className="h-[8px] w-[36px]" />
+              </View>
+            ) : (
+              <View className="items-end gap-y-[1px]">
+                <Text className="font-sans text-[14px] tabular-nums text-ink">
+                  {r.price?.primary ?? '—'}
+                </Text>
+                <DayChange value={r.dayChange} className="text-[11px]" />
+              </View>
+            )}
           </Pressable>
         ))}
       </View>
@@ -147,11 +157,21 @@ export function WatchlistTab({
               values={r.closes}
               dayChange={r.dayChange ?? 0}
             />
-            <NumericCell
-              primary={r.price?.primary ?? '—'}
-              secondary={r.price?.secondary ?? undefined}
-            />
-            <DayChange value={r.dayChange} className="text-[13px]" />
+            {loading ? (
+              <View className="items-end">
+                <Skeleton className="h-[10px] w-[64px]" />
+              </View>
+            ) : (
+              <NumericCell
+                primary={r.price?.primary ?? '—'}
+                secondary={r.price?.secondary ?? undefined}
+              />
+            )}
+            {loading ? (
+              <Skeleton className="h-[10px] w-[44px]" />
+            ) : (
+              <DayChange value={r.dayChange} className="text-[13px]" />
+            )}
             {r.held ? <Held /> : <View />}
           </TableRow>
         ))}

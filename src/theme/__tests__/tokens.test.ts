@@ -19,6 +19,7 @@ describe('colours', () => {
       muted: '#6b6a65',
       muted2: '#8a8984',
       danger: '#b4532f',
+      gain: '#256b3e',
       white: '#fff',
     });
   });

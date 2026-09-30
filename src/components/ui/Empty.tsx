@@ -32,6 +32,26 @@ const ROW = {
   },
 } as const;
 
+/**
+ * A figure still loading: a soft bar where it will be, so an unknown amount
+ * never reads as a zero. Size it with `className`.
+ */
+export function Skeleton({
+  testID = 'skeleton',
+  className,
+}: {
+  testID?: string;
+  className: string;
+}) {
+  return (
+    <View
+      testID={testID}
+      accessibilityLabel="Loading"
+      className={cx('rounded-full bg-ink/[.08]', className)}
+    />
+  );
+}
+
 /** Dashed stand-ins for the rows a card will list: an icon tile, two lines and an amount. */
 export function GhostRows({
   count,

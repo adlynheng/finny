@@ -7,9 +7,10 @@ import { Glass } from '@/components/ui/Glass';
 import { GradientFill } from '@/components/ui/GradientFill';
 import { Segmented } from '@/components/ui/Segmented';
 import { cx } from '@/components/ui/cardChrome';
-import { AddButton } from '@/components/ui/Empty';
+import { AddButton, Skeleton } from '@/components/ui/Empty';
 import { useBars } from '@/hooks/useBars';
 import type { BarRange } from '@/lib/queryKeys';
+import { today } from '@/lib/today';
 import { useUiStore, type TradingMode } from '@/stores/uiStore';
 import { gradients } from '@/theme/gradients';
 import { capitalSeries, pnlSeries, totalsOf } from '@/utils/derive/portfolio';
@@ -49,6 +50,8 @@ const SPAN = 74;
  * strip takes two rows.
  *
  * Before the first buy there is nothing to chart: the design's empty hero.
+ * Until prices arrive, today's value and P&L are skeletons; if they cannot be
+ * fetched, dashes.
  */
 export function TradingHero({
   book,
@@ -79,7 +82,7 @@ export function TradingHero({
     range,
   );
   const { dates, values } = useMemo(
-    () => pnlSeries(selected, bars),
+    () => pnlSeries(selected, bars, today()),
     [selected, bars],
   );
   const y = useMemo(() => scaleOf(values), [values]);
@@ -103,6 +106,9 @@ export function TradingHero({
     selectedTotals.costCents > 0 ? (pnl / selectedTotals.costCents) * 100 : 0;
   const invested = capital.values[day ?? n - 1] ?? selectedTotals.costCents;
   const change = last - (values[0] ?? 0);
+  // Today's value needs prices; a hovered day's comes from its closes.
+  const unknown = day === null && book.prices !== 'priced';
+  const loading = unknown && book.prices === 'loading';
 
   const pick = (s: string) => {
     setHover(null);
@@ -187,12 +193,19 @@ export function TradingHero({
               <Text className="mt-[10px] font-sans text-[22px] font-light text-muted ios:mt-[8px] ios:text-[20px]">
                 S$
               </Text>
-              <Text
-                testID="trading-value"
-                className="font-sans text-[64px] font-light leading-[61px] tracking-[-0.035em] tabular-nums text-ink ios:text-[52px] ios:leading-[49px]"
-              >
-                {formatAmount(value)}
-              </Text>
+              {loading ? (
+                <Skeleton
+                  testID="trading-value-loading"
+                  className="my-[8px] h-[45px] w-[240px] ios:my-[6px] ios:h-[37px] ios:w-[200px]"
+                />
+              ) : (
+                <Text
+                  testID="trading-value"
+                  className="font-sans text-[64px] font-light leading-[61px] tracking-[-0.035em] tabular-nums text-ink ios:text-[52px] ios:leading-[49px]"
+                >
+                  {unknown ? '—' : formatAmount(value)}
+                </Text>
+              )}
             </View>
             {/* The P&L label, and the P&L under it where the design's chip was. */}
             <View className="mb-[4px] min-w-0 shrink gap-y-[6px] ios:mb-0 ios:gap-y-[8px]">
@@ -205,18 +218,25 @@ export function TradingHero({
                   ? `Unrealised P&L on ${formatDayMonth(dates[day]!)}`
                   : `Unrealised P&L · ${position ? symbol : 'all positions'}`}
               </Text>
-              <Text
-                testID="trading-pnl"
-                className={cx(
-                  'font-sans text-[16px] tabular-nums',
-                  pnl < 0 ? 'text-danger' : 'text-ink',
-                )}
-              >
-                {formatSignedMoney(pnl)}{' '}
-                <Text testID="trading-invested" className="text-muted">
-                  ({formatMoney(invested)} invested)
+              {loading ? (
+                <Skeleton
+                  testID="trading-pnl-loading"
+                  className="my-[4px] h-[12px] w-[180px]"
+                />
+              ) : (
+                <Text
+                  testID="trading-pnl"
+                  className={cx(
+                    'font-sans text-[16px] tabular-nums',
+                    !unknown && pnl < 0 ? 'text-danger' : 'text-ink',
+                  )}
+                >
+                  {unknown ? '—' : formatSignedMoney(pnl)}{' '}
+                  <Text testID="trading-invested" className="text-muted">
+                    ({formatMoney(invested)} invested)
+                  </Text>
                 </Text>
-              </Text>
+              )}
             </View>
           </View>
           <View className="mt-[10px] flex-row flex-wrap items-center gap-[8px] ios:mt-0">
@@ -243,7 +263,7 @@ export function TradingHero({
               testID="trading-pnl-sub"
               className="font-sans text-[12px] text-muted"
             >
-              {`${formatSignedPercent(onCost)} on cost`}
+              {`${unknown ? '—' : formatSignedPercent(onCost)} on cost`}
             </Text>
           </View>
         </View>

@@ -108,6 +108,23 @@ describe('pnlSeries', () => {
     ]);
   });
 
+  it('adds today at the latest price when the closes stop at the last session', () => {
+    const [nvda, d05] = [find('NVDA'), find('D05')];
+    const closes = {
+      NVDA: [bar('2026-09-23', 17_000)],
+      D05: [bar('2026-09-23', 4_300)],
+    };
+    const { dates, values } = pnlSeries([nvda], closes, '2026-09-24');
+    expect(dates).toEqual(['2026-09-23', '2026-09-24']);
+    expect(values[1]).toBe(nvda.pnlCents);
+    // With no price, or no closes to lead up to it, nothing is added.
+    const unpriced = { ...d05, priceCents: null };
+    expect(pnlSeries([unpriced], closes, '2026-09-24').dates).toEqual([
+      '2026-09-23',
+    ]);
+    expect(pnlSeries([nvda], {}, '2026-09-24').dates).toEqual([]);
+  });
+
   it('carries a missing day forward, and counts nothing before the first', () => {
     const d05 = find('D05');
     const { values } = pnlSeries([d05], {

@@ -1,5 +1,5 @@
-import { useState, type ReactNode } from 'react';
-import { Text, View } from 'react-native';
+import { useMemo, useState, type ReactNode } from 'react';
+import { Platform, Pressable, Text, View } from 'react-native';
 
 import { ChipRow } from '@/components/ui/ChipRow';
 import { DatePicker } from '@/components/ui/DatePicker';
@@ -8,8 +8,11 @@ import { Input } from '@/components/ui/Input';
 import { Segmented } from '@/components/ui/Segmented';
 import { Sheet } from '@/components/ui/Sheet';
 import { cx } from '@/components/ui/cardChrome';
+import { useDebounced } from '@/hooks/useDebounced';
 import { useInstruments } from '@/hooks/useInstruments';
 import { useAddPosition } from '@/hooks/usePositions';
+import { useUsListings } from '@/hooks/useUsListings';
+import { searchListings, type Listing } from '@/lib/listings';
 import { today } from '@/lib/today';
 import {
   INSTRUMENT_KINDS,
@@ -25,6 +28,7 @@ import {
   sanitizeAmountInput,
   type Currency,
 } from '@/utils/format/money';
+import { LIST_SHADOW } from './SymbolPicker';
 import type { Book } from './useTradingBook';
 
 const MARKETS = [
@@ -45,13 +49,21 @@ const INDUSTRIES = [
   'Broad market',
 ].map(s => ({ value: s, label: s }));
 
+/** How long the symbol field waits after the last keystroke before searching. */
+export const SEARCH_DEBOUNCE_MS = 300;
+/** Between the fields and the floating matches. */
+const MATCHES_OFFSET = 6;
+
 const shares = (n: number) =>
   n.toLocaleString('en-US', { maximumFractionDigits: 4 });
 
 /**
  * One form for three cases: a lot for a held symbol, a first position in a
  * known symbol (say, from the watchlist), or a new symbol. Picking a chip
- * fills the form from that instrument. A held symbol's market, type and
+ * fills the form from that instrument. Typing a symbol searches every US
+ * listing by symbol and name; picking a match fills its symbol and name (or,
+ * for a symbol already known, the whole form as a chip does). A symbol with
+ * no match, such as an SGX listing, can still be typed in full. A held symbol's market, type and
  * industry are already known, so they lock. Saving shows the Positions tab
  * with the symbol open.
  */
@@ -75,6 +87,17 @@ export function AddPositionSheet({
   const [quantity, setQuantity] = useState('');
   const [price, setPrice] = useState('');
   const [date, setDate] = useState(today());
+  // Typing opens the matches; picking one, or a chip, closes them.
+  const [searching, setSearching] = useState(false);
+  // Where the Symbol and Name row ends, for the matches to float under it.
+  const [fieldsBottom, setFieldsBottom] = useState(0);
+
+  const listings = useUsListings();
+  const query = useDebounced(symbol, SEARCH_DEBOUNCE_MS);
+  const matches = useMemo(
+    () => (searching ? searchListings(listings.data ?? [], query) : []),
+    [searching, listings.data, query],
+  );
 
   const held = book.holdings.find(h => h.symbol === symbol);
   const known = held?.instrument ?? instruments.find(i => i.symbol === symbol);
@@ -101,12 +124,28 @@ export function AddPositionSheet({
 
   const fill = (i: InstrumentRow) => {
     const quote = book.quotes[i.symbol];
+    setSearching(false);
     setSymbol(i.symbol);
     setName(i.name ?? '');
     setCurrency(currencyOf(i));
     if (isOneOf(INSTRUMENT_KINDS, i.kind)) setKind(i.kind);
     if (i.sector) setSector(i.sector);
     if (quote) setPrice(centsToInput(quote.priceCents));
+  };
+
+  const pick = (l: Listing) => {
+    const same =
+      book.holdings.find(h => h.symbol === l.symbol)?.instrument ??
+      instruments.find(i => i.symbol === l.symbol);
+    if (same) {
+      fill(same);
+      return;
+    }
+    setSearching(false);
+    setSymbol(l.symbol);
+    setName(l.name);
+    setCurrency('USD');
+    setKind(l.etf ? 'ETF' : 'Stock');
   };
 
   const note = held
@@ -174,7 +213,12 @@ export function AddPositionSheet({
         },
       }}
     >
-      <View className="flex-row gap-[10px] ios:gap-[8px]">
+      <View
+        onLayout={e =>
+          setFieldsBottom(e.nativeEvent.layout.y + e.nativeEvent.layout.height)
+        }
+        className="flex-row gap-[10px] ios:gap-[8px]"
+      >
         <Input
           testID="add-symbol"
           label="Symbol"
@@ -182,9 +226,10 @@ export function AddPositionSheet({
           autoCapitalize="characters"
           autoCorrect={false}
           value={symbol}
-          onChangeText={t =>
-            setSymbol(t.toUpperCase().replace(/[^A-Z0-9.]/g, ''))
-          }
+          onChangeText={t => {
+            setSymbol(t.toUpperCase().replace(/[^A-Z0-9.]/g, ''));
+            setSearching(true);
+          }}
           className="flex-1 ios:flex-[0.8]"
         />
         <Input
@@ -275,7 +320,86 @@ export function AddPositionSheet({
           Couldn’t save the position. Try again.
         </Text>
       )}
+      {/* Last, so it draws over the fields below. It floats in the form
+          rather than in the row, where it would fall outside the row's
+          bounds and miss presses. */}
+      {searching && symbol !== '' && (
+        <Matches
+          top={fieldsBottom + MATCHES_OFFSET}
+          matches={matches}
+          loading={listings.isPending}
+          onPick={pick}
+        />
+      )}
     </Sheet>
+  );
+}
+
+/**
+ * The symbol search's results, floating under the Symbol field over the rest
+ * of the form: symbol, name and an ETF tag. While the list is loading it says
+ * so; with no match (or no list) it shows nothing, and whatever was typed
+ * stands.
+ */
+function Matches({
+  top,
+  matches,
+  loading,
+  onPick,
+}: {
+  top: number;
+  matches: readonly Listing[];
+  loading: boolean;
+  onPick: (l: Listing) => void;
+}) {
+  if (matches.length === 0 && !loading) {
+    return null;
+  }
+  return (
+    <View
+      testID="add-matches"
+      // Measured, so not a class.
+      style={{
+        top,
+        boxShadow: Platform.OS === 'ios' ? LIST_SHADOW.ios : LIST_SHADOW.macos,
+      }}
+      className="absolute inset-x-0 z-10 gap-y-[2px] rounded-8 border border-input-border bg-white p-[4px] ios:rounded-10"
+    >
+      {matches.length === 0 ? (
+        <Text
+          testID="add-matches-loading"
+          className="px-[10px] py-[7px] font-sans text-[12px] text-muted"
+        >
+          Loading US listings…
+        </Text>
+      ) : (
+        matches.map(l => (
+          <Pressable
+            key={l.symbol}
+            testID={`add-match-${l.symbol}`}
+            accessibilityRole="button"
+            accessibilityLabel={`${l.symbol}, ${l.name}`}
+            onPress={() => onPick(l)}
+            className="flex-row items-center gap-x-[10px] rounded-6 px-[10px] py-[7px] hover:bg-ink/5 ios:min-h-[42px] ios:rounded-8 ios:py-0"
+          >
+            <Text className="w-[52px] font-sans text-[13px] text-ink ios:text-[14px]">
+              {l.symbol}
+            </Text>
+            <Text
+              numberOfLines={1}
+              className="min-w-0 flex-1 font-sans text-[12px] text-muted ios:text-[13px]"
+            >
+              {l.name}
+            </Text>
+            {l.etf && (
+              <Text className="font-sans text-[10px] uppercase tracking-[0.04em] text-muted">
+                ETF
+              </Text>
+            )}
+          </Pressable>
+        ))
+      )}
+    </View>
   );
 }
 

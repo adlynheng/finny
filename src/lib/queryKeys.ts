@@ -26,6 +26,7 @@ const snapshots = ['snapshots'] as const;
 const fx = ['fx'] as const;
 const quotes = ['quotes'] as const;
 const bars = ['bars'] as const;
+const listings = ['listings'] as const;
 
 export const queryKeys = {
   settings: { all: settings, detail: () => [...settings, 'detail'] as const },
@@ -68,4 +69,5 @@ export const queryKeys = {
     series: (symbol: string, range: BarRange) =>
       [...bars, symbol, range] as const,
   },
+  listings: { all: listings, us: () => [...listings, 'US'] as const },
 };

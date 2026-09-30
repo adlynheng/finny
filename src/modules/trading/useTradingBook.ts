@@ -27,6 +27,15 @@ export type Book = {
   quotes: Record<string, Quote>;
   /** When the quotes were fetched. */
   quotedAt: Date | null;
+  /**
+   * `loading` until the first quotes arrive, `failed` if none could be
+   * fetched, then `priced`. Until priced, holdings are valued at cost, so
+   * price-dependent figures show a skeleton or a dash rather than a P&L of 0.
+   */
+  prices: 'loading' | 'failed' | 'priced';
+  /** The last quote request failed, a first load or a refresh. */
+  quoteError: boolean;
+  retryQuotes: () => void;
   /** S$ per US$1. */
   rate: number;
   rateAt: Date | null;
@@ -38,7 +47,8 @@ export type Book = {
 /**
  * Everything the Trading page shows, from positions, sales, the watchlist,
  * quotes and the USD/SGD rate: one quote request for held and watched symbols
- * together. Null until positions and quotes have loaded.
+ * together. Null until positions, sales and the watchlist have loaded; quotes
+ * may still be on their way (see `prices`), so cost basis shows without them.
  */
 export function useTradingBook(): Book | null {
   const positions = usePositions().data;
@@ -55,9 +65,15 @@ export function useTradingBook(): Book | null {
   ].filter((ins, i, all) => all.findIndex(o => o.id === ins.id) === i);
   const quotes = useQuotes(watched.map(i => i.symbol));
 
-  if (!positions || !sales || !watchlist || (watched.length && !quotes.data)) {
+  if (!positions || !sales || !watchlist) {
     return null;
   }
+  const prices =
+    watched.length === 0 || quotes.data
+      ? 'priced'
+      : quotes.isError
+      ? 'failed'
+      : 'loading';
   const holdings = holdingsOf(positions, quotes.data ?? {}, rate);
   const instrumentOf = new Map(
     [...(instruments ?? []), ...watched].map(i => [i.id, i]),
@@ -75,6 +91,11 @@ export function useTradingBook(): Book | null {
     watched,
     quotes: quotes.data ?? {},
     quotedAt: quotes.dataUpdatedAt ? new Date(quotes.dataUpdatedAt) : null,
+    prices,
+    quoteError: quotes.isError,
+    retryQuotes: () => {
+      quotes.refetch();
+    },
     rate,
     rateAt,
     idle: idleCash(holdings, accounts ?? []),

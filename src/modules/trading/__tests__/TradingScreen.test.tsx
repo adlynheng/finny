@@ -241,6 +241,19 @@ describe('on macOS', () => {
       );
     });
 
+    it('colours only the P&L percentage: green up, red down', async () => {
+      await open();
+      const pct = (id: string) =>
+        classes(within(text(id)).getByText(/^[+−]\d[\d.,]*%$/));
+      expect(pct('position-NVDA')).toContain('text-gain');
+      expect(pct('position-TSLA')).toContain('text-danger');
+      expect(pct('positions-totals')).toContain('text-gain');
+      // The money stays ink on a gain.
+      expect(
+        classes(within(text('position-NVDA')).getByText(/^\+US\$/)),
+      ).toContain('text-ink');
+    });
+
     it('opens a row onto its lots oldest first, then its sales', async () => {
       await open();
       await fireEvent.press(text('position-NVDA'));
@@ -420,6 +433,15 @@ describe('on iOS', () => {
     expect(hero.indexOf('trading-range')).toBeGreaterThan(
       hero.indexOf('trading-chart'),
     );
+  });
+
+  it('colours a card’s P&L percentage by its sign', async () => {
+    await open();
+    const pct = (id: string) =>
+      classes(within(text(id)).getByText(/^[+−]\d[\d.,]*%$/));
+    expect(pct('position-NVDA-toggle')).toContain('text-gain');
+    expect(pct('position-TSLA-toggle')).toContain('text-danger');
+    expect(pct('positions-totals')).toContain('text-gain');
   });
 
   it('opens a position card onto its figures, lots and actions', async () => {

@@ -2,6 +2,7 @@ import { Pressable, ScrollView, Text, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
 import { Button } from '@/components/ui/Button';
+import { Skeleton } from '@/components/ui/Empty';
 import {
   Chevron,
   ExpandableRow,
@@ -54,7 +55,10 @@ type SubLine = {
   value: { primary: string; secondary: string | null };
   pnl: { primary: string; secondary: string | null };
   note: string;
+  noteTone: ReturnType<typeof pctTone>;
   loss: boolean;
+  /** A lot has no value or P&L until its holding has a price. */
+  priced: boolean;
 };
 
 /**
@@ -70,6 +74,7 @@ function subLines(h: Holding, sales: readonly SaleRow[], rate: number) {
     const value = Math.round(
       l.quantity * (h.priceCents ?? l.cost_per_unit_cents) * h.fx,
     );
+    const priced = h.priceCents !== null;
     const cost = Math.round(l.quantity * l.cost_per_unit_cents * h.fx);
     return {
       key: `lot-${l.id}`,
@@ -83,7 +88,9 @@ function subLines(h: Holding, sales: readonly SaleRow[], rate: number) {
       value: dual(value),
       pnl: dual(value - cost, true),
       note: formatSignedPercent(((value - cost) / cost) * 100),
+      noteTone: pctTone(value - cost),
       loss: value < cost,
+      priced,
     };
   });
   const sold: SubLine[] = sales
@@ -100,7 +107,9 @@ function subLines(h: Holding, sales: readonly SaleRow[], rate: number) {
       value: dual(Math.round(s.proceeds_cents * h.fx)),
       pnl: dual(Math.round(s.realized_pnl_cents * h.fx), true),
       note: 'realised',
+      noteTone: 'muted' as const,
       loss: s.realized_pnl_cents < 0,
+      priced: true,
     }));
   return [...lots, ...sold];
 }
@@ -116,11 +125,56 @@ function figures(h: Holding, rate: number) {
     value: formatDualMoney(h.valueCents, rate, { currency: 'SGD' }),
     pnl: formatDualMoney(h.pnlCents, rate, { currency: 'SGD', signed: true }),
     note: formatSignedPercent(h.pnlPercent),
+    noteTone: pctTone(h.pnlCents),
     lots: `${h.lots.length} ${h.lots.length === 1 ? 'lot' : 'lots'}`,
   };
 }
 
 const orNull = (s: string | null) => s ?? undefined;
+
+/** A P&L percentage's colour, by its P&L's sign: green up, red down, muted flat. */
+const pctText = {
+  gain: 'text-gain',
+  danger: 'text-danger',
+  muted: 'text-muted',
+} as const;
+const pctTone = (pnl: number): keyof typeof pctText =>
+  pnl > 0 ? 'gain' : pnl < 0 ? 'danger' : 'muted';
+
+/**
+ * A figure that needs a price it does not have: a skeleton while prices load,
+ * else a dash. Never the cost-basis stand-in, which would read as a P&L of 0.
+ */
+function Unpriced({
+  loading,
+  size = 'row',
+}: {
+  loading: boolean;
+  size?: 'row' | 'sub' | 'card';
+}) {
+  return (
+    <View className="items-end">
+      {loading ? (
+        <Skeleton
+          className={cx(
+            size === 'sub' ? 'h-[8px] w-[52px]' : 'h-[10px] w-[64px]',
+            'my-[3px]',
+          )}
+        />
+      ) : (
+        <Text
+          className={cx(
+            'font-sans tabular-nums text-muted',
+            size === 'row' ? 'text-[13px]' : 'text-[12px]',
+            size === 'card' && 'text-[14px]',
+          )}
+        >
+          —
+        </Text>
+      )}
+    </View>
+  );
+}
 
 type Props = {
   book: Book;
@@ -132,7 +186,8 @@ type Props = {
 
 /**
  * Every holding with its quantity, average cost, price, market value and
- * unrealised P&L. A row opens onto its lots and recorded sales; its chart
+ * unrealised P&L; without a price (still loading, or none to be had) the
+ * last three are a skeleton or a dash while the cost columns stay. A row opens onto its lots and recorded sales; its chart
  * button switches the hero to that holding. Desktop lays it out as the
  * eight-column table; mobile as expanding cards.
  */
@@ -149,6 +204,8 @@ function PositionsTable({ book, charted, onSell }: Props) {
   const toggle = useUiStore(s => s.toggleExpanded);
   const chart = useUiStore(s => s.selectTradingSymbol);
   const { rate, totals } = book;
+  const loading = book.prices === 'loading';
+  const priced = book.prices === 'priced';
 
   return (
     <View className="min-h-0 flex-1">
@@ -208,18 +265,27 @@ function PositionsTable({ book, charted, onSell }: Props) {
                   >
                     {l.priceNote}
                   </Text>
-                  <NumericCell
-                    size="sub"
-                    primary={l.value.primary}
-                    secondary={orNull(l.value.secondary)}
-                  />
-                  <NumericCell
-                    size="sub"
-                    primary={l.pnl.primary}
-                    secondary={orNull(l.pnl.secondary)}
-                    note={l.note}
-                    tone={l.loss ? 'danger' : 'ink'}
-                  />
+                  {l.priced ? (
+                    <NumericCell
+                      size="sub"
+                      primary={l.value.primary}
+                      secondary={orNull(l.value.secondary)}
+                    />
+                  ) : (
+                    <Unpriced loading={loading} size="sub" />
+                  )}
+                  {l.priced ? (
+                    <NumericCell
+                      size="sub"
+                      primary={l.pnl.primary}
+                      secondary={orNull(l.pnl.secondary)}
+                      note={l.note}
+                      noteTone={l.noteTone}
+                      tone={l.loss ? 'danger' : 'ink'}
+                    />
+                  ) : (
+                    <Unpriced loading={loading} size="sub" />
+                  )}
                   <View />
                 </SubRow>
               ))}
@@ -251,21 +317,34 @@ function PositionsTable({ book, charted, onSell }: Props) {
                 primary={f.total.primary}
                 secondary={orNull(f.total.secondary)}
               />
-              <NumericCell
-                primary={f.price?.primary ?? '—'}
-                secondary={orNull(f.price?.secondary ?? null)}
-              />
-              <NumericCell
-                primary={f.value.primary}
-                secondary={orNull(f.value.secondary)}
-              />
-              <NumericCell
-                primary={f.pnl.primary}
-                secondary={orNull(f.pnl.secondary)}
-                note={f.note}
-                tone={h.pnlCents < 0 ? 'danger' : 'ink'}
-                lead={h.pnlCents >= 0 ? <UpDot /> : undefined}
-              />
+              {f.price ? (
+                <NumericCell
+                  primary={f.price.primary}
+                  secondary={orNull(f.price.secondary)}
+                />
+              ) : (
+                <Unpriced loading={loading} />
+              )}
+              {f.price ? (
+                <NumericCell
+                  primary={f.value.primary}
+                  secondary={orNull(f.value.secondary)}
+                />
+              ) : (
+                <Unpriced loading={loading} />
+              )}
+              {f.price ? (
+                <NumericCell
+                  primary={f.pnl.primary}
+                  secondary={orNull(f.pnl.secondary)}
+                  note={f.note}
+                  noteTone={f.noteTone}
+                  tone={h.pnlCents < 0 ? 'danger' : 'ink'}
+                  lead={h.pnlCents >= 0 ? <UpDot /> : undefined}
+                />
+              ) : (
+                <Unpriced loading={loading} />
+              )}
               <View className="flex-row items-center gap-x-[6px]">
                 <Pressable
                   testID={`position-${h.symbol}-chart`}
@@ -297,18 +376,27 @@ function PositionsTable({ book, charted, onSell }: Props) {
           {...formatDualMoney(totals.costCents, book.rate, { currency: 'SGD' })}
         />
         <View />
-        <TotalCell
-          {...formatDualMoney(totals.valueCents, book.rate, {
-            currency: 'SGD',
-          })}
-        />
-        <TotalCell
-          {...formatDualMoney(totals.pnlCents, book.rate, {
-            currency: 'SGD',
-            signed: true,
-          })}
-          note={formatSignedPercent(totals.pnlPercent)}
-        />
+        {priced ? (
+          <TotalCell
+            {...formatDualMoney(totals.valueCents, book.rate, {
+              currency: 'SGD',
+            })}
+          />
+        ) : (
+          <Unpriced loading={loading} />
+        )}
+        {priced ? (
+          <TotalCell
+            {...formatDualMoney(totals.pnlCents, book.rate, {
+              currency: 'SGD',
+              signed: true,
+            })}
+            note={formatSignedPercent(totals.pnlPercent)}
+            noteTone={pctTone(totals.pnlCents)}
+          />
+        ) : (
+          <Unpriced loading={loading} />
+        )}
         <View />
       </TotalsRow>
     </View>
@@ -320,10 +408,12 @@ function TotalCell({
   primary,
   secondary,
   note,
+  noteTone = 'muted',
 }: {
   primary: string;
   secondary: string | null;
   note?: string;
+  noteTone?: ReturnType<typeof pctTone>;
 }) {
   return (
     <View className="items-end gap-y-[1px]">
@@ -335,7 +425,9 @@ function TotalCell({
           {primary}
         </Text>
         {note && (
-          <Text className="font-sans text-[11px] text-muted">{note}</Text>
+          <Text className={cx('font-sans text-[11px]', pctText[noteTone])}>
+            {note}
+          </Text>
         )}
       </View>
       <Text numberOfLines={1} className="font-sans text-[11px] text-muted">
@@ -350,6 +442,8 @@ function PositionCards({ book, charted, onSell }: Props) {
   const toggle = useUiStore(s => s.toggleExpanded);
   const chart = useUiStore(s => s.selectTradingSymbol);
   const { rate, totals } = book;
+  const loading = book.prices === 'loading';
+  const priced = book.prices === 'priced';
   const total = {
     cost: formatDualMoney(totals.costCents, rate, { currency: 'SGD' }),
     value: formatDualMoney(totals.valueCents, rate, { currency: 'SGD' }),
@@ -398,25 +492,34 @@ function PositionCards({ book, charted, onSell }: Props) {
                   {h.instrument.name} · {f.lots}
                 </Text>
               </View>
-              <View className="items-end gap-y-[2px]">
-                <Text className="font-sans text-[14px] tabular-nums text-ink">
-                  {f.value.primary}
-                </Text>
-                <View className="flex-row items-center gap-x-[5px]">
-                  {h.pnlCents >= 0 && <UpDot />}
-                  <Text
-                    className={cx(
-                      'font-sans text-[12px] tabular-nums',
-                      h.pnlCents < 0 ? 'text-danger' : 'text-ink',
-                    )}
-                  >
-                    {f.pnl.primary}
+              {f.price ? (
+                <View className="items-end gap-y-[2px]">
+                  <Text className="font-sans text-[14px] tabular-nums text-ink">
+                    {f.value.primary}
                   </Text>
-                  <Text className="font-sans text-[11px] text-muted">
-                    {f.note}
-                  </Text>
+                  <View className="flex-row items-center gap-x-[5px]">
+                    {h.pnlCents >= 0 && <UpDot />}
+                    <Text
+                      className={cx(
+                        'font-sans text-[12px] tabular-nums',
+                        h.pnlCents < 0 ? 'text-danger' : 'text-ink',
+                      )}
+                    >
+                      {f.pnl.primary}
+                    </Text>
+                    <Text
+                      className={cx(
+                        'font-sans text-[11px]',
+                        pctText[f.noteTone],
+                      )}
+                    >
+                      {f.note}
+                    </Text>
+                  </View>
                 </View>
-              </View>
+              ) : (
+                <Unpriced loading={loading} size="card" />
+              )}
             </Pressable>
             {open && (
               <View
@@ -428,7 +531,7 @@ function PositionCards({ book, charted, onSell }: Props) {
                   <Figure label="Avg cost" {...f.cost} />
                   <Figure
                     label="Price"
-                    primary={f.price?.primary ?? '—'}
+                    primary={f.price?.primary ?? (loading ? '…' : '—')}
                     secondary={f.price?.secondary ?? null}
                   />
                 </View>
@@ -453,24 +556,33 @@ function PositionCards({ book, charted, onSell }: Props) {
                           {l.quantity} @ {l.cost.primary}
                         </Text>
                       </View>
-                      <View className="items-end gap-y-[1px]">
-                        <Text className="font-sans text-[12px] tabular-nums text-ink">
-                          {l.value.primary}
-                        </Text>
-                        <View className="flex-row gap-x-[5px]">
-                          <Text
-                            className={cx(
-                              'font-sans text-[11px] tabular-nums',
-                              l.loss ? 'text-danger' : 'text-ink',
-                            )}
-                          >
-                            {l.pnl.primary}
+                      {l.priced ? (
+                        <View className="items-end gap-y-[1px]">
+                          <Text className="font-sans text-[12px] tabular-nums text-ink">
+                            {l.value.primary}
                           </Text>
-                          <Text className="font-sans text-[10px] text-muted">
-                            {l.note}
-                          </Text>
+                          <View className="flex-row gap-x-[5px]">
+                            <Text
+                              className={cx(
+                                'font-sans text-[11px] tabular-nums',
+                                l.loss ? 'text-danger' : 'text-ink',
+                              )}
+                            >
+                              {l.pnl.primary}
+                            </Text>
+                            <Text
+                              className={cx(
+                                'font-sans text-[10px]',
+                                pctText[l.noteTone],
+                              )}
+                            >
+                              {l.note}
+                            </Text>
+                          </View>
                         </View>
-                      </View>
+                      ) : (
+                        <Unpriced loading={loading} size="sub" />
+                      )}
                     </View>
                   ))}
                 </View>
@@ -514,22 +626,31 @@ function PositionCards({ book, charted, onSell }: Props) {
             Cost {total.cost.primary}
           </Text>
         </View>
-        <View className="items-end gap-y-[2px]">
-          <Text className="font-sans text-[14px] tabular-nums text-ink">
-            {total.value.primary}
-          </Text>
-          <View className="flex-row gap-x-[5px]">
-            <Text className="font-sans text-[12px] tabular-nums text-ink">
-              {total.pnl.primary}
+        {priced ? (
+          <View className="items-end gap-y-[2px]">
+            <Text className="font-sans text-[14px] tabular-nums text-ink">
+              {total.value.primary}
             </Text>
+            <View className="flex-row gap-x-[5px]">
+              <Text className="font-sans text-[12px] tabular-nums text-ink">
+                {total.pnl.primary}
+              </Text>
+              <Text
+                className={cx(
+                  'font-sans text-[11px]',
+                  pctText[pctTone(totals.pnlCents)],
+                )}
+              >
+                {formatSignedPercent(totals.pnlPercent)}
+              </Text>
+            </View>
             <Text className="font-sans text-[11px] text-muted">
-              {formatSignedPercent(totals.pnlPercent)}
+              {total.value.secondary}
             </Text>
           </View>
-          <Text className="font-sans text-[11px] text-muted">
-            {total.value.secondary}
-          </Text>
-        </View>
+        ) : (
+          <Unpriced loading={loading} size="card" />
+        )}
       </View>
     </View>
   );

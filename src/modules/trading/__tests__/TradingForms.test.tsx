@@ -1,7 +1,8 @@
 import { Platform } from 'react-native';
 import { PortalHost } from '@rn-primitives/portal';
-import { fireEvent, screen, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
 
+import { LISTING_URLS } from '@/lib/listings';
 import { supabase } from '@/lib/supabase';
 import { freezeToday, resetToday } from '@/lib/today';
 import { initialUiState, useUiStore } from '@/stores/uiStore';
@@ -16,6 +17,7 @@ jest.mock('@/lib/supabase', () => ({
 }));
 
 const stub = supabase as unknown as SupabaseStub;
+const fetchMock = global.fetch as jest.Mock;
 
 beforeEach(() => {
   stub.reset();
@@ -26,6 +28,9 @@ beforeEach(() => {
 });
 afterEach(() => {
   resetToday();
+  fetchMock
+    .mockReset()
+    .mockImplementation(() => Promise.reject(new Error('No network')));
   jest.restoreAllMocks();
 });
 
@@ -204,5 +209,93 @@ describe('adding', () => {
       tradingTab: 'positions',
       expandedSymbols: ['NVDA'],
     });
+  });
+});
+
+describe('searching for a symbol', () => {
+  const NASDAQ = [
+    'Symbol|Security Name|Market Category|Test Issue|Financial Status|Round Lot Size|ETF|NextShares',
+    'AAPL|Apple Inc. - Common Stock|Q|N|N|100|N|N',
+    'NVDA|NVIDIA Corporation - Common Stock|Q|N|N|100|N|N',
+    'File Creation Time: 0930202611:01|||||||',
+  ].join('\n');
+  const OTHER = [
+    'ACT Symbol|Security Name|Exchange|CQS Symbol|ETF|Round Lot Size|Test Issue|NASDAQ Symbol',
+    'APLE|Apple Hospitality REIT, Inc. Common Shares|N|APLE|N|100|N|APLE',
+    'VOO|Vanguard S&P 500 ETF|P|VOO|Y|100|N|VOO',
+    'File Creation Time: 0930202611:01|||||||',
+  ].join('\n');
+
+  beforeEach(() =>
+    fetchMock.mockImplementation((url: string) =>
+      Promise.resolve({
+        ok: true,
+        text: () => Promise.resolve(url === LISTING_URLS[0] ? NASDAQ : OTHER),
+      }),
+    ),
+  );
+
+  async function typeSymbol(text: string) {
+    await open();
+    await fireEvent.press(byId('add-position'));
+    await screen.findByText('New position');
+    await fireEvent.changeText(field('Symbol'), text);
+  }
+
+  it('lists matches by symbol and name once typing pauses', async () => {
+    await typeSymbol('appl');
+    // Not on the keystroke itself.
+    expect(screen.queryByTestId('add-matches')).toBeNull();
+    await screen.findByTestId('add-matches');
+    expect(screen.getByTestId('add-match-AAPL')).toHaveTextContent(
+      'Apple Inc.',
+      {
+        exact: false,
+      },
+    );
+    expect(screen.getByTestId('add-match-APLE')).toBeTruthy();
+    // Floating over the form, not in its flow.
+    expect(byId('add-matches').props.className).toContain('absolute');
+    // Fetched once, both files.
+    expect(
+      fetchMock.mock.calls.filter(([url]) => url.includes('nasdaqtrader')),
+    ).toHaveLength(2);
+  });
+
+  it('fills the symbol and name from a pick, and closes the list', async () => {
+    await typeSymbol('apple');
+    await fireEvent.press(await screen.findByTestId('add-match-AAPL'));
+    expect(field('Symbol').props.value).toBe('AAPL');
+    expect(field('Name').props.value).toBe('Apple Inc.');
+    expect(screen.queryByTestId('add-matches')).toBeNull();
+    has('add-note', 'New holding');
+  });
+
+  it('marks a picked ETF as one', async () => {
+    await typeSymbol('vo');
+    await fireEvent.press(await screen.findByTestId('add-match-VOO'));
+    expect(field('Name').props.value).toBe('Vanguard S&P 500 ETF');
+    expect(
+      screen.getByTestId('add-kind-ETF').props.accessibilityState.selected,
+    ).toBe(true);
+  });
+
+  it('fills a held symbol from its holding, as its chip does', async () => {
+    await typeSymbol('nvd');
+    await fireEvent.press(await screen.findByTestId('add-match-NVDA'));
+    expect(field('Name').props.value).toBe('NVIDIA');
+    expect(field('Price per share').props.value).toBe('178.40');
+    expect(screen.getAllByTestId('add-locked')).toHaveLength(3);
+  });
+
+  it('lets any symbol be typed when nothing matches or the list fails', async () => {
+    fetchMock.mockImplementation(() => Promise.reject(new Error('offline')));
+    await typeSymbol('z74');
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+    // Past the debounce.
+    await act(() => new Promise(r => setTimeout(r, 400)));
+    expect(screen.queryByTestId('add-matches')).toBeNull();
+    expect(field('Symbol').props.value).toBe('Z74');
+    has('add-note', 'New holding');
   });
 });

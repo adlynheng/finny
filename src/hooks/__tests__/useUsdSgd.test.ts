@@ -54,9 +54,7 @@ it('keeps the last good rate and its time when a refresh fails', async () => {
   const { fetchedAt } = result.current;
 
   fetchMock.mockImplementation(() => Promise.reject(new Error('offline')));
-  await act(() =>
-    client.refetchQueries({ queryKey: queryKeys.fx.usdSgd() }),
-  );
+  await act(() => client.refetchQueries({ queryKey: queryKeys.fx.usdSgd() }));
 
   expect(fetchMock).toHaveBeenCalledTimes(2);
   expect(result.current).toEqual({ rate: 1.2764, fetchedAt });

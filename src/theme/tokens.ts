@@ -46,6 +46,8 @@ const colors = {
   muted: '#6b6a65',
   muted2: '#8a8984',
   danger: '#b4532f',
+  /** A gain's percentage on the Positions table. */
+  gain: '#256b3e',
   white: '#fff',
 } as const;
 

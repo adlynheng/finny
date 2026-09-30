@@ -13,7 +13,8 @@ type Placement = { top: number; left: number; width?: number };
 
 /** Between the button and the list. */
 const OFFSET = 6;
-const LIST_SHADOW = {
+/** A floating list's shadow; the Add position form's matches share it. */
+export const LIST_SHADOW = {
   macos: '0 18px 44px rgba(0,0,0,.14)',
   ios: '0 18px 44px rgba(0,0,0,.16)',
 };

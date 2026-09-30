@@ -3,6 +3,7 @@ import { Pressable, ScrollView, Text, View } from 'react-native';
 
 import { MixRing } from '@/components/charts/MixRing';
 import { cx } from '@/components/ui/cardChrome';
+import { Skeleton } from '@/components/ui/Empty';
 import type { InstrumentKind } from '@/types/domain';
 import {
   byIndustry,
@@ -28,7 +29,8 @@ const count = (n: number, one: string, many: string) =>
  * The portfolio split two ways: by instrument type, on the mix ring beside
  * its list, and by industry, largest first with bars scaled to the largest.
  * Hovering a type (tapping, on mobile) dims the others in the list and the
- * ring, and the ring's centre shows that type's share.
+ * ring, and the ring's centre shows that type's share. The split is by market
+ * value, so until the first prices arrive it is skeleton rows.
  */
 export function PortfolioTab({
   book,
@@ -115,6 +117,25 @@ export function PortfolioTab({
       note={count(industries.length, 'industry', 'industries')}
     />
   );
+
+  if (book.prices === 'loading') {
+    return (
+      <View
+        testID="mix-loading"
+        className="mt-[14px] flex-1 gap-y-[14px] px-[8px] ios:px-0"
+      >
+        {['w-[38%]', 'w-[52%]', 'w-[30%]', 'w-[44%]'].map(w => (
+          <View
+            key={w}
+            className="flex-row items-center justify-between border-t border-row-border pt-[12px]"
+          >
+            <Skeleton className={cx('h-[10px]', w)} />
+            <Skeleton className="h-[10px] w-[40px]" />
+          </View>
+        ))}
+      </View>
+    );
+  }
 
   if (mobile) {
     return (

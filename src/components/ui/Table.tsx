@@ -243,12 +243,14 @@ const tones = {
   ink: 'text-ink',
   danger: 'text-danger',
   muted: 'text-muted',
+  gain: 'text-gain',
 } as const;
 
 /**
  * A right-aligned money cell: the primary value (US$) over a muted secondary
- * (`(S$ …)`), in tabular figures. `note` is a muted percentage beside the
- * primary and `lead` a mark before it (the P&L column's lime dot).
+ * (`(S$ …)`), in tabular figures. `note` is a percentage beside the primary,
+ * muted unless `noteTone` says otherwise, and `lead` a mark before it (the
+ * P&L column's lime dot).
  */
 export function NumericCell({
   primary,
@@ -256,6 +258,7 @@ export function NumericCell({
   note,
   lead,
   tone = 'ink',
+  noteTone = 'muted',
   size = 'row',
 }: {
   primary: string;
@@ -263,6 +266,7 @@ export function NumericCell({
   note?: string;
   lead?: ReactNode;
   tone?: keyof typeof tones;
+  noteTone?: keyof typeof tones;
   size?: keyof typeof numericSizes;
 }) {
   const sized = numericSizes[size];
@@ -282,7 +286,7 @@ export function NumericCell({
         {note && (
           <Text
             numberOfLines={1}
-            className={cx('font-sans text-muted', sized.secondary)}
+            className={cx('font-sans', sized.secondary, tones[noteTone])}
           >
             {note}
           </Text>

@@ -20,3 +20,14 @@ jest.mock('nativewind', () => ({ cssInterop: () => {} }));
 // No test reaches the network: a fetch fails, so market data falls back as it does offline.
 // A test that needs a reply mocks fetch itself.
 global.fetch = jest.fn(() => Promise.reject(new Error('No network in tests')));
+
+// Quotes and closes come from the design's stub table rather than the Edge Functions. They are
+// mock functions, so a test can make a call hang or fail.
+jest.mock('@/lib/marketData', () => {
+  const stub = require('./marketDataStub');
+  return {
+    ...jest.requireActual('@/lib/marketData'),
+    fetchQuotes: jest.fn(stub.stubQuotes),
+    fetchBars: jest.fn(stub.stubBars),
+  };
+});

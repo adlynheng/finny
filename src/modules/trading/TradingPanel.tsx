@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import { Platform, Text, View } from 'react-native';
+import { Platform, Pressable, Text, View } from 'react-native';
 
 import { PlusIcon } from '@/components/icons/PlusIcon';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { AddButton, EmptyNote, GhostRows } from '@/components/ui/Empty';
 import { Segmented } from '@/components/ui/Segmented';
+import { cx } from '@/components/ui/cardChrome';
+import { now } from '@/lib/today';
 import { useUiStore, type TradingTab } from '@/stores/uiStore';
 import type { Holding } from '@/utils/derive/portfolio';
 import { byIndustry, byType } from '@/utils/derive/portfolio';
@@ -24,13 +26,22 @@ const TABS = [
   { value: 'portfolio', label: 'Portfolio' },
 ] as const;
 
+/**
+ * The rate updates hourly and is refetched about as often; one older than
+ * this has missed several refreshes.
+ */
+const FX_STALE_MS = 3 * 60 * 60_000;
+
 const count = (n: number, one: string, many: string) =>
   `${n} ${n === 1 ? one : many}`;
 
 /**
  * The glass panel under the hero: Positions, Watchlist and Portfolio tabs, a
  * line about the open tab, the USD/SGD rate and when it was fetched, and Add
- * position. The Sell and Add position forms open from here.
+ * position. The Sell and Add position forms open from here. The rate's time
+ * is the honest signal of its age: marked stale once old, and the fallback
+ * named as such before any fetch. A failed quote request shows a quiet notice
+ * with a retry beside it.
  *
  * A tab with nothing to list is the design's empty tab: dashed rows, and
  * beside them what fills it (and, for Positions, a first one to add).
@@ -110,7 +121,45 @@ export function TradingPanel({
       {line}
     </Text>
   );
-  const time = book.rateAt ? formatTime(book.rateAt) : null;
+  const stale =
+    !book.rateAt || now().getTime() - book.rateAt.getTime() > FX_STALE_MS;
+  const rateAge = (
+    <View className="flex-row items-center gap-x-[5px]">
+      <View
+        testID="trading-rate-dot"
+        className={cx(
+          'size-[5px] rounded-full',
+          stale ? 'bg-danger' : 'bg-lime-dark',
+        )}
+      />
+      <Text
+        testID="trading-rate-time"
+        className="font-sans text-[11px] text-muted"
+      >
+        {book.rateAt
+          ? `${formatTime(book.rateAt)}${stale ? ' · stale' : ''}`
+          : 'fallback rate'}
+      </Text>
+    </View>
+  );
+  const notice = book.quoteError && (
+    <View testID="quote-error" className="flex-row items-center gap-x-[6px]">
+      <Text className="font-sans text-[11px] text-muted">
+        {book.prices === 'priced'
+          ? 'Prices not refreshed'
+          : 'Prices unavailable'}
+      </Text>
+      <Pressable
+        testID="quote-retry"
+        accessibilityRole="button"
+        accessibilityLabel="Retry prices"
+        hitSlop={8}
+        onPress={book.retryQuotes}
+      >
+        <Text className="font-sans text-[11px] text-ink underline">Retry</Text>
+      </Pressable>
+    </View>
+  );
   const add = (
     <Button
       testID="add-position"
@@ -143,15 +192,9 @@ export function TradingPanel({
                 >
                   {book.rate.toFixed(4)}
                 </Text>
-                {time && (
-                  <>
-                    <View className="size-[5px] rounded-full bg-lime-dark" />
-                    <Text className="font-sans text-[11px] text-muted">
-                      {time}
-                    </Text>
-                  </>
-                )}
+                {rateAge}
               </View>
+              {notice}
               {countLine}
             </View>
             {add}
@@ -164,6 +207,7 @@ export function TradingPanel({
             {countLine}
           </View>
           <View className="flex-row items-center gap-x-[8px]">
+            {notice}
             <View className="h-[28px] flex-row items-center gap-x-[8px] rounded-6 bg-ink/[.04] px-[10px]">
               <Text className="font-sans text-[12px] text-muted">USD/SGD</Text>
               <Text
@@ -172,14 +216,7 @@ export function TradingPanel({
               >
                 {book.rate.toFixed(4)}
               </Text>
-              {time && (
-                <View className="flex-row items-center gap-x-[5px]">
-                  <View className="size-[5px] rounded-full bg-lime-dark" />
-                  <Text className="font-sans text-[11px] text-muted">
-                    {time}
-                  </Text>
-                </View>
-              )}
+              {rateAge}
             </View>
             {add}
           </View>
