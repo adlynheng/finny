@@ -16,15 +16,18 @@ import { daysInMonth, monthKey } from '@/utils/format/date';
 /**
  * This month's budget, from the budget derive functions against the month's
  * transactions and the settings limit: what the hero, its stats and the dial
- * show. Spend counts through today only. Null until both have loaded.
+ * show. Spend counts through today only, and leaves out posted recurring
+ * charges: the limit is for everyday spending, while the charges still move
+ * their accounts' balances. Null until both have loaded.
  */
 export function useBudget() {
   const month = monthKey(today());
-  const txns = useTransactions(month).data;
+  const all = useTransactions(month).data;
   const settings = useSettings().data;
-  if (!txns || !settings) {
+  if (!all || !settings) {
     return null;
   }
+  const txns = all.filter(t => t.recurring_id === null);
   const limitCents = settings.monthly_expenditure_cents;
   const elapsed = elapsedDays(month);
   const spentCents = monthSpentCents(txns, month, elapsed);

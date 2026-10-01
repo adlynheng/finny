@@ -1,4 +1,9 @@
-import { screen, within } from '@testing-library/react-native';
+import { act, screen, within } from '@testing-library/react-native';
+import { State } from 'react-native-gesture-handler';
+import {
+  fireGestureHandler,
+  getByGestureTestId,
+} from 'react-native-gesture-handler/jest-utils';
 import { Sheet } from '@/components/ui/Sheet';
 import { classes } from '../../../../test/classes';
 import { describeSheet, renderSheet } from '../../../../test/sheetCases';
@@ -22,6 +27,13 @@ describe('Sheet on iOS: a bottom sheet', () => {
     );
   });
 
+  it('sits on the bottom edge: the dragged frame fills the screen', async () => {
+    await renderSheet(Sheet);
+    expect(classes(screen.getByTestId('sheet-drag-frame'))).toEqual(
+      expect.arrayContaining(['flex-1', 'justify-end']),
+    );
+  });
+
   it('is the solid sheet: 22 22 0 0 corners, at most 92% tall, with a grab handle', async () => {
     await renderSheet(Sheet);
     expect(classes(screen.getByTestId('sheet-surface'))).toEqual(
@@ -38,6 +50,49 @@ describe('Sheet on iOS: a bottom sheet', () => {
       expect.arrayContaining(['gap-sheet-gap', 'px-sheet-pad', 'pt-[10px]']),
     );
     expect(classes(screen.getByTestId('sheet-body'))).toContain('shrink');
+  });
+
+  it('takes a tap in the body with the keyboard up, instead of only dismissing the keyboard', async () => {
+    await renderSheet(Sheet);
+    expect(
+      screen.getByTestId('sheet-body').props.keyboardShouldPersistTaps,
+    ).toBe('handled');
+  });
+
+  const drag = (translationY: number, velocityY = 0) =>
+    act(() =>
+      fireGestureHandler(getByGestureTestId('sheet-drag'), [
+        { state: State.BEGAN, translationY: 0 },
+        { state: State.ACTIVE, translationY: translationY / 2 },
+        { translationY, velocityY },
+        { state: State.END, translationY, velocityY },
+      ]),
+    );
+
+  it('closes when its handle is dragged down past 120pt', async () => {
+    const { onClose } = await renderSheet(Sheet);
+    await drag(160);
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('closes on a quick flick down, however short', async () => {
+    const { onClose } = await renderSheet(Sheet);
+    await drag(40, 1200);
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('springs back, still open, from a short slow drag', async () => {
+    const { onClose } = await renderSheet(Sheet);
+    await drag(60, 100);
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('drags from the handle and title, leaving the form to scroll', async () => {
+    await renderSheet(Sheet);
+    const zone = screen.getByTestId('sheet-drag-zone');
+    expect(within(zone).getByTestId('sheet-handle')).toBeTruthy();
+    expect(within(zone).getByText('New transaction')).toBeTruthy();
+    expect(within(zone).queryByTestId('sheet-body')).toBeNull();
   });
 
   it('ignores the desktop width', async () => {

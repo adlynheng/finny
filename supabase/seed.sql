@@ -60,18 +60,17 @@ from (
 -- Multiplier's debit card spends from the salary account.
 insert into card (
   account_id, bank, product_name, network, last4, card_type, credit_limit_cents,
-  statement_date, rewards_program, rewards_earned_display, color_theme, include_in_budget
+  statement_date, rewards_program, rewards_earned_display, color_theme
 )
 select (select id from account where name = a), bank, product, network, last4, kind, limit_cents,
-  statement, rewards, earned, theme, in_budget
+  statement, rewards, earned, theme
 from (
   values
     ('DBS Altitude', 'DBS Altitude', 'Visa Signature', 'VISA', '4821', 'credit', 1200000,
-      '18 Oct', '1.3 mpd local · 2.2 mpd overseas', '2,570 mi', 'Green', true),
+      '18 Oct', '1.3 mpd local · 2.2 mpd overseas', '2,570 mi', 'Green'),
     ('DBS Multiplier', 'DBS Multiplier', 'Visa Debit', 'VISA', '0157', 'debit', null,
-      'Salary account', '3.1% p.a. bonus interest with salary credit', 'S$72.60', 'Slate', false)
-) as c (a, bank, product, network, last4, kind, limit_cents, statement, rewards, earned, theme,
-  in_budget);
+      'Salary account', '3.1% p.a. bonus interest with salary credit', 'S$72.60', 'Slate')
+) as c (a, bank, product, network, last4, kind, limit_cents, statement, rewards, earned, theme);
 
 -- Icons are icon-registry keys; Freelance has none of its own, so it shows Other.
 insert into category (name, kind, icon)
@@ -90,6 +89,11 @@ values
   ('Shopping', 'expense', 'Shopping'),
   ('Subscriptions', 'expense', 'Subscriptions'),
   ('Transport', 'expense', 'Transport');
+
+-- The recurring-charge form's categories (migration 0011).
+update category
+set is_recurring = true
+where name in ('Bills', 'Health', 'Housing', 'Insurance', 'Services', 'Subscriptions');
 
 -- The ledger covers the twelve months ending this month; nothing is dated after today.
 create temporary table seed_months as

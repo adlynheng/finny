@@ -40,17 +40,6 @@ import {
   sanitizeAmountInput,
 } from '@/utils/format/money';
 
-/** The recurring-charge categories, in the design's order. */
-const CATEGORY_SET = [
-  'Subscriptions',
-  'Bills',
-  'Insurance',
-  'Housing',
-  'Health',
-  'Services',
-  'Other',
-];
-
 const capitalise = (w: string) => w[0]!.toUpperCase() + w.slice(1);
 const INTERVALS = FREQUENCIES.map(f => ({ value: f, label: capitalise(f) }));
 const UNITS = CUSTOM_UNITS.map(u => ({ value: u, label: capitalise(u) }));
@@ -110,9 +99,10 @@ export function RecurringChargeSheet({
       toIsoDate(startOfMonth(addMonths(now(), 1))),
   );
 
-  const categories = expense
-    .filter(c => CATEGORY_SET.includes(c.name) || c.id === charge?.category_id)
-    .sort((a, b) => rank(CATEGORY_SET, a.name) - rank(CATEGORY_SET, b.name));
+  // The categories Settings marks recurring, and the charge's own if it is no longer one.
+  const categories = expense.filter(
+    c => c.is_recurring || c.id === charge?.category_id,
+  );
   const category = categoryId ?? categories[0]?.id ?? null;
   const account =
     accountId ??
@@ -282,9 +272,4 @@ export function RecurringChargeSheet({
       )}
     </Sheet>
   );
-}
-
-function rank(order: readonly string[], name: string) {
-  const i = order.indexOf(name);
-  return i === -1 ? order.length : i;
 }

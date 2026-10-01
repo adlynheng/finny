@@ -85,7 +85,7 @@ export const ACCOUNT_TYPES = [
 export type AccountType = (typeof ACCOUNT_TYPES)[number];
 
 /** `account.cpf_type`: which CPF account a CPF-type account is. */
-export const CPF_TYPES = ['OA', 'SA', 'MA'] as const;
+export const CPF_TYPES = ['OA', 'SA', 'MA', 'RA'] as const;
 export type CpfType = (typeof CPF_TYPES)[number];
 
 /** `card.card_type` */

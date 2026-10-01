@@ -14,7 +14,12 @@ export type TradingTab = 'positions' | 'watchlist' | 'portfolio';
 export type TransactionsFilter = 'all' | 'in' | 'out' | 'transfers';
 export type TransactionsView = 'list' | 'categories';
 export type CashFlowView = 'savings' | 'cashflow';
-export type SettingsPanel = 'accounts' | 'expenditure' | 'deposit' | 'fixed';
+export type SettingsPanel =
+  | 'accounts'
+  | 'expenditure'
+  | 'recurring'
+  | 'deposit'
+  | 'fixed';
 
 type UiFields = {
   /** Overview net worth history card. */

@@ -58,7 +58,7 @@ const inserts = (table: string) =>
   stub.chainsFor(table).filter(chain => chain[0]?.[0] === 'insert');
 
 describe('the nav', () => {
-  it('lists the four panels with their counts, the selected one white with a lime dot', async () => {
+  it('lists the five panels with their counts, the selected one white with a lime dot', async () => {
     await draw();
     const nav = within(screen.getByTestId('settings-nav'));
     expect(
@@ -66,11 +66,13 @@ describe('the nav', () => {
     ).toEqual([
       'Accounts & balances',
       'Expenditure categories',
+      'Recurring categories',
       'Deposit categories',
       'Fixed variables',
     ]);
     expect(nav.getByText('5 accounts')).toBeTruthy();
     expect(nav.getByText('5 categories')).toBeTruthy();
+    expect(nav.getByText('3 categories')).toBeTruthy();
     expect(nav.getByText('2 categories')).toBeTruthy();
     expect(nav.getByText('3 income streams')).toBeTruthy();
     expect(classes(screen.getByTestId('settings-nav-accounts'))).toContain(
@@ -180,6 +182,47 @@ describe('Accounts & balances', () => {
     expect(text('account-hint')).toBe('Counts toward your share of assets.');
   });
 
+  it('saves a card’s balance owed as negative', async () => {
+    await draw();
+    await fireEvent.press(screen.getByTestId('account-row-5'));
+    await fireEvent.changeText(screen.getByLabelText('Balance owed'), '1500');
+    await fireEvent.press(screen.getByLabelText('Save changes'));
+    const update = stub.chainsFor('account').find(c => c[0]?.[0] === 'update')!;
+    expect(update[0]![1]).toMatchObject({
+      balance_cents: -150_000,
+      is_liability: true,
+    });
+  });
+
+  it('a CPF account says which CPF account it is', async () => {
+    await draw();
+    await fireEvent.press(screen.getByLabelText('New account'));
+    expect(screen.queryByTestId('account-cpf-type')).toBeNull();
+    await fireEvent.changeText(
+      screen.getByLabelText('Account name'),
+      'CPF Retirement',
+    );
+    await fireEvent.press(
+      within(screen.getByTestId('account-type')).getByText('CPF'),
+    );
+    const picker = screen.getByTestId('account-cpf-type');
+    expect(
+      ['Ordinary', 'Special', 'MediSave', 'Retirement'].map(
+        label => within(picker).getByText(label) && label,
+      ),
+    ).toHaveLength(4);
+    await fireEvent.press(within(picker).getByText('Retirement'));
+    await fireEvent.changeText(
+      screen.getByLabelText('Current balance'),
+      '1000',
+    );
+    await fireEvent.press(screen.getByLabelText('Add'));
+    expect(inserts('account')[0]![0]![1]).toMatchObject({
+      type: 'CPF',
+      cpf_type: 'RA',
+    });
+  });
+
   it('editing saves by id', async () => {
     await draw();
     await fireEvent.press(screen.getByTestId('account-row-2'));
@@ -284,10 +327,42 @@ describe('Category panels', () => {
       await fireEvent.press(screen.getByLabelText('Add'));
       expect(inserts('category')[0]![0]).toEqual([
         'insert',
-        { name: 'Pets', icon: 'Other', kind },
+        { name: 'Pets', icon: 'Other', kind, is_recurring: false },
       ]);
     },
   );
+
+  it('recurring: the expense categories marked for recurring charges', async () => {
+    await draw('recurring');
+    expect(summary()).toBe('3 categories · S$1,159.98 spent in Sep');
+    expect([5, 6, 7].map(id => text(`category-total-${id}`))).toEqual([
+      'S$1,140 spent in Sep',
+      'S$19.98 spent in Sep',
+      'S$0 spent in Sep',
+    ]);
+    expect(screen.queryByTestId('category-tile-3')).toBeNull();
+  });
+
+  it('recurring: a new category starts marked, and an expense one can be marked', async () => {
+    await draw('recurring');
+    await fireEvent.press(screen.getByTestId('category-new-tile'));
+    expect(
+      screen.getByTestId('category-recurring').props.accessibilityState.checked,
+    ).toBe(true);
+    await fireEvent.changeText(screen.getByLabelText('Name'), 'Gym');
+    await fireEvent.press(screen.getByLabelText('Add'));
+    expect(inserts('category')[0]![0]![1]).toMatchObject({
+      name: 'Gym',
+      kind: 'expense',
+      is_recurring: true,
+    });
+  });
+
+  it('deposit categories are never recurring', async () => {
+    await draw('deposit');
+    await fireEvent.press(screen.getByTestId('category-new-tile'));
+    expect(screen.queryByTestId('category-recurring')).toBeNull();
+  });
 
   it('the chosen icon is ink with a lime glyph', async () => {
     await draw('expenditure');

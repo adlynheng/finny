@@ -9,6 +9,7 @@ import Svg, { Path } from 'react-native-svg';
 import { tokens, type GlassName } from '@/theme/tokens';
 import { cx } from './cardChrome';
 import { Glass } from './Glass';
+import { touchSlop } from './touch';
 
 /** The full-window scrim behind the container; pressing it closes. */
 export function SheetScrim({
@@ -82,6 +83,7 @@ export function SheetHeader({
         accessibilityRole="button"
         accessibilityLabel="Close"
         onPress={onClose}
+        hitSlop={touchSlop(40, 40)}
         className="size-[28px] items-center justify-center rounded-6 hover:bg-icon-hover ios:size-[40px] ios:rounded-10 ios:bg-soft"
       >
         <Svg width={closeIconSize} height={closeIconSize} viewBox="0 0 10 10">
@@ -127,6 +129,9 @@ export function SheetBody({
       className="shrink grow-0"
       contentContainerClassName={gapClassName}
       showsVerticalScrollIndicator={false}
+      // With the keyboard up, a tap on a chip or a search match acts at once
+      // rather than only dismissing the keyboard.
+      keyboardShouldPersistTaps="handled"
     >
       {children}
     </ScrollView>

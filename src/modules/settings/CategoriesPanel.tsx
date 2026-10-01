@@ -19,22 +19,29 @@ const VERB: Record<CategoryKind, string> = {
 };
 
 /**
- * Expenditure or Deposit categories: one tile per category of the kind, with
+ * Expenditure, Recurring or Deposit categories: one tile per category of the
+ * kind (`recurring`: the expense categories marked for recurring charges), with
  * its icon and this month's total, then a dashed New category tile. A tile
  * opens the category drawer. Auto-fill 180px columns on desktop, two on
  * mobile.
  */
 export function CategoriesPanel({
   kind,
+  recurring = false,
   data,
   head,
 }: {
   kind: CategoryKind;
+  recurring?: boolean;
   data: SettingsData;
   head: PanelHead;
 }) {
   const [open, setOpen] = useState<CategoryRow | 'new' | null>(null);
-  const totals = kind === 'expense' ? data.expense : data.deposit;
+  const totals = recurring
+    ? data.recurring
+    : kind === 'expense'
+    ? data.expense
+    : data.deposit;
   const tiles = [
     ...totals.map(t => (
       <Tile
@@ -57,6 +64,7 @@ export function CategoriesPanel({
         open && (
           <CategorySheet
             kind={kind}
+            recurring={recurring}
             category={open === 'new' ? null : open}
             onClose={() => setOpen(null)}
           />
@@ -64,7 +72,7 @@ export function CategoriesPanel({
       }
     >
       <ResponsiveGrid
-        testID={`category-grid-${kind}`}
+        testID={`category-grid-${recurring ? 'recurring' : kind}`}
         minColumnWidth={180}
         columns={Platform.OS === 'ios' ? 2 : undefined}
         columnGap={8}

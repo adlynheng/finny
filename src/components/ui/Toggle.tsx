@@ -7,6 +7,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { tokens } from '@/theme/tokens';
 import { cx } from './cardChrome';
+import { touchSlop } from './touch';
 
 const { knobShadow, durationMs, ...desktop } = tokens.controls.toggle;
 
@@ -53,6 +54,7 @@ export function Toggle({
       accessibilityState={{ checked: value, disabled }}
       disabled={disabled}
       onPress={() => onChange(!value)}
+      hitSlop={touchSlop(24, 40)}
       className={cx(
         'h-toggle-h w-toggle-w rounded-full ios:h-toggle-h-mobile ios:w-toggle-w-mobile',
         value ? 'bg-ink' : 'bg-toggle-off',

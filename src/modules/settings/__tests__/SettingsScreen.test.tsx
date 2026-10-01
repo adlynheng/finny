@@ -219,17 +219,6 @@ describe('the hero’s columns', () => {
       'Salary account',
     ]);
   });
-
-  it('the budget switch writes the card’s include_in_budget', async () => {
-    await draw();
-    const toggle = screen.getByTestId('card-in-budget');
-    expect(toggle.props.accessibilityState.checked).toBe(true);
-    await fireEvent.press(toggle);
-    expect(stub.chainsFor('card').at(-2)).toEqual([
-      ['update', { include_in_budget: false }],
-      ['eq', 'id', 1],
-    ]);
-  });
 });
 
 describe('Add card', () => {
@@ -340,7 +329,6 @@ describe('Add card', () => {
         card_type: 'credit',
         network: 'VISA',
         color_theme: 'Mist',
-        include_in_budget: true,
         statement_day: null,
         bill_due_day: null,
       }),
@@ -369,7 +357,6 @@ describe('Add card', () => {
       expect.objectContaining({
         account_id: 2,
         card_type: 'debit',
-        include_in_budget: false,
       }),
     ]);
   });

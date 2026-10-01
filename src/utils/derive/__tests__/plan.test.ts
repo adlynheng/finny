@@ -62,8 +62,20 @@ function charge(
 }
 
 const categories: CategoryRow[] = [
-  { id: 5, name: 'Housing', kind: 'expense', icon: 'Housing' },
-  { id: 7, name: 'Insurance', kind: 'expense', icon: 'Insurance' },
+  {
+    id: 5,
+    name: 'Housing',
+    kind: 'expense',
+    icon: 'Housing',
+    is_recurring: true,
+  },
+  {
+    id: 7,
+    name: 'Insurance',
+    kind: 'expense',
+    icon: 'Insurance',
+    is_recurring: true,
+  },
 ];
 
 const plan = {

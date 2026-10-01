@@ -27,7 +27,6 @@ function card(
     bill_due_day: null,
     rewards_program: null,
     rewards_earned_display: null,
-    include_in_budget: true,
     ...fields,
   };
 }
@@ -64,7 +63,6 @@ export const cards: CardRow[] = [
     rewards_program: '3.1% p.a. bonus interest with salary credit',
     rewards_earned_display: 'S$72.60',
     color_theme: 'Slate',
-    include_in_budget: false,
   }),
 ];
 

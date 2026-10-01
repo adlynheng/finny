@@ -3,9 +3,7 @@ import { Text, View } from 'react-native';
 import { PlusIcon } from '@/components/icons/PlusIcon';
 import { Button } from '@/components/ui/Button';
 import { Glass } from '@/components/ui/Glass';
-import { Toggle } from '@/components/ui/Toggle';
 import { useAccounts } from '@/hooks/useAccounts';
-import { useSetCardInBudget } from '@/hooks/useCards';
 import { useTransactions } from '@/hooks/useTransactions';
 import { today } from '@/lib/today';
 import type { CardRow } from '@/types/domain';
@@ -111,7 +109,6 @@ export function CardDetail({
 
 function CardFacts({ card }: { card: CardRow }) {
   const stats = useCardStats(card);
-  const setInBudget = useSetCardInBudget();
   return (
     <>
       <Glass
@@ -151,20 +148,6 @@ function CardFacts({ card }: { card: CardRow }) {
             </Text>
           </View>
         ))}
-      </View>
-      <View className="min-h-[36px] flex-row items-center justify-between gap-x-[12px] border-t border-ink/[.06] ios:min-h-[48px]">
-        <Text className="font-sans text-[13px] text-ink ios:text-[14px]">
-          Count toward monthly budget
-        </Text>
-        <Toggle
-          testID="card-in-budget"
-          accessibilityLabel="Count toward monthly budget"
-          value={card.include_in_budget}
-          onChange={includeInBudget =>
-            setInBudget.mutate({ id: card.id, includeInBudget })
-          }
-          disabled={setInBudget.isPending}
-        />
       </View>
     </>
   );

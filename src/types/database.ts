@@ -92,7 +92,6 @@ export type Database = {
           color_theme: string | null;
           credit_limit_cents: number | null;
           id: number;
-          include_in_budget: boolean;
           last4: string | null;
           network: string | null;
           product_name: string;
@@ -109,7 +108,6 @@ export type Database = {
           color_theme?: string | null;
           credit_limit_cents?: number | null;
           id?: never;
-          include_in_budget?: boolean;
           last4?: string | null;
           network?: string | null;
           product_name: string;
@@ -126,7 +124,6 @@ export type Database = {
           color_theme?: string | null;
           credit_limit_cents?: number | null;
           id?: never;
-          include_in_budget?: boolean;
           last4?: string | null;
           network?: string | null;
           product_name?: string;
@@ -149,18 +146,21 @@ export type Database = {
         Row: {
           icon: string | null;
           id: number;
+          is_recurring: boolean;
           kind: string;
           name: string;
         };
         Insert: {
           icon?: string | null;
           id?: never;
+          is_recurring?: boolean;
           kind?: string;
           name: string;
         };
         Update: {
           icon?: string | null;
           id?: never;
+          is_recurring?: boolean;
           kind?: string;
           name?: string;
         };

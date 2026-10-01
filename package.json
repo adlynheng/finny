@@ -11,6 +11,7 @@
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit",
     "ios:ipa": "scripts/build-ipa.sh",
+    "macos:release": "scripts/build-macos.sh",
     "db:test": "supabase test db",
     "db:types": "supabase gen types typescript --local --schema public > src/types/database.ts && prettier --write src/types/database.ts"
   },

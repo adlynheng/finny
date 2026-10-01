@@ -1,11 +1,6 @@
 import { act, waitFor } from '@testing-library/react-native';
 
-import {
-  useAddCard,
-  useCards,
-  useSetCardInBudget,
-  useUpsertCard,
-} from '../useCards';
+import { useAddCard, useCards, useUpsertCard } from '../useCards';
 import { supabase } from '@/lib/supabase';
 import { queryKeys } from '@/lib/queryKeys';
 import { renderHookWithClient } from '../../../test/queryTestUtils';
@@ -87,31 +82,6 @@ it('updates an existing card by id', async () => {
       ['single'],
     ],
   ]);
-});
-
-it('toggles whether a card counts toward the monthly budget', async () => {
-  const { result, client } = await renderHookWithClient(() =>
-    useSetCardInBudget(),
-  );
-  client.setQueryData(queryKeys.cards.list(), []);
-  client.setQueryData(queryKeys.snapshots.window(12), []);
-
-  await act(async () => {
-    await result.current.mutateAsync({ id: 5, includeInBudget: false });
-  });
-
-  expect(stub.chainsFor('card')).toEqual([
-    [
-      ['update', { include_in_budget: false }],
-      ['eq', 'id', 5],
-    ],
-  ]);
-  expect(client.getQueryState(queryKeys.cards.list())?.isInvalidated).toBe(
-    true,
-  );
-  expect(
-    client.getQueryState(queryKeys.snapshots.window(12))?.isInvalidated,
-  ).toBe(true);
 });
 
 it('adds a credit card on a new account of its own, then refreshes cards and accounts', async () => {

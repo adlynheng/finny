@@ -89,25 +89,3 @@ export function useAddCard() {
       ]),
   });
 }
-
-/** The Settings card drawer's "Count toward monthly budget" toggle. */
-export function useSetCardInBudget() {
-  const onSettled = useInvalidateCards();
-  return useMutation({
-    mutationFn: async ({
-      id,
-      includeInBudget,
-    }: {
-      id: number;
-      includeInBudget: boolean;
-    }) => {
-      unwrap(
-        await supabase
-          .from('card')
-          .update({ include_in_budget: includeInBudget })
-          .eq('id', id),
-      );
-    },
-    onSettled,
-  });
-}

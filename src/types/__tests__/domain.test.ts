@@ -22,11 +22,19 @@ const sql = readdirSync(migrationsDir)
   .map(file => readFileSync(join(migrationsDir, file), 'utf8'))
   .join('\n');
 
-/** The allowed values of the check constraint with this name, in the order written. */
+/**
+ * The allowed values of the check constraint with this name, in the order written. A later
+ * migration can redefine a constraint, so the last definition wins.
+ */
 function checkValues(constraint: string): string[] {
-  const match = new RegExp(
-    `constraint ${constraint}\\s+check \\(\\w+ in \\(([^)]*)\\)\\)`,
-  ).exec(sql);
+  const match = [
+    ...sql.matchAll(
+      new RegExp(
+        `constraint ${constraint}\\s+check \\(\\w+ in \\(([^)]*)\\)\\)`,
+        'g',
+      ),
+    ),
+  ].at(-1);
   if (!match?.[1]) {
     throw new Error(`No check constraint named ${constraint}`);
   }

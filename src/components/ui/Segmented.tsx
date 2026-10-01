@@ -3,6 +3,7 @@ import Animated from 'react-native-reanimated';
 import { tokens } from '@/theme/tokens';
 import { cx } from './cardChrome';
 import { useSlidingPill } from './useSlidingPill';
+import { touchSlop } from './touch';
 
 export type SegmentOption<T extends string> = { value: T; label: string };
 
@@ -192,6 +193,8 @@ export function Segmented<T extends string>({
             accessibilityRole="button"
             accessibilityState={{ selected, disabled }}
             disabled={disabled}
+            // Segments are 32–38pt tall on iOS; grow them to 44 vertically.
+            hitSlop={touchSlop(32)}
             onPress={() => {
               if (!selected) {
                 onChange(option.value);

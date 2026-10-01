@@ -12,6 +12,9 @@ import { Button } from './Button';
 import { Glass } from './Glass';
 import { SheetScrim } from './SheetParts';
 
+/** The mobile confirmation's lift off the scrim. */
+const LIFT = { boxShadow: '0 -20px 60px rgba(0,0,0,.12)' };
+
 type Props = {
   open: boolean;
   /** The thing being deleted, quoted in the title: `Delete “Japan trip”?` */
@@ -118,7 +121,7 @@ export function ConfirmDialog({
           <View
             testID="confirm-surface"
             className="gap-y-[12px] rounded-t-[20px] bg-white px-[18px] pt-[22px]"
-            style={{ boxShadow: '0 -20px 60px rgba(0,0,0,.12)' }}
+            style={LIFT}
           >
             {text}
             <View className="mt-[6px] gap-y-[8px]">

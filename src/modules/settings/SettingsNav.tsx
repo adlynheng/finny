@@ -9,7 +9,7 @@ import { PANELS, type PanelHead } from './useSettingsData';
 const LIFT = { boxShadow: '0 1px 3px rgba(0,0,0,.08)' };
 
 /**
- * The four panels to switch between, each with its count underneath. On
+ * The five panels to switch between, each with its count underneath. On
  * desktop a glass column, the selected item white with a lime dot; on mobile
  * a row of chips that scrolls sideways when it does not fit.
  */

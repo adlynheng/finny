@@ -16,6 +16,7 @@ import {
   type CalendarTile,
   type TileState,
 } from './calendarGrid';
+import { touchSlop } from './touch';
 
 type Props = {
   /** `YYYY-MM-DD`, or null when nothing is chosen yet. */
@@ -119,6 +120,7 @@ function MonthButton({
       accessibilityRole="button"
       accessibilityLabel={label}
       onPress={onPress}
+      hitSlop={touchSlop(32, 36)}
       className="h-[22px] w-[24px] items-center justify-center rounded-4 hover:bg-white ios:h-[32px] ios:w-[36px] ios:rounded-6"
     >
       <Svg width={chevronSize} height={chevronSize} viewBox="0 0 10 10">

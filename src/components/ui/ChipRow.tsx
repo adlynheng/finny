@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Platform, Pressable, Text, View } from 'react-native';
 import { tokens } from '@/theme/tokens';
 import { cx } from './cardChrome';
+import { touchSlop } from './touch';
 
 export type ChipOption<T extends string> = {
   value: T;
@@ -61,6 +62,7 @@ export function ChipRow<T extends string>({
             accessibilityState={{ selected, disabled: inactive }}
             disabled={inactive}
             onPress={() => onChange(option.value)}
+            hitSlop={touchSlop(38)}
             className={cx(
               'flex-row items-center gap-[6px] rounded-7 border border-chip-border px-[11px] py-[7px] ios:h-[38px] ios:rounded-9 ios:px-[13px] ios:py-0',
               selected ? 'bg-ink' : 'bg-white',

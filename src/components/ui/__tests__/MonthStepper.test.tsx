@@ -70,5 +70,5 @@ it('gives mobile 34 × 32 arrows that reach a 44-point target', async () => {
   expect(classes(prev)).toEqual(
     expect.arrayContaining(['ios:h-[32px]', 'ios:w-[34px]']),
   );
-  expect(prev.props.hitSlop).toBe(6);
+  expect(prev.props.hitSlop).toEqual({ top: 6, bottom: 6, left: 5, right: 5 });
 });

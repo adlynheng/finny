@@ -26,6 +26,8 @@ export type SettingsData = {
   /** Every asset account's balance, credit cards excluded. */
   assetsCents: number;
   expense: CategoryTotal[];
+  /** The expense categories marked for recurring charges. */
+  recurring: CategoryTotal[];
   deposit: CategoryTotal[];
   /** Active income streams. */
   incomes: IncomeSourceRow[];
@@ -61,11 +63,13 @@ export function useSettingsData(): SettingsData | null {
           .reduce((sum, r) => sum + r.cents, 0),
       }));
   const incomes = sources.filter(s => s.is_active);
+  const expense = totals('expense', spending.rows);
   return {
     settings,
     accounts,
     assetsCents: shareOfAssets(accounts).reduce((sum, r) => sum + r.cents, 0),
-    expense: totals('expense', spending.rows),
+    expense,
+    recurring: expense.filter(t => t.category.is_recurring),
     deposit: totals('deposit', income.rows),
     incomes,
     incomeMonthlyCents: grossIncomeCents(incomes),
@@ -99,6 +103,10 @@ const EMPTY: Record<SettingsPanel, { title: string; body: string }> = {
     title: 'No categories yet',
     body: 'Categories sort every transaction and drive the spending breakdown on Personal Finance.',
   },
+  recurring: {
+    title: 'No recurring categories yet',
+    body: 'Recurring categories sort your recurring charges. They are expense categories, so each charge still counts toward your spending.',
+  },
   deposit: {
     title: 'No categories yet',
     body: 'Categories sort every transaction and drive the spending breakdown on Personal Finance.',
@@ -120,6 +128,7 @@ export function panelHeads(
   const lengths: Record<SettingsPanel, number> = {
     accounts: data.accounts.length,
     expenditure: data.expense.length,
+    recurring: data.recurring.length,
     deposit: data.deposit.length,
     fixed: data.incomes.length,
   };
@@ -158,6 +167,15 @@ export function panelHeads(
       `${formatMoney(sumOf(data.expense), { decimals: 2 })} spent in ${month}`,
       'New category',
     ),
+    recurring: head(
+      'recurring',
+      'Recurring categories',
+      plural(data.recurring.length, 'category', 'categories'),
+      `${formatMoney(sumOf(data.recurring), {
+        decimals: 2,
+      })} spent in ${month}`,
+      'New category',
+    ),
     deposit: head(
       'deposit',
       'Deposit categories',
@@ -178,6 +196,7 @@ export function panelHeads(
 export const PANELS: SettingsPanel[] = [
   'accounts',
   'expenditure',
+  'recurring',
   'deposit',
   'fixed',
 ];

@@ -8,6 +8,7 @@ import {
 } from '@/utils/format/date';
 import { cx } from './cardChrome';
 import { Glass } from './Glass';
+import { touchSlop } from './touch';
 
 type Tone = 'plain' | 'onGradient';
 
@@ -131,7 +132,7 @@ function Arrow({
       accessibilityState={{ disabled }}
       disabled={disabled}
       onPress={onPress}
-      hitSlop={Platform.OS === 'ios' ? 6 : undefined}
+      hitSlop={touchSlop(32, 34)}
       className={cx(
         'items-center justify-center rounded-4 ios:h-[32px] ios:w-[34px] ios:rounded-6',
         className,

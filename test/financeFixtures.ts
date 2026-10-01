@@ -7,13 +7,43 @@
 export const TODAY = '2026-09-24';
 
 export const categories = [
-  { id: 1, name: 'Salary', kind: 'deposit', icon: 'Salary' },
-  { id: 2, name: 'Freelance', kind: 'deposit', icon: null },
-  { id: 3, name: 'Groceries', kind: 'expense', icon: 'Groceries' },
-  { id: 4, name: 'Dining', kind: 'expense', icon: 'Food' },
-  { id: 5, name: 'Housing', kind: 'expense', icon: 'Housing' },
-  { id: 6, name: 'Subscriptions', kind: 'expense', icon: 'Subscriptions' },
-  { id: 7, name: 'Bills', kind: 'expense', icon: 'Bills' },
+  {
+    id: 1,
+    name: 'Salary',
+    kind: 'deposit',
+    icon: 'Salary',
+    is_recurring: false,
+  },
+  {
+    id: 2,
+    name: 'Freelance',
+    kind: 'deposit',
+    icon: null,
+    is_recurring: false,
+  },
+  {
+    id: 3,
+    name: 'Groceries',
+    kind: 'expense',
+    icon: 'Groceries',
+    is_recurring: false,
+  },
+  { id: 4, name: 'Dining', kind: 'expense', icon: 'Food', is_recurring: false },
+  {
+    id: 5,
+    name: 'Housing',
+    kind: 'expense',
+    icon: 'Housing',
+    is_recurring: true,
+  },
+  {
+    id: 6,
+    name: 'Subscriptions',
+    kind: 'expense',
+    icon: 'Subscriptions',
+    is_recurring: true,
+  },
+  { id: 7, name: 'Bills', kind: 'expense', icon: 'Bills', is_recurring: true },
 ];
 
 function txn(

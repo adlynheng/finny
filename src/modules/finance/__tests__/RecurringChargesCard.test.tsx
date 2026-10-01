@@ -119,6 +119,9 @@ describe('the form', () => {
 
     await fireEvent.changeText(screen.getByTestId('rf-name'), ' Disney+ ');
     await fireEvent.changeText(screen.getByTestId('rf-amount'), '13.98');
+    await fireEvent.press(
+      inside('rf-category').getByLabelText('Subscriptions'),
+    );
     await fireEvent.press(inside('rf-account').getByLabelText('UOB One'));
     expect(save.props.accessibilityState.disabled).toBe(false);
     await fireEvent.press(save);
@@ -145,13 +148,13 @@ describe('the form', () => {
     );
   });
 
-  it('offers the recurring-charge categories, Subscriptions first', async () => {
+  it('offers the categories Settings marks recurring', async () => {
     await open();
     await fireEvent.press(screen.getByTestId('recurring-add'));
     const labels = inside('rf-category')
       .getAllByRole('button')
       .map(b => b.props.accessibilityLabel);
-    expect(labels).toEqual(['Subscriptions', 'Bills', 'Housing']);
+    expect(labels).toEqual(['Housing', 'Subscriptions', 'Bills']);
     // Groceries and Dining are everyday spending, not recurring.
   });
 

@@ -10,6 +10,7 @@ import {
 import type { Session } from '@supabase/supabase-js';
 import { useQueryClient } from '@tanstack/react-query';
 
+import { touchSlop } from '@/components/ui/touch';
 import { supabase } from '@/lib/supabase';
 
 type Props = {
@@ -119,6 +120,7 @@ function SignInForm() {
           accessibilityRole="button"
           disabled={busy}
           onPress={signIn}
+          hitSlop={touchSlop(40)}
           className="h-10 items-center justify-center rounded-8 bg-ink"
         >
           <Text className="font-sans text-[14px] font-medium text-white">

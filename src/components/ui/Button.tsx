@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Pressable, Text } from 'react-native';
 import { tokens, type ColorName } from '@/theme/tokens';
 import { cx } from './cardChrome';
+import { touchSlop } from './touch';
 
 export type ButtonVariant =
   | 'primary'
@@ -155,6 +156,8 @@ export function Button({
       accessibilityState={{ disabled }}
       disabled={disabled}
       onPress={onPress}
+      // The small button is drawn 38pt tall on iOS.
+      hitSlop={size === 'sm' ? touchSlop(38) : undefined}
       className={cx(
         'group flex-row items-center justify-center gap-[7px] self-start',
         sized[size].box,

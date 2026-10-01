@@ -11,9 +11,11 @@ import { useAssetClasses } from '@/hooks/useAssetClasses';
 import { useCards } from '@/hooks/useCards';
 import {
   ACCOUNT_TYPES,
+  CPF_TYPES,
   isOneOf,
   type AccountRow,
   type AccountType,
+  type CpfType,
 } from '@/types/domain';
 import {
   centsToInput,
@@ -23,6 +25,15 @@ import {
 import { plural } from './useSettingsData';
 
 const TYPES = ACCOUNT_TYPES.map(t => ({ value: t, label: t }));
+
+/** Each CPF account, by `account.cpf_type`. */
+const CPF_LABELS: Record<CpfType, string> = {
+  OA: 'Ordinary',
+  SA: 'Special',
+  MA: 'MediSave',
+  RA: 'Retirement',
+};
+const CPF_OPTIONS = CPF_TYPES.map(t => ({ value: t, label: CPF_LABELS[t] }));
 
 /** The asset class each type's balance counts towards; a credit card's counts towards none. */
 const TYPE_CLASS: Record<AccountType, string | null> = {
@@ -44,9 +55,11 @@ export function removeAccountDetail(cardCount: number, last4?: string | null) {
 }
 
 /**
- * The account drawer: name, type, institution or note, and the balance —
- * "Balance owed" for a credit card, whose balance counts as a liability.
- * Editing adds Remove account, which asks first. Mount it only while open.
+ * The account drawer: name, type (and for CPF, which CPF account), institution
+ * or note, and the balance — "Balance owed" for a credit card, whose balance
+ * counts as a liability and is stored negative, so spending on the card makes
+ * it more negative and a payment in less. Editing adds Remove account, which
+ * asks first. Mount it only while open.
  */
 export function AccountSheet({
   account,
@@ -67,6 +80,9 @@ export function AccountSheet({
   const [name, setName] = useState(account?.name ?? '');
   const [type, setType] = useState<AccountType>(
     isOneOf(ACCOUNT_TYPES, account?.type) ? account.type : 'Savings',
+  );
+  const [cpfType, setCpfType] = useState<CpfType>(
+    isOneOf(CPF_TYPES, account?.cpf_type) ? account.cpf_type : 'OA',
   );
   const [note, setNote] = useState(account?.note ?? '');
   const [balance, setBalance] = useState(
@@ -90,11 +106,12 @@ export function AccountSheet({
       name: name.trim(),
       type,
       note: note.trim() || null,
-      balance_cents: cents,
+      // The form takes what is owed as a positive amount.
+      balance_cents: credit && cents ? -cents : cents,
       is_liability: credit,
       asset_class_id: credit ? null : classId,
       // Only a CPF account says which CPF account it is.
-      cpf_type: type === 'CPF' ? account?.cpf_type ?? null : null,
+      cpf_type: type === 'CPF' ? cpfType : null,
     };
     upsert.mutate(account ? { id: account.id, ...fields } : fields, {
       onSuccess: onClose,
@@ -136,6 +153,16 @@ export function AccountSheet({
           onChange={setType}
         />
       </FormField>
+      {type === 'CPF' && (
+        <FormField label="CPF account">
+          <Segmented
+            testID="account-cpf-type"
+            options={CPF_OPTIONS}
+            value={cpfType}
+            onChange={setCpfType}
+          />
+        </FormField>
+      )}
       <Input
         testID="account-note"
         label="Institution or note"

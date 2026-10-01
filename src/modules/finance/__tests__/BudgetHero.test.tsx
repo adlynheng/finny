@@ -76,6 +76,23 @@ it('shows the pace, the daily average and the safe daily spend', async () => {
   expect(text('budget-safe-note')).toHaveTextContent(/7 days left$/);
 });
 
+it('leaves posted recurring charges out of the budget', async () => {
+  const rent = {
+    ...september[0]!,
+    id: 99,
+    description: 'Rent',
+    amount_cents: -250_000,
+    recurring_id: 1,
+  };
+  stub.respond('txn', { data: [rent, ...september], error: null });
+  await renderWithClient(<Hero />);
+
+  expect(await screen.findByTestId('budget-spent-value')).toHaveTextContent(
+    'S$1,366',
+  );
+  expect(text('budget-left')).toHaveTextContent('2,134');
+});
+
 it('flips to over limit, in the danger colour, once spend passes the limit', async () => {
   stub.respond('settings', { data: settings(100_000), error: null });
   await renderWithClient(<Hero />);

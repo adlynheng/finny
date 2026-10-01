@@ -86,8 +86,6 @@ export function AddCardSheet({
           card_type: kind,
           rewards_program: rewards.trim() || null,
           color_theme: theme,
-          // As the design: a credit card counts toward the budget, a debit card not.
-          include_in_budget: credit,
           account_id: credit ? undefined : linked!,
           statement_day: credit ? statementDay : null,
           bill_due_day: credit ? billDueDay : null,

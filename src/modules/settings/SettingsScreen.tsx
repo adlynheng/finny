@@ -149,6 +149,15 @@ function Panel({
       return (
         <CategoriesPanel kind="expense" data={data} head={heads.expenditure} />
       );
+    case 'recurring':
+      return (
+        <CategoriesPanel
+          kind="expense"
+          recurring
+          data={data}
+          head={heads.recurring}
+        />
+      );
     case 'deposit':
       return (
         <CategoriesPanel kind="deposit" data={data} head={heads.deposit} />
