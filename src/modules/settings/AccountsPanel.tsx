@@ -45,7 +45,18 @@ export function AccountsPanel({
   })).filter(g => g.rows.length > 0);
 
   return (
-    <PanelFrame head={head} onAction={() => setOpen('new')}>
+    <PanelFrame
+      head={head}
+      onAction={() => setOpen('new')}
+      sheet={
+        open && (
+          <AccountSheet
+            account={open === 'new' ? null : open}
+            onClose={() => setOpen(null)}
+          />
+        )
+      }
+    >
       <GroupGrid>
         {groups.map(({ type, rows }) => {
           const credit = type === CREDIT_CARD;
@@ -99,12 +110,6 @@ export function AccountsPanel({
           );
         })}
       </GroupGrid>
-      {open && (
-        <AccountSheet
-          account={open === 'new' ? null : open}
-          onClose={() => setOpen(null)}
-        />
-      )}
     </PanelFrame>
   );
 }

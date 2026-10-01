@@ -50,7 +50,19 @@ export function CategoriesPanel({
     <NewTile key="new" onPress={() => setOpen('new')} />,
   ];
   return (
-    <PanelFrame head={head} onAction={() => setOpen('new')}>
+    <PanelFrame
+      head={head}
+      onAction={() => setOpen('new')}
+      sheet={
+        open && (
+          <CategorySheet
+            kind={kind}
+            category={open === 'new' ? null : open}
+            onClose={() => setOpen(null)}
+          />
+        )
+      }
+    >
       <ResponsiveGrid
         testID={`category-grid-${kind}`}
         minColumnWidth={180}
@@ -61,13 +73,6 @@ export function CategoriesPanel({
       >
         {tiles}
       </ResponsiveGrid>
-      {open && (
-        <CategorySheet
-          kind={kind}
-          category={open === 'new' ? null : open}
-          onClose={() => setOpen(null)}
-        />
-      )}
     </PanelFrame>
   );
 }

@@ -152,7 +152,7 @@ function EmptyPlanHero() {
         </Text>
         <Text
           testID="plan-left"
-          className="font-sans text-[68px] font-light leading-[65px] tracking-[-0.035em] text-ink ios:text-[56px] ios:leading-[53px]"
+          className="font-sans text-[68px] font-light leading-[65px] tracking-[-0.035em] text-ink ios:text-[56px] ios:-mt-[15px] ios:leading-[68px]"
         >
           0
         </Text>
@@ -291,7 +291,7 @@ function Summary({ planner }: { planner: Planner }) {
         </Text>
         <Text
           testID="plan-left"
-          className="font-sans text-[68px] font-light leading-[65px] tracking-[-0.035em] tabular-nums text-ink ios:text-[56px] ios:leading-[53px]"
+          className="font-sans text-[68px] font-light leading-[65px] tracking-[-0.035em] tabular-nums text-ink ios:text-[56px] ios:-mt-[15px] ios:leading-[68px]"
         >
           {formatAmount(leftCents)}
         </Text>

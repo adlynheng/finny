@@ -103,6 +103,27 @@ it.each([
   },
 );
 
+describe.each(['macos', 'ios'] as const)(
+  'on %s, an empty panel’s buttons open its sheet',
+  os => {
+    beforeEach(() => jest.replaceProperty(Platform, 'OS', os));
+
+    it.each([
+      ['accounts', 'settings-panel-empty-action'],
+      ['accounts', 'settings-panel-action'],
+      ['expenditure', 'settings-panel-empty-action'],
+      ['deposit', 'settings-panel-empty-action'],
+      ['fixed', 'settings-panel-empty-action'],
+      ['fixed', 'settings-panel-action'],
+    ] as const)('%s: %s', async (panel, button) => {
+      await draw(panel);
+
+      await fireEvent.press(screen.getByTestId(button));
+      expect(await screen.findByTestId('sheet-surface')).toBeTruthy();
+    });
+  },
+);
+
 it('the share card: S$0 across 0 accounts, and nothing owed', async () => {
   await draw();
 

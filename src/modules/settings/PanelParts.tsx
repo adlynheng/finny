@@ -14,14 +14,18 @@ import type { PanelHead } from './useSettingsData';
  * panel's action on the right (stacked on mobile), then the body. On desktop
  * the body scrolls within the row; on mobile the page scrolls. An empty
  * panel shows dashed rows and its empty note (with the action again) instead.
+ * The panel's `sheet` stays mounted either way, so the empty note's action
+ * can open it.
  */
 export function PanelFrame({
   head,
   onAction,
+  sheet,
   children,
 }: {
   head: PanelHead;
   onAction: () => void;
+  sheet: ReactNode;
   children: ReactNode;
 }) {
   return (
@@ -81,6 +85,7 @@ export function PanelFrame({
           children
         )}
       </ScrollView>
+      {sheet}
     </Card>
   );
 }

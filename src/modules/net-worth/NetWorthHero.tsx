@@ -60,7 +60,7 @@ export function NetWorthHero() {
             </Text>
             <Text
               testID="net-worth"
-              className="font-sans text-[76px] font-light leading-[72px] tracking-[-0.035em] text-ink ios:text-[60px] ios:leading-[57px]"
+              className="font-sans text-[76px] font-light leading-[72px] tracking-[-0.035em] text-ink ios:text-[60px] ios:-mt-[15px] ios:leading-[72px]"
             >
               {worth.netCents < 0 && MINUS}
               {formatAmount(worth.netCents)}
@@ -140,7 +140,7 @@ function EmptyHero() {
         </Text>
         <Text
           testID="net-worth"
-          className="font-sans text-[76px] font-light leading-[72px] tracking-[-0.035em] text-ink ios:text-[60px] ios:leading-[57px]"
+          className="font-sans text-[76px] font-light leading-[72px] tracking-[-0.035em] text-ink ios:text-[60px] ios:-mt-[15px] ios:leading-[72px]"
         >
           0
         </Text>

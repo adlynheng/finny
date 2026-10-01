@@ -72,7 +72,7 @@ export function BudgetSummary({ budget }: { budget: Budget | null }) {
             <Text
               testID="budget-left"
               className={cx(
-                'font-sans text-[68px] font-light leading-[65px] tracking-[-0.035em] ios:text-[56px] ios:leading-[53px]',
+                'font-sans text-[68px] font-light leading-[65px] tracking-[-0.035em] ios:text-[56px] ios:-mt-[15px] ios:leading-[68px]',
                 over ? 'text-danger' : 'text-ink',
               )}
             >

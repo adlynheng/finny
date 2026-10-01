@@ -201,7 +201,7 @@ export function TradingHero({
               ) : (
                 <Text
                   testID="trading-value"
-                  className="font-sans text-[64px] font-light leading-[61px] tracking-[-0.035em] tabular-nums text-ink ios:text-[52px] ios:leading-[49px]"
+                  className="font-sans text-[64px] font-light leading-[61px] tracking-[-0.035em] tabular-nums text-ink ios:text-[52px] ios:-mt-[14px] ios:leading-[63px]"
                 >
                   {unknown ? '—' : formatAmount(value)}
                 </Text>
@@ -342,7 +342,7 @@ function EmptyTradingHero() {
             </Text>
             <Text
               testID="trading-value"
-              className="font-sans text-[64px] font-light leading-[61px] tracking-[-0.035em] text-ink ios:text-[52px] ios:leading-[49px]"
+              className="font-sans text-[64px] font-light leading-[61px] tracking-[-0.035em] text-ink ios:text-[52px] ios:-mt-[14px] ios:leading-[63px]"
             >
               0
             </Text>

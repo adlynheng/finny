@@ -76,7 +76,23 @@ export function FixedPanel({
   })).filter(g => g.rows.length > 0);
 
   return (
-    <PanelFrame head={head} onAction={() => setIncome('new')}>
+    <PanelFrame
+      head={head}
+      onAction={() => setIncome('new')}
+      sheet={
+        <>
+          {income && (
+            <IncomeSheet
+              source={income === 'new' ? null : income}
+              onClose={() => setIncome(null)}
+            />
+          )}
+          {cpfOpen && (
+            <CpfSheet settings={settings} onClose={() => setCpfOpen(false)} />
+          )}
+        </>
+      }
+    >
       <GroupGrid>
         {[
           ...groups.map(({ type, rows }) => (
@@ -136,15 +152,6 @@ export function FixedPanel({
           </PanelGroup>,
         ]}
       </GroupGrid>
-      {income && (
-        <IncomeSheet
-          source={income === 'new' ? null : income}
-          onClose={() => setIncome(null)}
-        />
-      )}
-      {cpfOpen && (
-        <CpfSheet settings={settings} onClose={() => setCpfOpen(false)} />
-      )}
     </PanelFrame>
   );
 }
