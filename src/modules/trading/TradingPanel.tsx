@@ -38,7 +38,8 @@ const count = (n: number, one: string, many: string) =>
 /**
  * The glass panel under the hero: Positions, Watchlist and Portfolio tabs, a
  * line about the open tab, the USD/SGD rate and when it was fetched, and Add
- * position. The Sell and Add position forms open from here. The rate's time
+ * position (New symbol on the Watchlist tab, which only watches). The Sell and
+ * Add position forms open from here. The rate's time
  * is the honest signal of its age: marked stale once old, and the fallback
  * named as such before any fetch. A failed quote request shows a quiet notice
  * with a retry beside it.
@@ -160,12 +161,13 @@ export function TradingPanel({
       </Pressable>
     </View>
   );
+  const watch = tab === 'watchlist';
   const add = (
     <Button
-      testID="add-position"
+      testID={watch ? 'add-watch' : 'add-position'}
       variant="primary"
       size="sm"
-      label="Add position"
+      label={watch ? 'New symbol' : 'Add position'}
       icon={plus}
       onPress={() => setAdding(true)}
       className="h-[28px] px-[11px] py-0 ios:h-[40px] ios:rounded-10 ios:px-[14px]"
@@ -254,8 +256,13 @@ export function TradingPanel({
       {adding && (
         <AddPositionSheet
           book={book}
+          watch={watch}
           onClose={() => setAdding(false)}
           onAdded={s => {
+            if (watch) {
+              setAdding(false);
+              return;
+            }
             setUi({
               addPositionOpen: false,
               tradingTab: 'positions',

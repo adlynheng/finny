@@ -385,7 +385,10 @@ function EmptyTradingHero() {
             <AddButton
               testID="trading-empty-add"
               label="Add position"
-              onPress={() => setUi({ addPositionOpen: true })}
+              // The form follows the panel's tab; this one adds a position.
+              onPress={() =>
+                setUi({ addPositionOpen: true, tradingTab: 'positions' })
+              }
             />
           </View>
         </View>

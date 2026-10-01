@@ -181,7 +181,7 @@ describe('adding', () => {
   });
 
   it('saves a lot and shows it on the Positions tab', async () => {
-    useUiStore.setState({ tradingTab: 'watchlist' });
+    useUiStore.setState({ tradingTab: 'portfolio' });
     // The instrument list, then the save's lookup of NVDA.
     stub.respond(
       'instrument',
@@ -209,6 +209,67 @@ describe('adding', () => {
       tradingTab: 'positions',
       expandedSymbols: ['NVDA'],
     });
+  });
+});
+
+describe('watching a symbol', () => {
+  async function openWatch() {
+    useUiStore.setState({ tradingTab: 'watchlist' });
+    await open();
+    await fireEvent.press(byId('add-watch'));
+    // The button and the form's title both say New symbol.
+    await screen.findByTestId('add-note');
+    expect(screen.getAllByText('New symbol')).toHaveLength(2);
+  }
+
+  it('opens New symbol from the Watchlist tab, without the buy fields', async () => {
+    await openWatch();
+    expect(screen.queryByTestId('add-position')).toBeNull();
+    expect(field('Symbol')).toBeTruthy();
+    expect(screen.queryByLabelText('Quantity')).toBeNull();
+    expect(screen.queryByLabelText('Price per share')).toBeNull();
+    expect(screen.queryByText('Date bought')).toBeNull();
+    expect(screen.queryByTestId('add-total')).toBeNull();
+    expect(screen.queryByTestId('add-quick')).toBeNull();
+    has('add-note', 'Pick a symbol or type one');
+  });
+
+  it('watches a new symbol and stays on the Watchlist tab', async () => {
+    // The instrument list, the save's lookup (none), the new row, then the refetch.
+    stub.respond(
+      'instrument',
+      { data: Object.values(instruments), error: null },
+      { data: null, error: null },
+      { data: { id: 40 }, error: null },
+      { data: Object.values(instruments), error: null },
+    );
+    await openWatch();
+    await fireEvent.changeText(field('Symbol'), 'voo');
+    has('add-note', 'New symbol');
+    expect(primary('Add to watchlist').props.accessibilityState.disabled).toBe(
+      true,
+    );
+    await fireEvent.changeText(field('Name'), 'Vanguard S&P 500');
+    await fireEvent.press(primary('Add to watchlist'));
+
+    await waitFor(() => expect(screen.queryByTestId('add-note')).toBeNull());
+    expect(stub.chainsFor('watchlist_item').at(-2)![0]).toEqual([
+      'upsert',
+      { instrument_id: 40 },
+      { onConflict: 'instrument_id', ignoreDuplicates: true },
+    ]);
+    expect(stub.chainsFor('lot')).toHaveLength(0);
+    expect(useUiStore.getState().tradingTab).toBe('watchlist');
+  });
+
+  it('will not add a symbol that is already listed', async () => {
+    await openWatch();
+    await fireEvent.changeText(field('Symbol'), 'nvda');
+    has('add-note', 'NVDA is already on your watchlist');
+    await fireEvent.changeText(field('Name'), 'NVIDIA');
+    expect(primary('Add to watchlist').props.accessibilityState.disabled).toBe(
+      true,
+    );
   });
 });
 

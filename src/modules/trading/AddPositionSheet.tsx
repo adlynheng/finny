@@ -11,6 +11,7 @@ import { cx } from '@/components/ui/cardChrome';
 import { useDebounced } from '@/hooks/useDebounced';
 import { useInstruments } from '@/hooks/useInstruments';
 import { useAddPosition } from '@/hooks/usePositions';
+import { useAddToWatchlist } from '@/hooks/useWatchlist';
 import { useUsListings } from '@/hooks/useUsListings';
 import { searchListings, type Listing } from '@/lib/listings';
 import { today } from '@/lib/today';
@@ -42,8 +43,10 @@ const KINDS = INSTRUMENT_KINDS.map(k => ({ value: k, label: k }));
 const INDUSTRIES = [
   'Tech',
   'Financials',
+  'Energy',
   'Consumer',
   'Real estate',
+  'Materials',
   'Industrials',
   'Healthcare',
   'Broad market',
@@ -66,18 +69,27 @@ const shares = (n: number) =>
  * no match, such as an SGX listing, can still be typed in full. A held symbol's market, type and
  * industry are already known, so they lock. Saving shows the Positions tab
  * with the symbol open.
+ *
+ * With `watch` it is the watchlist's New symbol form instead: the same symbol,
+ * market, type and industry, but no quantity, price or date, and saving only
+ * watches the symbol. A symbol already listed (held or watched) cannot be
+ * added again.
  */
 export function AddPositionSheet({
   book,
+  watch = false,
   onClose,
   onAdded,
 }: {
   book: Book;
+  watch?: boolean;
   onClose: () => void;
   onAdded: (symbol: string) => void;
 }) {
   const instruments = useInstruments().data ?? [];
-  const add = useAddPosition();
+  const addLot = useAddPosition();
+  const addWatch = useAddToWatchlist();
+  const add = watch ? addWatch : addLot;
 
   const [symbol, setSymbol] = useState('');
   const [name, setName] = useState('');
@@ -114,8 +126,10 @@ export function AddPositionSheet({
 
   const q = Number(sanitizeAmountInput(quantity)) || 0;
   const p = inputToCents(price) ?? 0;
-  const valid =
-    symbol !== '' && (locked || name.trim() !== '') && q > 0 && p > 0;
+  const listed = book.watched.some(i => i.symbol === symbol);
+  const valid = watch
+    ? symbol !== '' && name.trim() !== '' && !listed
+    : symbol !== '' && (locked || name.trim() !== '') && q > 0 && p > 0;
   const total = formatDualMoney(
     Math.round(q * p * fxFor(shown.currency, book.rate)),
     book.rate,
@@ -148,7 +162,15 @@ export function AddPositionSheet({
     setKind(l.etf ? 'ETF' : 'Stock');
   };
 
-  const note = held
+  const note = watch
+    ? listed
+      ? `${symbol} is already on your watchlist`
+      : known
+      ? lastPrice(known, book)
+      : symbol
+      ? 'New symbol'
+      : 'Pick a symbol or type one'
+    : held
     ? `Adds a lot to your ${symbol} position (${shares(
         held.quantity,
       )} shares held)`
@@ -162,16 +184,21 @@ export function AddPositionSheet({
     if (!valid) {
       return;
     }
-    add.mutate(
+    const instrument = {
+      symbol,
+      name: name.trim() || known?.name || symbol,
+      currency: shown.currency,
+      exchange: shown.currency === 'SGD' ? 'SGX' : null,
+      kind: shown.kind,
+      sector: shown.sector,
+    };
+    if (watch) {
+      addWatch.mutate(instrument, { onSuccess: () => onAdded(symbol) });
+      return;
+    }
+    addLot.mutate(
       {
-        instrument: {
-          symbol,
-          name: name.trim() || known?.name || symbol,
-          currency: shown.currency,
-          exchange: shown.currency === 'SGD' ? 'SGX' : null,
-          kind: shown.kind,
-          sector: shown.sector,
-        },
+        instrument,
         quantity: q,
         costPerUnitCents: p,
         purchasedAt: date,
@@ -184,19 +211,21 @@ export function AddPositionSheet({
     <Sheet
       open
       onClose={onClose}
-      title="New position"
+      title={watch ? 'New symbol' : 'New position'}
       width="wide"
       note={
         <View className="gap-y-[2px]">
-          <Text
-            testID="add-total"
-            className="font-sans text-[13px] tabular-nums text-ink ios:text-[20px] ios:font-light"
-          >
-            {total.primary}{' '}
-            <Text className="text-[12px] font-normal text-muted ios:text-[13px]">
-              {total.secondary}
+          {!watch && (
+            <Text
+              testID="add-total"
+              className="font-sans text-[13px] tabular-nums text-ink ios:text-[20px] ios:font-light"
+            >
+              {total.primary}{' '}
+              <Text className="text-[12px] font-normal text-muted ios:text-[13px]">
+                {total.secondary}
+              </Text>
             </Text>
-          </Text>
+          )}
           <Text
             testID="add-note"
             className="font-sans text-[11px] text-muted ios:text-[12px]"
@@ -207,7 +236,7 @@ export function AddPositionSheet({
       }
       actions={{
         primary: {
-          label: held ? 'Add lot' : 'Add position',
+          label: watch ? 'Add to watchlist' : held ? 'Add lot' : 'Add position',
           onPress: save,
           disabled: !valid || add.isPending,
         },
@@ -241,17 +270,20 @@ export function AddPositionSheet({
           className="flex-[1.6] ios:flex-[1.4]"
         />
       </View>
-      <FormField label="From your watchlist and holdings">
-        <ChipRow
-          testID="add-quick"
-          options={book.watched.map(i => ({
-            value: i.symbol,
-            label: i.symbol,
-          }))}
-          value={book.watched.some(i => i.symbol === symbol) ? symbol : null}
-          onChange={s => fill(book.watched.find(i => i.symbol === s)!)}
-        />
-      </FormField>
+      {/* Everything here is already watched, so the watchlist's form has no use for it. */}
+      {!watch && (
+        <FormField label="From your watchlist and holdings">
+          <ChipRow
+            testID="add-quick"
+            options={book.watched.map(i => ({
+              value: i.symbol,
+              label: i.symbol,
+            }))}
+            value={listed ? symbol : null}
+            onChange={s => fill(book.watched.find(i => i.symbol === s)!)}
+          />
+        </FormField>
+      )}
       <View className="flex-row gap-[10px] ios:flex-col ios:gap-sheet-gap">
         <Locked locked={locked} className="flex-1 ios:flex-none">
           <FormField label="Market">
@@ -286,38 +318,40 @@ export function AddPositionSheet({
       </Locked>
       {/* Desktop: quantity, price and date in one row (.7 : 1 : 1.3). Mobile:
           quantity and price side by side, the date under them. */}
-      <View className="flex-row items-start gap-[10px] ios:flex-col ios:items-stretch ios:gap-sheet-gap">
-        <View className="flex-[1.7] flex-row gap-[10px] ios:flex-none ios:gap-[8px]">
-          <Input
-            testID="add-qty"
-            label="Quantity"
-            placeholder="0"
-            keyboardType="decimal-pad"
-            value={quantity}
-            onChangeText={t => setQuantity(sanitizeAmountInput(t))}
-            className="flex-[0.7] ios:flex-1"
-          />
-          <Input
-            testID="add-price"
-            label="Price per share"
-            prefix={shown.currency === 'USD' ? 'US$' : 'S$'}
-            placeholder="0.00"
-            keyboardType="decimal-pad"
-            value={price}
-            onChangeText={t => setPrice(sanitizeAmountInput(t))}
-            className="flex-1"
+      {!watch && (
+        <View className="flex-row items-start gap-[10px] ios:flex-col ios:items-stretch ios:gap-sheet-gap">
+          <View className="flex-[1.7] flex-row gap-[10px] ios:flex-none ios:gap-[8px]">
+            <Input
+              testID="add-qty"
+              label="Quantity"
+              placeholder="0"
+              keyboardType="decimal-pad"
+              value={quantity}
+              onChangeText={t => setQuantity(sanitizeAmountInput(t))}
+              className="flex-[0.7] ios:flex-1"
+            />
+            <Input
+              testID="add-price"
+              label="Price per share"
+              prefix={shown.currency === 'USD' ? 'US$' : 'S$'}
+              placeholder="0.00"
+              keyboardType="decimal-pad"
+              value={price}
+              onChangeText={t => setPrice(sanitizeAmountInput(t))}
+              className="flex-1"
+            />
+          </View>
+          <DatePicker
+            label="Date bought"
+            value={date}
+            onChange={setDate}
+            className="flex-[1.3] ios:flex-none"
           />
         </View>
-        <DatePicker
-          label="Date bought"
-          value={date}
-          onChange={setDate}
-          className="flex-[1.3] ios:flex-none"
-        />
-      </View>
+      )}
       {add.isError && (
         <Text testID="add-error" className="font-sans text-[12px] text-danger">
-          Couldn’t save the position. Try again.
+          Couldn’t save the {watch ? 'symbol' : 'position'}. Try again.
         </Text>
       )}
       {/* Last, so it draws over the fields below. It floats in the form
